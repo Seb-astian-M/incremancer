@@ -1145,7 +1145,9 @@ var Incremancer;
                     autoRelease: !1,
                     autoMaxHarpies: !1,
                     skeleton: null,
-                    skeletonTalents: []
+                    skeletonTalents: [],
+                    saveVersion: "2.0.0",
+                    forkOrigin: "unified"
                 }
         }
         static getInstance() {
@@ -1356,6 +1358,47 @@ var Incremancer;
                 console.log(e)
             }
         }
+        detectSaveOrigin() {
+            if (this.persistentData.saveVersion) return this.persistentData.forkOrigin;
+            if (this.skeleton.persistent.items && this.skeleton.persistent.items.some(function(i) { return i.s === 8 || i.s === 9; }))
+                return "framed";
+            if ("gearSetEquipped" in this.skeleton.persistent) return "cirus";
+            return "chalice";
+        }
+        recalcLevelFromXP(totalXP) {
+            var level = 1;
+            var remaining = totalXP;
+            var xpNeeded = 800 * Math.pow(level, 1.9);
+            while (remaining >= xpNeeded && level < 99999) {
+                remaining -= xpNeeded;
+                level++;
+                xpNeeded = 800 * Math.pow(level, 1.9);
+            }
+            return { level: level, remainingXP: remaining };
+        }
+        migrateSave() {
+            var skel = this.skeleton.persistent;
+            if (!skel) return;
+            var origin = this.detectSaveOrigin();
+            console.log("[Incremancer] Save origin detected: " + origin);
+            if (!("gearSetEquipped" in skel)) skel.gearSetEquipped = -1;
+            if (!skel.gearSets) skel.gearSets = [];
+            if (skel.xp != null && skel.level != null) {
+                var totalXP = skel.xp;
+                for (var lvl = 1; lvl < skel.level; lvl++) {
+                    if (origin === "framed" || origin === "unified") {
+                        totalXP += 800 * Math.pow(lvl, 1.9);
+                    } else {
+                        totalXP += 1e3 * Math.pow(lvl, 2);
+                    }
+                }
+                var result = this.recalcLevelFromXP(totalXP);
+                skel.level = result.level;
+                skel.xp = result.remainingXP;
+            }
+            this.persistentData.saveVersion = "2.0.0";
+            this.persistentData.forkOrigin = "unified";
+        }
         loadData() {
             try {
                 null !== localStorage.getItem(this.storageName) && (this.persistentData = JSON.parse(localStorage.getItem(this.storageName)), this.level = this.persistentData.levelUnlocked, null !== localStorage.getItem(this.skeleton.storageName) ? (this.skeleton.persistent = JSON.parse(localStorage.getItem(this.skeleton.storageName)), !('gearSetEquipped' in this.skeleton.persistent) && (this.skeleton.persistent.gearSetEquipped = -1), !('gearSets' in this.skeleton.persistent) && (this.skeleton.persistent.gearSets = [])) : this.skeleton.persistent = {
@@ -1368,7 +1411,7 @@ var Incremancer;
                     gearSets: [],
                     currItemId: 0,
                     talentReset: !1
-                }, null !== localStorage.getItem(this.skeleton.talentsStorageName) ? this.skeleton.talents = JSON.parse(localStorage.getItem(this.skeleton.talentsStorageName)) : this.skeleton.talents = [], this.updatePersistentData(), this.calcOfflineProgress());
+                }, null !== localStorage.getItem(this.skeleton.talentsStorageName) ? this.skeleton.talents = JSON.parse(localStorage.getItem(this.skeleton.talentsStorageName)) : this.skeleton.talents = [], this.migrateSave(), this.updatePersistentData(), this.calcOfflineProgress());
             } catch (e) {
                 console.log(e)
             }
@@ -1411,7 +1454,7 @@ var Incremancer;
                     i = ne.getInstance();
                 s.onload = function (e) {
                     const t = JSON.parse(LZString.decompressFromEncodedURIComponent(e.target.result));
-                    t.dateOfSave ? (t.skeleton && (i.skeleton.persistent = t.skeleton, delete t.skeleton, !('gearSetEquipped' in i.skeleton.persistent) && (i.skeleton.persistent.gearSetEquipped = -1), !('gearSets' in i.skeleton.persistent) && (i.skeleton.persistent.gearSets = [])), t.skeletonTalents ? (i.skeleton.talents = t.skeletonTalents, delete t.skeletonTalents) : i.skeleton.talents = [], i.persistentData = t, i.updatePersistentData(), i.saveToPlayFab(), i.level = i.persistentData.levelUnlocked, i.creatureFactory.spawnedSavedCreatures = !1, i.setupLevel()) : alert("Error loading save game")
+                    t.dateOfSave ? (t.skeleton && (i.skeleton.persistent = t.skeleton, delete t.skeleton, !('gearSetEquipped' in i.skeleton.persistent) && (i.skeleton.persistent.gearSetEquipped = -1), !('gearSets' in i.skeleton.persistent) && (i.skeleton.persistent.gearSets = [])), t.skeletonTalents ? (i.skeleton.talents = t.skeletonTalents, delete t.skeletonTalents) : i.skeleton.talents = [], i.persistentData = t, i.migrateSave(), i.updatePersistentData(), i.saveToPlayFab(), i.level = i.persistentData.levelUnlocked, i.creatureFactory.spawnedSavedCreatures = !1, i.setupLevel()) : alert("Error loading save game")
                 }, s.readAsText(t)
             }
         }
@@ -1502,7 +1545,7 @@ var Incremancer;
                     PlayFab.ClientApi.GetUserData(t, (function (t) {
                         if (t.data.Data.save) {
                             const i = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.save.Value));
-                            (e || i.saveCreated < s.persistentData.saveCreated || i.saveCreated == s.persistentData.saveCreated && i.dateOfSave > s.persistentData.dateOfSave) && (s.persistentData = i, t.data.Data.trophies && (s.persistentData.trophies = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.trophies.Value))), t.data.Data.skeleton && (s.skeleton.persistent = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.skeleton.Value))), t.data.Data.talents ? s.skeleton.talents = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.talents.Value)) : s.skeleton.talents = [], s.level = s.persistentData.levelUnlocked, s.updatePersistentData(), s.calcOfflineProgress(), s.setupLevel(), s.messageQueue.push("Game Loaded from Cloud"))
+                            (e || i.saveCreated < s.persistentData.saveCreated || i.saveCreated == s.persistentData.saveCreated && i.dateOfSave > s.persistentData.dateOfSave) && (s.persistentData = i, t.data.Data.trophies && (s.persistentData.trophies = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.trophies.Value))), t.data.Data.skeleton && (s.skeleton.persistent = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.skeleton.Value))), t.data.Data.talents ? s.skeleton.talents = JSON.parse(LZString.decompressFromEncodedURIComponent(t.data.Data.talents.Value)) : s.skeleton.talents = [], s.migrateSave(), s.level = s.persistentData.levelUnlocked, s.updatePersistentData(), s.calcOfflineProgress(), s.setupLevel(), s.messageQueue.push("Game Loaded from Cloud"))
                         }
                     }), (function (e) {
                         console.log(e)
