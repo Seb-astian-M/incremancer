@@ -918,6 +918,12 @@ div.skeleton > div.lvl.dead {
 .inventory .item.shield .icon {
   background: url("images/shield.png");
 }
+.inventory .item.ring .icon {
+  background: url("images/ring.png");
+}
+.inventory .item.armband .icon {
+  background: url("images/armband.png");
+}
 .inventory .item.trash .icon {
   background: url("images/trash-can.png");
   background-position-y: -5px;

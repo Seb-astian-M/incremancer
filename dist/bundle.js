@@ -1822,17 +1822,17 @@ var Incremancer;
                 new le(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.(In testing)", null, 304)],
                 this.prestigeUpgrades = [new le(108, "A Small Investment", this.types.startingPC, this.costs.prestigePoints, 10, 1.25, 1, 0, "Each rank gives you an additional 500 blood, 50 brains, and 200 bones when starting a new level.", null, null),
                 new le(109, "Time Warp", this.types.unlockSpell, this.costs.prestigePoints, 50, 1, 1, 1, "Unlock the Time Warp spell in order to speed up the flow of time.", null, null),
-                new le(110, "Master of Death", this.types.energyCost, this.costs.prestigePoints, 1e3, 1, 1, 5, "Each rank reduces the energy cost of summoning a zombie by 1", null, null),
-                new le(101, "Blood Storage", this.types.bloodStoragePC, this.costs.prestigePoints, 10, 1.25, .2, 0, "Additional 20% blood storage for each rank.", null, null),
-                new le(102, "Blood Rate", this.types.bloodGainPC, this.costs.prestigePoints, 10, 1.25, .2, 0, "Additional 20% blood income rate for each rank.", null, null),
-                new le(103, "Brain Storage", this.types.brainsStoragePC, this.costs.prestigePoints, 10, 1.25, .2, 0, "Additional 20% brain storage for each rank.", null, null),
-                new le(104, "Brain Rate", this.types.brainsGainPC, this.costs.prestigePoints, 10, 1.25, .2, 0, "Additional 20% brain income rate for each rank.", null, null),
-                new le(105, "Bone Rate", this.types.bonesGainPC, this.costs.prestigePoints, 10, 1.25, .2, 0, "Additional 20% bones income rate for each rank.", null, null),
-                new le(111, "Parts Rate", this.types.partsGainPC, this.costs.prestigePoints, 10, 1.25, .2, 0, "Additional 20% creature parts income rate for each rank.", null, null),
+                new le(110, "Master of Death", this.types.energyCost, this.costs.prestigePoints, 1e3, 1, 1, 8, "Each rank reduces the energy cost of summoning a zombie by 1", null, null),
+                new le(101, "Blood Storage", this.types.bloodStoragePC, this.costs.prestigePoints, 10, 1.225, .2, 0, "Additional 20% blood storage for each rank.", null, null),
+                new le(102, "Blood Rate", this.types.bloodGainPC, this.costs.prestigePoints, 10, 1.225, .2, 0, "Additional 20% blood income rate for each rank.", null, null),
+                new le(103, "Brain Storage", this.types.brainsStoragePC, this.costs.prestigePoints, 10, 1.225, .2, 0, "Additional 20% brain storage for each rank.", null, null),
+                new le(104, "Brain Rate", this.types.brainsGainPC, this.costs.prestigePoints, 10, 1.225, .2, 0, "Additional 20% brain income rate for each rank.", null, null),
+                new le(105, "Bone Rate", this.types.bonesGainPC, this.costs.prestigePoints, 10, 1.225, .2, 0, "Additional 20% bones income rate for each rank.", null, null),
+                new le(111, "Parts Rate", this.types.partsGainPC, this.costs.prestigePoints, 10, 1.225, .2, 0, "Additional 20% creature parts income rate for each rank.", null, null),
                 new le(112, "Auto Construction", this.types.autoconstruction, this.costs.prestigePoints, 250, 1, 1, 1, "Unlock the ability to automatically start construction of the cheapest available building option.", null, null),
                 new le(114, "Auto Shop", this.types.autoshop, this.costs.prestigePoints, 250, 1, 1, 1, "Unlock the ability to automatically purchase items from the shop.", null, null),
-                new le(113, "Graveyard Health", this.types.graveyardHealth, this.costs.prestigePoints, 10, 1.25, .1, 0, "Additional 10% graveyard health during boss levels with each rank.", null, null),
-                new le(115, "Talent Point", this.types.talentPoint, this.costs.prestigePoints, 100, 1.175, 1, 0, "Additional skeleton talent point", null, null)], oe.instance) return oe.instance;
+                new le(113, "Graveyard Health", this.types.graveyardHealth, this.costs.prestigePoints, 10, 1.225, .1, 0, "Additional 10% graveyard health during boss levels with each rank.", null, null),
+                new le(115, "Talent Point", this.types.talentPoint, this.costs.prestigePoints, 95, 1.17, 1, 0, "Additional skeleton talent point", null, null)], oe.instance) return oe.instance;
 
             oe.instance = this
         }
@@ -2030,7 +2030,7 @@ var Incremancer;
                 case this.constructionTypes.fence:
                     return void (this.gameModel.constructions.fence = 1);
                 case this.constructionTypes.fenceSize:
-                    return void (this.gameModel.fenceRadius += e.effect * e.rank);
+                    return void (this.gameModel.fenceRadius += e.effect * e.rank * 1.33);
                 case this.constructionTypes.pit:
                     return this.gameModel.bloodMax += 1e6 * e.rank, void (this.gameModel.brainsMax += 1e5 * e.rank);
                 case this.constructionTypes.runesmith:
@@ -2604,9 +2604,9 @@ var Incremancer;
                                     e < 85 ? 500 * (e - 49) :
                                         e < 499 ? 17800 * Math.pow(1.015, e - 84) :
                                             e < 999 ? 85e5 * Math.pow(1.03, e - 499) :
-                                                e < 1499 ? 98e16 * Math.pow(1.021, e - 1499) :
+                                                e < 1499 ? 498e16 * Math.pow(1.021, e - 1499) :
                                                     e > 2299 ? 845e23 * Math.pow(1.025, e - 2299) :
-                                                        4.5e12 * Math.pow(1.025, e - 999)
+                                                        22e12 * Math.pow(1.025, e - 999)
         }
         getAttackDamage() {
             1 != this.gameModel.level ? 2 != this.gameModel.level ? 3 != this.gameModel.level ? this.attackDamage = Math.round(this.getMaxHealth(this.gameModel.level) / 10) : this.attackDamage = 5 : this.attackDamage = 4 : this.attackDamage = 2
@@ -3484,6 +3484,14 @@ var Incremancer;
                 shield: {
                     id: 7,
                     name: "Shield"
+                },
+                ring: {
+                    id: 8,
+                    name: "Ring"
+                },
+                armband: {
+                    id: 9,
+                    name: "Armband"
                 }
             }, this.rarity = {
                 common: 1,
@@ -3537,7 +3545,7 @@ var Incremancer;
             return this.talentPoints - this.getUsedPoints()
         }
         xpForNextLevel() {
-            return 1e3 * Math.pow(this.persistent.level, 2)
+            return 800 * Math.pow(this.persistent.level, 1.9)
         }
         addXp(e) {
             if (this.isAlive() && (this.persistent.xp += e * this.persistent.xpRate, this.persistent.xp > this.xpForNextLevel())) {
@@ -3581,7 +3589,7 @@ var Incremancer;
             }
             const e = [];
             for (let t = 0; t < this.skeletons.length; t++) this.skeletons[t].flags.dead ? (this.discardedSprites.push(this.skeletons[t]), g.removeChild(this.skeletons[t])) : (e.push(this.skeletons[t]), this.skeletons[t].x = this.graveyard.sprite.x, this.skeletons[t].zIndex = this.skeletons[t].y = this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0), this.skeletons[t].target = null, this.skeletons[t].state = be.lookingForTarget, this.skeletons[t].timer.scan = 0);
-            this.skeletons = e, this.aliveSkeletons = [], this.lootChance = .001, this.model.level < this.persistent.level && (this.lootChance *= .5), this.model.level > 2 * this.persistent.level && (this.lootChance *= 1.5)
+            this.skeletons = e, this.aliveSkeletons = [], this.lootChance = .00125, this.persistent.level > 10 * this.model.level && (this.lootChance *= 1.85), this.persistent.level > 5 * this.model.level && (this.lootChance *= 1.65), this.persistent.level > 2 * this.model.level && (this.lootChance *= 1.33), this.persistent.level < this.model.level / 2 && (this.lootChance *= .2), this.persistent.level < this.model.level && (this.lootChance *= .33)
         }
         spawnCreature() {
             let e;
@@ -3671,7 +3679,7 @@ var Incremancer;
             return this.model.runeEffects.critChance > 0 && Math.random() < this.model.runeEffects.critChance && (t *= this.model.runeEffects.critDamage, He(e.x, e.y - 10, t)), t
         }
         applyItemUpgrades() {
-            this.model = ne.getInstance(), this.moveSpeed = (40 + this.model.SkeleMoveMod), this.respawnTime = 10, this.randomSpells = [], this.persistent.items.filter((e => e.q)).forEach((e => {
+            this.model = ne.getInstance(), this.moveSpeed = 40, this.respawnTime = 10, this.randomSpells = [], this.persistent.items.filter((e => e.q)).forEach((e => {
                 e.e.forEach((t => {
                     switch (t) {
                         case this.stats.respawnTime.id:
@@ -3742,7 +3750,14 @@ var Incremancer;
                     s = this.lootPositions.sword.name;
                     break;
                 case this.lootPositions.shield.id:
-                    s = this.lootPositions.shield.name
+                    s = this.lootPositions.shield.name;
+                    break;
+                case this.lootPositions.ring.id:
+                    s = this.lootPositions.ring.name;
+                    break;
+                case this.lootPositions.armband.id:
+                    s = this.lootPositions.armband.name;
+                    break
             }
             return t + " " + s
         }
@@ -3817,7 +3832,7 @@ var Incremancer;
             return [this.rarity.common, this.rarity.rare, this.rarity.epic, this.rarity.legendary, this.rarity.ancient, this.rarity.divine, this.rarity.chaos]
         }
         getTypeList() {
-            return [this.lootPositions.helmet.id, this.lootPositions.chest.id, this.lootPositions.gloves.id, this.lootPositions.legs.id, this.lootPositions.boots.id, this.lootPositions.sword.id, this.lootPositions.shield.id]
+            return [this.lootPositions.helmet.id, this.lootPositions.chest.id, this.lootPositions.gloves.id, this.lootPositions.legs.id, this.lootPositions.boots.id, this.lootPositions.sword.id, this.lootPositions.shield.id, this.lootPositions.ring.id, this.lootPositions.armband.id]
         }
         testForLoot() {
             if (this.persistent.skeletons > 0 && Math.random() < this.lootChance) {
@@ -3826,10 +3841,10 @@ var Incremancer;
             }
         }
         generateLoot(e) {
-            const t = Math.round(6 * Math.random()) + 1;
+            const t = Math.floor(Math.random() * 9) + 1;
             let s = this.rarity.common;
             const i = [];
-            if (Math.random() < .2 * this.lootChanceMod && (s = this.rarity.rare, Math.random() < .2 * this.lootChanceMod && (s = this.rarity.epic, Math.random() < .1 * this.lootChanceMod && (s = this.rarity.legendary, Math.random() < .1 * this.lootChanceMod && (s = this.rarity.ancient, Math.random() < .1 * this.lootChanceMod))))) 
+            if (Math.random() < .25 * this.lootChanceMod && (s = this.rarity.rare, Math.random() < .2 * this.lootChanceMod && (s = this.rarity.epic, Math.random() < .125 * this.lootChanceMod && (s = this.rarity.legendary, Math.random() < .1 * this.lootChanceMod && (s = this.rarity.ancient, Math.random() < .125 * this.lootChanceMod))))) 
             {
                 s = this.rarity.divine;
                 const e = a(this.spells.spells, Math.random());
@@ -3895,7 +3910,7 @@ var Incremancer;
             }
         }
         destroyItem(e) {
-            this.addXp(e.l * e.r * 10);
+            this.addXp(e.l * (1 + e.r * 2) * 20);
             for (let t = 0; t < this.persistent.items.length; t++) this.persistent.items[t].id === e.id && this.persistent.items.splice(t, 1)
         }
         destroyAllItems() {
@@ -3907,33 +3922,33 @@ var Incremancer;
         xpForItems() {
             let e = 0;
             return this.persistent.items.filter(e => !e.q && e.r != this.rarity.legendary).forEach((function (t) {
-                e += t.l * t.r * 10
+                e += t.l * (1 + t.r * 2) * 20
             })), e
         }
 
         xpForLegendary() {
             let e = 0;
             return this.persistent.items.filter(e => !e.q && e.r == this.rarity.legendary).forEach((function (t) {
-                e += t.l * t.r * 10
+                e += t.l * (1 + t.r * 2) * 20
             })), e
         }
 
         xpForAncient() {
             let e = 0;
             return this.persistent.items.filter(e => !e.q && e.r == this.rarity.ancient).forEach((function (t) {
-                e += t.l * t.r * 10
+                e += t.l * (1 + t.r * 2) * 20
             })), e
         }
         xpForDivine() {
             let e = 0;
             return this.persistent.items.filter(e => !e.q && e.r == this.rarity.divine).forEach((function (t) {
-                e += t.l * t.r * 10
+                e += t.l * (1 + t.r * 2) * 20
             })), e
         }
         xpForChaos() {
             let e = 0;
             return this.persistent.items.filter(e => !e.q && e.r == this.rarity.chaos).forEach((function (t) {
-                e += t.l * t.r * 10
+                e += t.l * (1 + t.r * 2) * 20
             })), e
         }
         xpTotal() {
@@ -4782,10 +4797,10 @@ var Incremancer;
     })), new xt(7, "Shiny", ft, 12, (function () {
         dt.lootChanceMod = 1;
         const e = dt.talents[this.id];
-        e && e > 0 && (dt.lootChanceMod = 1 + .1 * e)
+        e && e > 0 && (dt.lootChanceMod = 1 + .04 * e)
     }), (function () {
         const e = dt.talents[this.id];
-        return e && e > 0 ? `Rare loot chance increased by ${10 * e}%` : "Increases the chance for rare loot by 10%"
+        return e && e > 0 ? `Loot increase chance increased by ${4 * e}%` : "Increases the chance for loot improvement by 4% multiplicatively."
     })), new xt(8, "Dark Orb", ft, 10, (function () {
         dt.darkorb = 0;
         const e = dt.talents[this.id];
@@ -5174,7 +5189,7 @@ var Incremancer;
             }
         }, c.constructionLeadsTo = function (e) {
             return h.constructionLeadsTo(e)
-        }, c.howToPlay = ["This started as Chalice's Mod, expanded by CirusDane (called Danemancer), for incremancer - We hope you enjoy the qol changes!", "Energy refills over time. You need 10 energy to spawn a zombie by clicking on the ground.", "Hold shift or control to spawn multiple zombies with a single click.", "Whenever one of your zombies attacks a human you will collect some blood.", "Killing a human or turning them into a zombie will earn you 1 brain.", "You can spend these currencies in the shop to purchase upgrades for your zombie horde.", "Hold shift to buy the maximum affordable number of upgrades.", "The world can be dragged with the mouse to explore it. Or by using the WASD or arrow keys.", "You can zoom in and out using your mouse wheel. Pinch to zoom on mobile."], c.updateMessages = function (e) {
+        }, c.howToPlay = ["Unified fork by smuenkel, combining CirusDane's features with FrAmed46's balance tweaks. Enjoy!", "This started as Chalice's Mod, expanded by CirusDane (called Danemancer), for incremancer - We hope you enjoy the qol changes!", "Energy refills over time. You need 10 energy to spawn a zombie by clicking on the ground.", "Hold shift or control to spawn multiple zombies with a single click.", "Whenever one of your zombies attacks a human you will collect some blood.", "Killing a human or turning them into a zombie will earn you 1 brain.", "You can spend these currencies in the shop to purchase upgrades for your zombie horde.", "Hold shift to buy the maximum affordable number of upgrades.", "The world can be dragged with the mouse to explore it. Or by using the WASD or arrow keys.", "You can zoom in and out using your mouse wheel. Pinch to zoom on mobile."], c.updateMessages = function (e) {
             c.message ? (c.messageTimer -= e, c.model.messageQueue.length > 0 && (c.messageTimer -= e), c.messageTimer < 0 && (c.message = !1, c.messageTimer = 4)) : c.model.messageQueue.length > 0 && (c.message = c.model.messageQueue.shift(), c.messageTimer = 4)
         }, c.infusionAmount = 1e3, c.infusionMax = !1, c.infuseRune = function (e, t) {
             if (c.infusionMax) switch (t) {
@@ -5309,6 +5324,16 @@ var Incremancer;
                     s: i.lootPositions.boots.id,
                     id: -7
                 });
+                const ri2 = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.ring.id));
+                ri2.length > 0 ? newGearSet.slots.push({ s: ri2[0].s, id: ri2[0].id }) : newGearSet.slots.push({
+                    s: i.lootPositions.ring.id,
+                    id: -8
+                });
+                const ab2 = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.armband.id));
+                ab2.length > 0 ? newGearSet.slots.push({ s: ab2[0].s, id: ab2[0].id }) : newGearSet.slots.push({
+                    s: i.lootPositions.armband.id,
+                    id: -9
+                });
                 i.persistent.gearSets.push(newGearSet), this.selectGearSet(i.persistent.gearSets.length - 1), this.showNewGearSet();
             },
             deleteGearSet() {
@@ -5379,12 +5404,26 @@ var Incremancer;
             timer: () => Math.ceil(i.skeletonTimer()),
             updateEquippedItems() {
                 this.equipped = [];
-                const e = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.helmet.id));
-                e.length > 0 ? this.equipped.push([e[0]]) : this.equipped.push([{
+                const e0 = [],
+                    e = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.helmet.id));
+                e.length > 0 ? e0.push(e[0]) : e0.push({
                     name: "Helmet Slot",
                     s: i.lootPositions.helmet.id,
                     id: -1
-                }]);
+                });
+                const ri = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.ring.id));
+                ri.length > 0 ? e0.push(ri[0]) : e0.push({
+                    name: "Ring Slot",
+                    s: i.lootPositions.ring.id,
+                    id: -8
+                });
+                const ab = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.armband.id));
+                ab.length > 0 ? e0.push(ab[0]) : e0.push({
+                    name: "Armband Slot",
+                    s: i.lootPositions.armband.id,
+                    id: -9
+                });
+                this.equipped.push(e0);
                 const t = [],
                     s = i.persistent.items.filter((e => e.q && e.s == i.lootPositions.sword.id));
                 s.length > 0 ? t.push(s[0]) : t.push({
@@ -5425,7 +5464,7 @@ var Incremancer;
                 }), this.equipped.push(n), this.equipped.push([{
                     name: "Destroy Items",
                     s: -1,
-                    id: -8
+                    id: -10
                 }])
             },
             inventoryItems: () => i.persistent.items.filter((e => !e.q)).sort(((e, t) => t.r * t.l - e.r * e.l)),
@@ -5493,7 +5532,11 @@ var Incremancer;
                     case i.lootPositions.sword.id:
                         return "sword";
                     case i.lootPositions.shield.id:
-                        return "shield"
+                        return "shield";
+                    case i.lootPositions.ring.id:
+                        return "ring";
+                    case i.lootPositions.armband.id:
+                        return "armband"
                 }
             },
             itemClass: e => e.name ? "empty" : i.getLootClass(e),
