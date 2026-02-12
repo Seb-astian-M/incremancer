@@ -1213,7 +1213,8 @@ var Incremancer;
                 this.gigazombies = !1,
                 this.harpySpeed = 75,
                 this.tankBuster = !1,
-                this.harpyBombs = 1
+                this.harpyBombs = 1,
+                this.golemTalents = !1
         }
         addEnergy(e) {
             this.energy += e, this.energy > this.energyMax && (this.energy = this.energyMax)
@@ -1613,6 +1614,7 @@ var Incremancer;
                 ShockPC: "ShockPC",
                 EnergyCost: "EnergyCost",
                 golemHealthPC: "golemHealthPC",
+                golemTalents: "golemTalents",
                 golemDamagePC: "golemDamagePC",
                 prest_multPC: "prest_multPC",
                 startingPC: "startingPC",
@@ -1862,7 +1864,8 @@ var Incremancer;
                 new le(71, "Electro-Shock Collars", this.types.ShockPC, this.costs.parts, 3e14, 1.20, .0025, 0, "Using shock collars tuned to the Hybrid Zombie's nervous system causes them to attack at blinding speeds! Attack Speed +0.25% with each rank of Electro-Shock Collars.", null, 304),
                 new le(72, "Power Regulators", this.types.EnergyCost, this.costs.parts, 1e18, 1.20, 1, 30, "Golem parts assembled around the graveyard can help regulate and attune necrotic power. Reduces zombie summoning cost by 1 with each rank of Power Regulators.", null, 304),
                 new le(73, "Sephirin's Reputation", this.types.prest_multPC, this.costs.blood, 1e20, 1.25, .03, 0, "Astounding levels of blood sacrificed can enhance your reputation with dark entities in the Void. +3% Zombie Heatlh and Damage per rank", null, 304),
-                new le(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.(In testing)", null, 304)],
+                new le(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.(In testing)", null, 304),
+                new le(75, "Hybrid Talent Infusion", this.types.golemTalents, this.costs.parts, 1e13, 1, 1, 1, "Infuse golems with the Skeleton Champion's combat knowledge. Skeleton talents (Bone Shield, Dark Orb, Thrifty, Opportunist, Blood Pact) also apply to all golems. Additional cost: 100M bones + 100M brains.", "Golems now benefit from Skeleton Champion talents!", 302)],
                 this.prestigeUpgrades = [new le(108, "A Small Investment", this.types.startingPC, this.costs.prestigePoints, 10, 1.25, 1, 0, "Each rank gives you an additional 500 blood, 50 brains, and 200 bones when starting a new level.", null, null),
                 new le(109, "Time Warp", this.types.unlockSpell, this.costs.prestigePoints, 50, 1, 1, 1, "Unlock the Time Warp spell in order to speed up the flow of time.", null, null),
                 new le(110, "Master of Death", this.types.energyCost, this.costs.prestigePoints, 1e3, 1, 1, 8, "Each rank reduces the energy cost of summoning a zombie by 1", null, null),
@@ -2029,6 +2032,8 @@ var Incremancer;
                     return void (this.gameModel.golemDamagePCMod *= Math.pow(1 + e.effect, t));
                 case this.types.golemHealthPC:
                     return void (this.gameModel.golemHealthPCMod *= Math.pow(1 + e.effect, t));
+                case this.types.golemTalents:
+                    return void (this.gameModel.golemTalents = !0);
                 case this.types.startingPC:
                     return void (this.gameModel.startingResources += e.effect * t);
                 case this.types.energyCost:
@@ -2260,6 +2265,10 @@ var Incremancer;
             return l(e.basePrice, e.multiplier, this.currentRank(e), t)
         }
         canAffordUpgrade(e) {
+            if (e.type == this.types.golemTalents) {
+                if (e.cap > 0 && this.currentRank(e) >= e.cap) return e.auto = !1, !1;
+                return this.gameModel.persistentData.parts >= this.upgradePrice(e) && this.gameModel.persistentData.bones >= 1e8 && this.gameModel.persistentData.brains >= 1e8
+            }
             if (e.cap > 0 && this.currentRank(e) >= e.cap) {
                 return e.auto = !1, !1;
             }
@@ -2310,6 +2319,7 @@ var Incremancer;
                     case this.costs.parts:
                         this.gameModel.persistentData.parts -= this.upgradePrice(e)
                 }
+                e.type == this.types.golemTalents && (this.gameModel.persistentData.bones -= 1e8, this.gameModel.persistentData.brains -= 1e8);
                 for (let t = 0; t < this.gameModel.persistentData.upgrades.length; t++)
                     if (e.id == this.gameModel.persistentData.upgrades[t].id) {
                         s = !0, this.gameModel.persistentData.upgrades[t] = {
@@ -4044,7 +4054,7 @@ var Incremancer;
                 case this.creatureTypes.waterGolem:
                     n.tint = 5080808, n.immuneToBurns = !0
             }
-            n.flags = new K, n.flags.golem = !0, n.burnDamage = 0, n.level = a, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = i, n.price = r, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), n.target = null, n.zIndex = n.position.y, n.visible = !0, n.maxHealth = n.health = e, n.attackDamage = t, n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = s, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2), this.model.creatureCount++
+            n.flags = new K, n.flags.golem = !0, n.burnDamage = 0, n.level = a, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = i, n.price = r, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), n.target = null, n.zIndex = n.position.y, n.visible = !0, n.maxHealth = n.health = e, n.attackDamage = t, n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = s, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2), this.model.creatureCount++, this.model.golemTalents && (n.boneshield = 0, n.boneshieldTimer = 3, n.boneshieldContainer || (n.boneshieldContainer = new Ge, n.addChild(n.boneshieldContainer), n.boneshieldContainer.position.set(0, -16)), n.darkorbTimer = Math.random() * 10)
         }
         update(e) {
             let t = 0;
@@ -4062,6 +4072,13 @@ var Incremancer;
             if (e.flags.dead) {
                 if (!e.visible) return;
                 return e.alpha -= this.fadeSpeed * t, void (e.alpha < 0 && (e.visible = !1, g.removeChild(e)))
+            }
+            if (this.model.golemTalents) {
+                if (this.model.skeleton.boneshield > 0 && e.boneshield !== undefined) {
+                    e.boneshield < this.model.skeleton.boneshield && (e.boneshieldTimer -= t, e.boneshieldTimer < 0 && (e.boneshieldTimer = 10 / this.model.skeleton.boneshield, e.boneshield++));
+                    e.boneshieldContainer && (this.model.skeleton.boneshield ? (e.boneshieldContainer.visible = !0, e.boneshieldContainer.update(e.boneshield), e.boneshieldContainer.rotation += t) : e.boneshieldContainer.visible = !1)
+                }
+                this.model.skeleton.darkorb > 0 && e.darkorbTimer !== undefined && (e.darkorbTimer -= t, e.darkorbTimer < 0 && e.target && !e.target.flags.dead && (e.darkorbTimer = this.model.skeleton.darkorb, this.bullets.newBullet(e, e.target, this.calculateDamage(e), !1, !1, !1, !0)))
             }
             if (e.timer.attack -= t, e.timer.scan -= t, e.timer.ability -= t, this.model.runeEffects.healthRegen > 0 && this.updateZombieRegen(e, t), e.flags.burning && !e.immuneToBurns && this.updateBurns(e, t), e.timer.ability < 0) switch (e.timer.ability = 4, e.creatureType) {
                 case this.creatureTypes.earthGolem:
@@ -4088,7 +4105,7 @@ var Incremancer;
                 }
                 case be.attackingTarget: {
                     const s = this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y);
-                    s < this.attackDistance ? (e.scale.x = e.target.x > e.x ? e.scaling : -e.scaling, e.timer.attack < 0 && (this.humans.damageHuman(e.target, this.calculateDamage(e)), e.creatureType == this.creatureTypes.fireGolem && this.humans.burnHuman(e.target, e.attackDamage / 2), e.timer.attack = this.attackSpeed * (1 / (this.model.runeEffects.attackSpeed * this.model.ShockPCMod)), e.flags.burning && (e.timer.attack *= 1 / this.model.burningSpeedMod)), s > this.attackDistance / 2 && this.updateCreatureSpeed(e, t)) : e.state = be.movingToTarget;
+                    s < this.attackDistance ? (e.scale.x = e.target.x > e.x ? e.scaling : -e.scaling, e.timer.attack < 0 && (this.humans.damageHuman(e.target, this.calculateDamage(e)), this.model.golemTalents && e.target.flags.dead && this.model.skeleton.killingBlowParts && (this.model.persistentData.parts += this.model.skeleton.killingBlowParts * this.model.partFactory.factoryStats().partsPerSec), e.creatureType == this.creatureTypes.fireGolem && this.humans.burnHuman(e.target, e.attackDamage / 2), e.timer.attack = this.attackSpeed * (1 / (this.model.runeEffects.attackSpeed * this.model.ShockPCMod)), e.flags.burning && (e.timer.attack *= 1 / this.model.burningSpeedMod), this.model.golemTalents && this.model.skeleton.randomSpells.length > 0 && this.model.skeleton.spellTimer < 0 && Math.random() < .07 + this.model.skeleton.increaseChance && (this.model.spells.castSpellNoMana(this.model.skeleton.randomSpells[Math.floor(Math.random() * this.model.skeleton.randomSpells.length)]), this.model.skeleton.spellTimer = 3)), s > this.attackDistance / 2 && this.updateCreatureSpeed(e, t)) : e.state = be.movingToTarget;
                     break
                 }
             }
@@ -4123,7 +4140,7 @@ var Incremancer;
         }
         calculateDamage(e) {
             let t = e.attackDamage;
-            return this.model.runeEffects.critChance > 0 && Math.random() < this.model.runeEffects.critChance && (t *= this.model.runeEffects.critDamage, He(e.x, e.y - 10, t)), t
+            return this.model.runeEffects.critChance > 0 && Math.random() < this.model.runeEffects.critChance && (t *= this.model.runeEffects.critDamage, He(e.x, e.y - 10, t)), this.model.golemTalents && this.model.zombies.bloodpact > 0 && this.model.addBlood(t * this.model.zombies.bloodpact), t
         }
         golemTaunt(e) {
             for (let t = 0; t < this.aliveHumans.length; t++) Math.abs(this.aliveHumans[t].x - e.x) < this.targetDistance && Math.abs(this.aliveHumans[t].y - e.y) < this.targetDistance && (this.aliveHumans[t].vip || (this.aliveHumans[t].zombieTarget = e, this.aliveHumans[t].target = e))
