@@ -606,38 +606,56 @@ div.generator-progress.active > span.percent {
   }
 }
 
-div.message {
-  background-color: rgba(0,0,0,0.4);
+/* Chatlog - positioned below skeleton portrait */
+div.spells > div.chatlog {
   position: absolute;
-  top:10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5em;
-  padding:0 0.5rem;
-  z-index: 150;
+  top: calc(100% + 5em + 2px);
+  left: 0;
+  width: 250px;
+  max-height: 200px;
+  overflow: hidden;
+  pointer-events: none;
+  font-size: 0.8em;
 }
 
-div.message > p {
-  position: relative;
-  text-shadow: 2px 2px #000;
-  margin: 0.5rem;
+.chatlog-msg {
+  padding: 1px 6px;
+  margin: 1px 0;
+  background: rgba(0,0,0,0.5);
+  text-shadow: 1px 1px #000;
+  animation: chatfadein 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-div.message > p::after {
-  content:"";
-  height:2px;
-  background-color: #fff;
-  position: absolute;
-  animation:width-animation 4s linear;
-  bottom:0;
-  left:50%;
-  transform: translateX(-50%);
+.chat-count {
+  color: #ffee10;
+  font-weight: bold;
 }
 
-@keyframes width-animation {
-  0% {width:100%;}
-  100% {width:0%;}
+@keyframes chatfadein {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+
+/* Message type colors */
+.chat-warning { color: #ff4444; }
+.chat-levelup { color: #ffee10; }
+.chat-construction { color: #44ff44; }
+.chat-spell { color: #aa88ff; }
+.chat-vip { color: #ffd700; }
+.chat-upgrade { color: #8cf; }
+.chat-thrifty { color: #aaa; }
+
+/* Loot rarity colors (match inventory colors) */
+.chat-loot-common { color: mediumseagreen; }
+.chat-loot-rare { color: dodgerblue; }
+.chat-loot-epic { color: #fb2; }
+.chat-loot-legendary { color: #ff6600; }
+.chat-loot-ancient { color: #a855f7; }
+.chat-loot-divine { color: #22d3ee; }
+.chat-loot-chaos { color: #c084fc; }
 
 #prestige-bg {
   position: absolute;

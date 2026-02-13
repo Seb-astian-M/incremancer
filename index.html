@@ -38,10 +38,6 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
   </head>
   <body ng-controller="ZombieController as zm">
-    <div class="message" ng-if="zm.message">
-      <p>{{zm.message}}</p>
-    </div>
-      
     <div class="stats {{zm.model.persistentData.zoomButtons ? 'zoom' : ''}}">
       <label>Level: {{zm.model.level}}</label>
       <button ng-click="zm.showStats = !zm.showStats" class="{{zm.showStats ? 'active' : ''}}">Stats</button>
@@ -74,6 +70,11 @@
           <div class="lvl dead" ng-if="zm.skeleton().skeletons > 0 && !zm.skeletonMenu.isAlive()">
             DEAD: {{zm.skeletonMenu.timer()}}
           </div>
+        </div>
+        <div class="chatlog" ng-if="zm.model.chatLog.length > 0">
+            <div ng-repeat="msg in zm.model.chatLog track by msg.id" class="chatlog-msg {{msg.cls}}">
+                <span ng-if="msg.count > 1" class="chat-count">{{msg.count}}x</span> {{msg.text}}
+            </div>
         </div>
       </div>
     </div>
