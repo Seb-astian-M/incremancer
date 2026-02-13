@@ -1062,6 +1062,9 @@ var Incremancer;
                 this.tankBuster = !1,
                 this.harpyBombs = 1,
                 this.zombieHarpies = !1,
+                this.zombieTalents = !1,
+                this.bossFailCount = 0,
+                this.lastFailedBoss = 0,
                 this.stats = null,
                 this.runicSyphon = {
                     percentage: 0,
@@ -1145,6 +1148,8 @@ var Incremancer;
                     vipEscaped: [],
                     autoRelease: !1,
                     autoMaxHarpies: !1,
+                    autoPrestige: !1,
+                    autoAuto: !1,
                     skeleton: null,
                     skeletonTalents: [],
                     saveVersion: "2.0.0",
@@ -1216,6 +1221,9 @@ var Incremancer;
                 this.tankBuster = !1,
                 this.harpyBombs = 1,
                 this.zombieHarpies = !1,
+                this.zombieTalents = !1,
+                this.bossFailCount = 0,
+                this.lastFailedBoss = 0,
                 this.golemTalents = !1
         }
         addEnergy(e) {
@@ -1243,7 +1251,7 @@ var Incremancer;
             if (this.persistentData.autoStartWait == !1 && this.currentState != this.states.levelCompleted && this.currentState != this.states.failed) {
                 this.startTimer = 0
             }
-            this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e); this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level); this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level - 49)), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(this.level - 49)), this.updateStats()
+            this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e); this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level); this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level - 49)), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.startLevel(this.level - 49))), this.updateStats()
         }
         calculateEndLevelBones() {
             this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones))
@@ -1630,7 +1638,8 @@ var Incremancer;
                 autoshop: "autoshop",
                 graveyardHealth: "graveyardHealth",
                 talentPoint: "talentPoint",
-                zombieHarpies: "zombieHarpies"
+                zombieHarpies: "zombieHarpies",
+                zombieTalents: "zombieTalents"
             }, this.costs = {
                 energy: "energy",
                 blood: "blood",
@@ -1874,7 +1883,8 @@ var Incremancer;
                 new le(73, "Sephirin's Reputation", this.types.prest_multPC, this.costs.blood, 1e20, 1.25, .03, 0, "Astounding levels of blood sacrificed can enhance your reputation with dark entities in the Void. +3% Zombie Heatlh and Damage per rank", null, 304),
                 new le(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.(In testing)", null, 304),
                 new le(75, "Hybrid Talent Infusion", this.types.golemTalents, this.costs.parts, 1e13, 1, 1, 1, "Infuse golems with the Skeleton Champion's combat knowledge. Skeleton talents (Bone Shield, Dark Orb, Thrifty, Opportunist, Blood Pact) also apply to all golems. Additional cost: 100M bones + 100M brains.", "Golems now benefit from Skeleton Champion talents!", 302),
-                new le(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e6, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222)],
+                new le(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e14, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222),
+                new le(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e15, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302)],
                 this.prestigeUpgrades = [new le(108, "A Small Investment", this.types.startingPC, this.costs.prestigePoints, 10, 1.25, 1, 0, "Each rank gives you an additional 500 blood, 50 brains, and 200 bones when starting a new level.", null, null),
                 new le(109, "Time Warp", this.types.unlockSpell, this.costs.prestigePoints, 50, 1, 1, 1, "Unlock the Time Warp spell in order to speed up the flow of time.", null, null),
                 new le(110, "Master of Death", this.types.energyCost, this.costs.prestigePoints, 1e3, 1, 1, 8, "Each rank reduces the energy cost of summoning a zombie by 1", null, null),
@@ -2045,6 +2055,8 @@ var Incremancer;
                     return void (this.gameModel.golemTalents = !0);
                 case this.types.zombieHarpies:
                     return void (this.gameModel.zombieHarpies = !0);
+                case this.types.zombieTalents:
+                    return void (this.gameModel.zombieTalents = !0);
                 case this.types.startingPC:
                     return void (this.gameModel.startingResources += e.effect * t);
                 case this.types.energyCost:
@@ -2377,9 +2389,9 @@ var Incremancer;
         }
         updateAutoUpgrades() {
             if (this.gameModel.autoUpgrades) {
-                for (let e = 0; e < this.upgrades.length; e++) this.upgrades[e].auto && this.purchaseUpgrade(this.upgrades[e], !1);
+                for (let e = 0; e < this.upgrades.length; e++) (this.gameModel.persistentData.autoAuto || this.upgrades[e].auto) && this.purchaseUpgrade(this.upgrades[e], !1);
                 if (this.gameModel.constructions.factory)
-                    for (let e = 0; e < this.partFactory.generators.length; e++) this.partFactory.generators[e].auto && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1)
+                    for (let e = 0; e < this.partFactory.generators.length; e++) (this.gameModel.persistentData.autoAuto || this.partFactory.generators[e].auto) && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1)
             }
             this.gameModel.autoShatter && this.doShatter()
         }
@@ -3282,6 +3294,14 @@ var Incremancer;
             const i = Math.floor(Math.random() * this.textures.length);
             let a;
             this.discardedZombies.length > 0 ? (a = this.discardedZombies.pop(), a.textures = s ? this.dogTexture : this.textures[i].animated) : a = new Ee(s ? this.dogTexture : this.textures[i].animated), a.zombie = !0, a.mod = 1, a.scaleMod = 1, this.super && (a.mod = 10, a.scaleMod = 1.5), a.flags = new Fe, a.flags.dog = s, a.flags.super = this.super, a.deadTexture = a.flags.dog ? this.deadDogTexture : this.textures[i].dead, a.textureId = i, a.burnDamage = 0, a.lastKnownBuilding = !1, a.alpha = 1, a.animationSpeed = .15, a.anchor.set(35 / 80, 1), a.bloodbornTimer = this.bloodborn, a.position.set(e, t), a.target = null, a.zIndex = a.position.y, a.visible = !0, a.maxHealth = a.health = this.model.zombieHealth * a.mod, a.regenTimer = 5, a.state = be.lookingForTarget;
+            this.model.zombieTalents && Math.random() < .01 && (
+                a.flags.talented = !0, a.tint = 0xffaa00,
+                a.darkorbTimer = Math.random() * 10,
+                a.boneshield = 0, a.boneshieldTimer = 3,
+                a.boneshieldContainer = new Ge,
+                a.addChild(a.boneshieldContainer),
+                a.boneshieldContainer.position.set(0, -16)
+            );
             const r = s ? .7 : 1;
             a.scaling = a.scaleMod * this.scaling * r, a.scale.set(Math.random() > .5 ? a.scaling : -1 * a.scaling, a.scaling), a.timer.attack = 0, a.xSpeed = 0, a.ySpeed = 0, a.speedMultiplier = 1, a.timer.scan = 0, a.timer.burnTick = this.burnTickTimer, a.timer.smoke = this.smokeTimer, a.play(), a.zombieId = this.currId++, this.zombies.push(a), g.addChild(a), this.smoke.newZombieSpawnCloud(e, t - 2)
         }
@@ -3364,6 +3384,24 @@ var Incremancer;
                     break
                 }
             }
+            e.flags.talented && (
+                this.model.skeleton.darkorb > 0 && e.darkorbTimer !== void 0 && (
+                    e.darkorbTimer -= t,
+                    e.darkorbTimer < 0 && e.target && !e.target.flags.dead && (
+                        e.darkorbTimer = this.model.skeleton.darkorb,
+                        this.bullets.newBullet(e, e.target, this.calculateDamage(e), !1, !1, !1, !0)
+                    )
+                ),
+                this.model.skeleton.boneshield > 0 && e.boneshield !== void 0 && (
+                    e.boneshield < this.model.skeleton.boneshield && (
+                        e.boneshieldTimer -= t,
+                        e.boneshieldTimer < 0 && (e.boneshieldTimer = 10 / this.model.skeleton.boneshield, e.boneshield++)
+                    ),
+                    e.boneshieldContainer && (this.model.skeleton.boneshield ?
+                        (e.boneshieldContainer.visible = !0, e.boneshieldContainer.update(e.boneshield), e.boneshieldContainer.rotation += t) :
+                        e.boneshieldContainer.visible = !1)
+                )
+            )
         }
         setSpeedMultiplier(e) {
             e.flags.burning ? e.speedMultiplier = this.model.burningSpeedMod : e.speedMultiplier = Math.max(Math.min(1, e.health / e.maxHealth), .4)
@@ -4185,7 +4223,11 @@ var Incremancer;
             this.boneCollectors = new Ve, this.zmMap = new ee, this.zombies = new Ae, this.bones = new tt, this.gameModel = ne.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.blood = new _e, this.humans = new Se, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.boneCollectors.populate(), this.harpies.populate()
         }
         damageGraveyard(e) {
-            this.gameModel.isBossStage(this.gameModel.level) && (this.graveyardHealth -= e, this.graveyardHealth < 0 && (this.gameModel.currentState = this.gameModel.states.failed, this.gameModel.startTimer = 3))
+            this.gameModel.isBossStage(this.gameModel.level) && (this.graveyardHealth -= e, this.graveyardHealth < 0 && (
+                    this.gameModel.lastFailedBoss === this.gameModel.level ? this.gameModel.bossFailCount++ : (this.gameModel.lastFailedBoss = this.gameModel.level, this.gameModel.bossFailCount = 1),
+                    this.gameModel.currentState = this.gameModel.states.failed,
+                    this.gameModel.startTimer = 3
+                ))
         }
         drawHealthBar() {
             this.gameModel.isBossStage(this.gameModel.level) ? (this.gameModel.sendMessage("Defend the Graveyard!", "chat-warning"), this.graveyardHealth = this.graveyardMaxHealth = 100 * this.gameModel.zombieHealth * this.gameModel.graveyardHealthMod, this.healthBar || (this.healthBar = {
@@ -4373,7 +4415,12 @@ var Incremancer;
             for (let t = 0; t < this.bombSprites.length; t++) this.bombSprites[t].visible && this.updateBomb(this.bombSprites[t], e)
         }
         updateBomb(e, t) {
-            e.dropped ? (e.rotation += t * e.rotSpeed, e.ySpeed += 50 * t, e.scale.x = e.scale.y -= .2 * t, e.y += e.ySpeed * t, e.y >= e.floor - 2 && (e.visible = !1, this.discardedBombSprites.push(e), this.model.zombieHarpies ? (this.zombies.createZombie(e.x, e.y, !1), this.model.sendMessage("Zombie dropped!", "chat-spell")) : (e.fire && this.humans.burnHuman(e.target, .1 * this.model.zombieHealth), this.zombies.causePlagueExplosion(e, .2 * this.model.zombieHealth, !1, !1)))) : (e.x = e.harpy.x, e.y = e.harpy.y)
+            e.dropped ? (e.rotation += t * e.rotSpeed, e.ySpeed += 50 * t, e.scale.x = e.scale.y -= .2 * t, e.y += e.ySpeed * t, e.y >= e.floor - 2 && (e.visible = !1, this.discardedBombSprites.push(e), this.model.zombieHarpies ? (
+                    this.model.skeleton.persistent.skeletons > 0 && this.model.skeleton.aliveSkeletons.length < this.model.skeleton.persistent.skeletons ? (
+                        this.model.skeleton.spawnCreature(),
+                        this.model.skeleton.skeletons[this.model.skeleton.skeletons.length - 1].position.set(e.x, e.y)
+                    ) : this.model.creatureCount < this.model.creatureLimit && this.harpyDeliverGolem(e.x, e.y) ? void 0 : this.zombies.createZombie(e.x, e.y, !1)
+                ) : (e.fire && this.humans.burnHuman(e.target, .1 * this.model.zombieHealth), this.zombies.causePlagueExplosion(e, .2 * this.model.zombieHealth, !1, !1)))) : (e.x = e.harpy.x, e.y = e.harpy.y)
         }
         updateHarpy(e, t) {
             e.tint = this.model.zombieHarpies ? 0x44ff44 : 0xffffff;
@@ -4404,6 +4451,20 @@ var Incremancer;
             if (0 == Math.max(a, r)) return;
             let n = 1 / Math.max(a, r);
             n *= 1.29289 - (a + r) * n * .29289, e.xSpeed = s * n * this.model.harpySpeed * e.speedFactor, e.ySpeed = i * n * this.model.harpySpeed * e.speedFactor, e.position.x += e.xSpeed * t, e.position.y += e.ySpeed * t, e.scale.x = e.xSpeed > 0 ? this.scaling : -1 * this.scaling
+        }
+        harpyDeliverGolem(x, y) {
+            const cf = this.model.creatureFactory;
+            const cm = this.model.creatures;
+            for (let i = 0; i < cf.creatures.length; i++) {
+                const c = cf.creatures[i];
+                if (c.autobuild > 0 && cm.creatureCount[c.type] !== undefined && cm.creatureCount[c.type] < c.autobuild) {
+                    cf.spawnCreature(c);
+                    const last = cm.creatures[cm.creatures.length - 1];
+                    if (last) last.position.set(x, y), last.zIndex = y;
+                    return !0;
+                }
+            }
+            return !1;
         }
     }
     class Qe {
@@ -5240,6 +5301,10 @@ var Incremancer;
             c.model.persistentData.autoSellGear ? c.model.persistentData.autoSellGear = !1 : c.model.persistentData.autoSellGear = !0
         }, c.toggleAutoSellGearLegendary = function () {
             c.model.persistentData.autoSellGearLegendary ? c.model.persistentData.autoSellGearLegendary = !1 : c.model.persistentData.autoSellGearLegendary = !0
+        }, c.toggleAutoPrestige = function () {
+            c.model.persistentData.autoPrestige = !c.model.persistentData.autoPrestige
+        }, c.toggleAutoAuto = function () {
+            c.model.persistentData.autoAuto = !c.model.persistentData.autoAuto
         }, c.toggleResolution = function (e) {
             c.model.persistentData.resolution = e, c.model.setResolution(c.model.persistentData.resolution)
         }, c.getResolution = function () {

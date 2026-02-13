@@ -31,6 +31,16 @@
           <button ng-click="zm.toggleAutoSellGearLegendary();">{{zm.model.persistentData.autoSellGearLegendary ? "On" : "Off"}}</button>
       </div>
       <div class="upgrade">
+          <h4>Auto Prestige</h4>
+          <p>Automatically prestige after failing the same boss level 3 times.</p>
+          <button ng-click="zm.toggleAutoPrestige();">{{zm.model.persistentData.autoPrestige ? "On" : "Off"}}</button>
+      </div>
+      <div class="upgrade">
+          <h4>Auto-Auto</h4>
+          <p>All shop and factory auto-buy toggles default to On. Individual toggles still work to exclude specific items.</p>
+          <button ng-click="zm.toggleAutoAuto();">{{zm.model.persistentData.autoAuto ? "On" : "Off"}}</button>
+      </div>
+      <div class="upgrade">
           <h4>Render Resolution</h4>
           <p>Choose your preferred resolution to render the game.</p>
           <p>50% will run better on slower hardware but may look blurry.</p>
@@ -85,6 +95,7 @@
       <div class="upgrade">
           <h4>Changelog (Fork)</h4>
           <ul>
+              <li><strong>2026-02-13</strong> — Auto Prestige + Auto-Auto settings, harpy skeleton/golem delivery, effective parts/s, Necromantic Prodigies upgrade (1/100 talented zombies)</li>
               <li><strong>2026-02-13</strong> — New upgrade: Zombie Harpies (Harpy Outfitter) — harpies drop free zombies instead of bombs</li>
               <li><strong>2026-02-12</strong> — New chatlog: all notifications now appear in a persistent feed below the skeleton portrait, with chat combining for repeated messages</li>
               <li><strong>2026-02-12</strong> — New upgrade: Hybrid Talent Infusion (Adv. Hybrid Lab) — skeleton combat talents now apply to golems</li>

@@ -8,6 +8,7 @@
     <button ng-click="zm.factory.changeFactoryTab('creatures');" class="blood {{zm.factoryTab == 'creatures' ? 'active' : ''}}" ng-if="zm.model.constructions.monsterFactory">Creatures</button>
     <button ng-click="zm.factory.changeFactoryTab('level');" class="blood {{zm.factoryTab == 'level' ? 'active' : ''}}" ng-if="zm.model.constructions.monsterFactory">Upgrade</button>
   </div>
+  <p class="factory-rate"><strong>Effective parts/s:</strong> {{zm.factoryStats.partsPerSec * zm.model.gameSpeed|whole}}</p>
   <p ng-if="zm.factoryTab == 'parts'">You currently have {{zm.factoryStats.machines}} machines, producing an average of {{zm.factoryStats.partsPerSec * zm.model.gameSpeed|whole}} creature parts per second.</p>
   <div class="upgrades" ng-if="zm.factoryTab == 'parts'">
     <div ng-repeat="generator in zm.upgrades" class="upgrade {{generator.costType}}">
