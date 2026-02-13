@@ -818,7 +818,7 @@ var Incremancer;
             }
         }
         update(e) {
-            for (let t = 0; t < this.generatorsApplied.length; t++) this.generatorsApplied[t].timeLeft -= e, this.generatorsApplied[t].timeLeft <= 0 && (this.generatorsApplied[t].timeLeft = this.generatorsApplied[t].time, this.gameModel.persistentData.parts += this.generatorsApplied[t].total * this.gameModel.partsPCMod * (this.storm ? 2 : 1))
+            for (let t = 0; t < this.generatorsApplied.length; t++) this.generatorsApplied[t].timeLeft -= e, this.generatorsApplied[t].timeLeft <= 0 && (this.generatorsApplied[t].timeLeft = this.generatorsApplied[t].time, (() => { const amt = this.generatorsApplied[t].total * this.gameModel.partsPCMod * (this.storm ? 2 : 1); this.gameModel.persistentData.parts += amt; this.gameModel.partsGenerated += amt; })())
         }
         updateLongTime(e) {
             let t = 0;
@@ -987,7 +987,7 @@ var Incremancer;
     }
     class re {
         constructor(e, t, s, i, a, r, n, o) {
-            this.id = e, this.type = t, this.name = s, this.baseHealth = i, this.baseDamage = a, this.speed = r, this.baseCost = n, this.description = o, this.time = 3, this.building = !1, this.timeLeft = 10, this.autobuild = 0, this.level = 1
+            this.id = e, this.type = t, this.name = s, this.baseHealth = i, this.baseDamage = a, this.speed = r, this.baseCost = n, this.description = o, this.time = 3, this.building = !1, this.timeLeft = 10, this.autobuild = 0, this.autoLevel = !1, this.level = 1
         }
     }
     class ne {
@@ -1065,6 +1065,9 @@ var Incremancer;
                 this.zombieTalents = !1,
                 this.bossFailCount = 0,
                 this.lastFailedBoss = 0,
+                this.partsGenerated = 0,
+                this.partsHistory = [],
+                this.effectivePartsPerSec = 0,
                 this.stats = null,
                 this.runicSyphon = {
                     percentage: 0,
@@ -1224,6 +1227,9 @@ var Incremancer;
                 this.zombieTalents = !1,
                 this.bossFailCount = 0,
                 this.lastFailedBoss = 0,
+                this.partsGenerated = 0,
+                this.partsHistory = [],
+                this.effectivePartsPerSec = 0,
                 this.golemTalents = !1
         }
         addEnergy(e) {
@@ -1242,7 +1248,13 @@ var Incremancer;
             return this.humanCount
         }
         getEnergyRate() {
-            return this.energySpellMultiplier * this.energyRate - (this.persistentData.boneCollectors + this.persistentData.harpies)
+            let harpyCost = this.persistentData.harpies;
+            if (this.zombieHarpies && this.skeleton.persistent && this.skeleton.persistent.skeletons > 0) {
+                const needed = Math.max(0, this.skeleton.persistent.skeletons - this.skeleton.aliveSkeletons.length);
+                const skeletonHarpies = Math.min(needed, this.persistentData.harpies);
+                harpyCost += skeletonHarpies * 4;
+            }
+            return this.energySpellMultiplier * this.energyRate - (this.persistentData.boneCollectors + harpyCost)
         }
         update(e, t) {
             if (this.currentState != this.states.levelCompleted && this.currentState != this.states.failed) {
@@ -1330,7 +1342,11 @@ var Incremancer;
             }
         }
         updateStats() {
-            this.stats && (this.stats.zombie.health = this.zombieHealth, this.stats.zombie.damage = this.zombieDamage, this.stats.zombie.speed = this.zombieSpeed, this.stats.zombie.count = this.zombieCount, this.stats.skeleton.health = 10 * this.zombieHealth, this.stats.skeleton.damage = 10 * this.zombieDamage, this.stats.skeleton.speed = this.skeleton.moveSpeed)
+            this.stats && (this.stats.zombie.health = this.zombieHealth, this.stats.zombie.damage = this.zombieDamage, this.stats.zombie.speed = this.zombieSpeed, this.stats.zombie.count = this.zombieCount, this.stats.skeleton.health = 10 * this.zombieHealth, this.stats.skeleton.damage = 10 * this.zombieDamage, this.stats.skeleton.speed = this.skeleton.moveSpeed);
+            const now = Date.now() / 1e3;
+            this.partsHistory.push({ time: now, total: this.partsGenerated });
+            while (this.partsHistory.length > 1 && this.partsHistory[0].time < now - 5) this.partsHistory.shift();
+            if (this.partsHistory.length >= 2) { const first = this.partsHistory[0], last = this.partsHistory[this.partsHistory.length - 1]; const dt = last.time - first.time; this.effectivePartsPerSec = dt > 0 ? (last.total - first.total) / dt : 0; } else this.effectivePartsPerSec = 0;
         }
         vipEscaped() {
             this.persistentData.vipEscaped || (this.persistentData.vipEscaped = []), this.persistentData.vipEscaped.push(this.level), this.saveData()
@@ -2390,8 +2406,24 @@ var Incremancer;
         updateAutoUpgrades() {
             if (this.gameModel.autoUpgrades) {
                 for (let e = 0; e < this.upgrades.length; e++) (this.gameModel.persistentData.autoAuto || this.upgrades[e].auto) && this.purchaseUpgrade(this.upgrades[e], !1);
+                for (let e = 0; e < this.prestigeUpgrades.length; e++) (this.gameModel.persistentData.autoAuto || this.prestigeUpgrades[e].auto) && this.purchaseUpgrade(this.prestigeUpgrades[e], !1);
                 if (this.gameModel.constructions.factory)
-                    for (let e = 0; e < this.partFactory.generators.length; e++) (this.gameModel.persistentData.autoAuto || this.partFactory.generators[e].auto) && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1)
+                    for (let e = 0; e < this.partFactory.generators.length; e++) (this.gameModel.persistentData.autoAuto || this.partFactory.generators[e].auto) && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1);
+                if (this.gameModel.constructions.monsterFactory) {
+                    const cf = this.gameModel.creatureFactory;
+                    for (let e = 0; e < cf.creatures.length; e++) {
+                        if (this.gameModel.persistentData.autoAuto || cf.creatures[e].autoLevel)
+                            while (cf.levelPrice(cf.creatures[e]) < this.gameModel.persistentData.parts)
+                                cf.levelCreature(cf.creatures[e]);
+                        if (this.gameModel.persistentData.autoAuto || cf.creatures[e].autobuild > 0) {
+                            const target = this.gameModel.creatureLimit;
+                            if (cf.creatures[e].autobuild < target) {
+                                cf.creatures[e].autobuild = target;
+                                this.gameModel.persistentData.creatureAutobuild[cf.creatures[e].id] = target;
+                            }
+                        }
+                    }
+                }
             }
             this.gameModel.autoShatter && this.doShatter()
         }
@@ -3735,7 +3767,7 @@ var Incremancer;
             }
         }
         killingBlow(e) {
-            this.killingBlowParts && (this.model.persistentData.parts += this.killingBlowParts * this.partFactory.factoryStats().partsPerSec), this.lastKillingBlow <= 0 && (this.model.addPrestigePoints(Math.round(this.persistent.level * Math.pow(1.00025, this.persistent.level))), this.lastKillingBlow = 20, this.prestigePoints.newPart(e.x, e.y))
+            this.killingBlowParts && ((() => { const amt = this.killingBlowParts * this.partFactory.factoryStats().partsPerSec; this.model.persistentData.parts += amt; this.model.partsGenerated += amt; })()), this.lastKillingBlow <= 0 && (this.model.addPrestigePoints(Math.round(this.persistent.level * Math.pow(1.00025, this.persistent.level))), this.lastKillingBlow = 20, this.prestigePoints.newPart(e.x, e.y))
         }
         orbHit(e) {
             if (e.flags.dead && this.killingBlow(e), this.randomSpells.length > 0)
@@ -4394,7 +4426,8 @@ var Incremancer;
             if (this.model = ne.getInstance(), this.graveyard = new Oe, this.zombies = new Ae, this.humans = new Se, this.tanks = new De, !this.textures) {
                 this.textures = [];
                 for (let e = 0; e < 2; e++) this.textures.push(PIXI.Texture.from("harpy" + (e + 1) + ".png"));
-                this.bombTexture = PIXI.Texture.from("harpybomb.png")
+                this.bombTexture = PIXI.Texture.from("harpybomb.png"),
+                this.skeletonBombTexture = PIXI.Texture.from("skeleton0.png")
             }
             void 0 === this.model.persistentData.harpies && (this.model.persistentData.harpies = 0);
             for (let e = 0; e < this.bombSprites.length; e++) this.bombSprites[e].visible && (this.bombSprites[e].visible = !1, this.discardedBombSprites.push(this.bombSprites[e]));
@@ -4423,7 +4456,11 @@ var Incremancer;
                 ) : (e.fire && this.humans.burnHuman(e.target, .1 * this.model.zombieHealth), this.zombies.causePlagueExplosion(e, .2 * this.model.zombieHealth, !1, !1)))) : (e.x = e.harpy.x, e.y = e.harpy.y)
         }
         updateHarpy(e, t) {
-            e.tint = this.model.zombieHarpies ? 0x44ff44 : 0xffffff;
+            if (this.model.zombieHarpies) {
+                const needed = this.model.skeleton.persistent ? Math.max(0, this.model.skeleton.persistent.skeletons - this.model.skeleton.aliveSkeletons.length) : 0;
+                const idx = this.sprites.indexOf(e);
+                e.tint = idx < needed ? 0xff4444 : 0x44ff44;
+            } else e.tint = 0xffffff;
             switch (e.state) {
                 case qe.bombing:
                     if (!e.target || e.target.graveyard || e.target.dead)
@@ -4440,7 +4477,13 @@ var Incremancer;
         }
         getBomb(e) {
             let t;
-            this.discardedBombSprites.length > 0 ? t = this.discardedBombSprites.pop() : (t = new $e(this.bombTexture), this.bombSprites.push(t), b.addChild(t)), t.scale.x = t.scale.y = 2, t.rotation = 0, t.rotSpeed = Math.random() > .5 ? 4 : -4, t.ySpeed = 0, t.visible = !0, t.dropped = !1, t.tint = this.model.zombieHarpies ? 0x44ff44 : 0xffffff, t.harpy = e, e.bomb = t
+            this.discardedBombSprites.length > 0 ? t = this.discardedBombSprites.pop() : (t = new $e(this.bombTexture), this.bombSprites.push(t), b.addChild(t)), t.scale.x = t.scale.y = 2, t.rotation = 0, t.rotSpeed = Math.random() > .5 ? 4 : -4, t.ySpeed = 0, t.visible = !0, t.dropped = !1, (() => {
+                const needed = this.model.zombieHarpies && this.model.skeleton.persistent ? Math.max(0, this.model.skeleton.persistent.skeletons - this.model.skeleton.aliveSkeletons.length) : 0;
+                const idx = this.sprites.indexOf(e);
+                const isSkelBomb = this.model.zombieHarpies && idx < needed;
+                t.texture = isSkelBomb ? this.skeletonBombTexture : this.bombTexture;
+                t.tint = isSkelBomb ? 0xff4444 : (this.model.zombieHarpies ? 0x44ff44 : 0xffffff);
+            })(), t.harpy = e, e.bomb = t
         }
         updateHarpySpeed(e, t) {
             e.speedFactor = Math.min(1, e.speedFactor += 2 * t);
@@ -5304,7 +5347,17 @@ var Incremancer;
         }, c.toggleAutoPrestige = function () {
             c.model.persistentData.autoPrestige = !c.model.persistentData.autoPrestige
         }, c.toggleAutoAuto = function () {
-            c.model.persistentData.autoAuto = !c.model.persistentData.autoAuto
+            c.model.persistentData.autoAuto = !c.model.persistentData.autoAuto;
+            if (c.model.persistentData.autoAuto) {
+                for (let i = 0; i < h.upgrades.length; i++) h.upgrades[i].auto = !0;
+                for (let i = 0; i < h.prestigeUpgrades.length; i++) h.prestigeUpgrades[i].auto = !0;
+                for (let i = 0; i < r.generators.length; i++) r.generators[i].auto = !0;
+                for (let i = 0; i < o.creatures.length; i++) o.creatures[i].autoLevel = !0;
+                for (let i = 0; i < o.creatures.length; i++) {
+                    o.creatures[i].autobuild = c.model.creatureLimit;
+                    c.model.persistentData.creatureAutobuild[o.creatures[i].id] = c.model.creatureLimit;
+                }
+            }
         }, c.toggleResolution = function (e) {
             c.model.persistentData.resolution = e, c.model.setResolution(c.model.persistentData.resolution)
         }, c.getResolution = function () {
