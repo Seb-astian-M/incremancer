@@ -2108,7 +2108,10 @@ var Incremancer;
       UpgradeManager.instance = this
     }
     hasRequirement(e) {
-      return !e.requires || 0 != this.gameModel.persistentData.constructions.filter((t => t.id == e.requires)).length
+      if (!e.requires) return !0;
+      if (this.gameModel.persistentData.constructions.some((t => t.id == e.requires))) return !0;
+      if (this.gameModel.persistentData.upgrades.some((t => t.id == e.requires))) return !0;
+      return !1;
     }
     getUpgrades(e) {
       switch (e) {
