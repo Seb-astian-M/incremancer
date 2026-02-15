@@ -1336,6 +1336,12 @@ var Incremancer;
       if (this.strapemRank > 0) harpyCost *= Math.pow(10, this.strapemRank);
       return this.energySpellMultiplier * this.energyRate - (this.persistentData.boneCollectors + harpyCost + (this.persistentData.spiders || 0) * 10)
     }
+    getHarpyCostPerUnit() {
+      let cost = 1;
+      if (this.zombieHarpies && this.skeleton.persistent && this.skeleton.persistent.skeletons > 0) cost = 5;
+      if (this.strapemRank > 0) cost *= Math.pow(10, this.strapemRank);
+      return cost;
+    }
     update(e, t) {
       if (this.currentState != this.states.levelCompleted && this.currentState != this.states.failed) {
         this.startTimer = 2
@@ -1411,8 +1417,11 @@ var Incremancer;
       }
     }
     setMaxHarpies() {
-      let e = Math.floor(this.getEnergyRate() + this.persistentData.harpies);
-      (e >= 0 && e < this.persistentData.harpies || this.getEnergyRate() >= 1 && e > 0) && (this.persistentData.harpies = e);
+      const costPer = this.getHarpyCostPerUnit();
+      const available = this.getEnergyRate() + this.persistentData.harpies * costPer;
+      let e = Math.floor(available / costPer);
+      if (e < 0) e = 0;
+      this.persistentData.harpies = e;
     }
     startLevel(e) {
       this.level = e, this.startGame()
@@ -1981,8 +1990,8 @@ var Incremancer;
             parts: 1e18
           }, 240, 1, 1, 1, 303, "Using all these stored brains allows us to harness their raw computational power for even more innovations!  Storage tanks resting on bedrock is as far as we can go, doubling storage", "New upgrades are available in the shop!"),
           new Construction(305, "Spider Lair", this.constructionTypes.spiderLair, {
-            parts: 1e14,
-            brains: 1e9
+            parts: 1e18,
+            brains: 1e12
           }, 300, 1, 1, 1, 304, "Construct a dark lair beneath the graveyard where spiders can be bred and trained. These arachnid servants will serve as utility collectors, draining energy to sustain themselves.", "Spider Lair constructed! Spiders are now available in the graveyard menu.")
         ],
 
@@ -2042,26 +2051,26 @@ var Incremancer;
           new UpgradeDef(75, "Hybrid Talent Infusion", this.types.golemTalents, this.costs.parts, 1e13, 1, 1, 1, "Infuse golems with the Skeleton Champion's combat knowledge. Skeleton talents (Bone Shield, Dark Orb, Thrifty, Opportunist, Blood Pact) also apply to all golems. Additional cost: 100M bones + 100M brains.", "Golems now benefit from Skeleton Champion talents!", 302),
           new UpgradeDef(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e14, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222),
           new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e15, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
-          new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e13, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
-          new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e10, 100, 1, 0, "Fuse spider silk with zombie flesh for massive power. Each rank: zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
-          new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e10, 1.25, 1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
-          new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e12, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
-          new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e15, 1, 1, 1, "Spiders weave collected parts into projectile nets, launched every 10 seconds. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
-          new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e14, 1, 1, 1, "Net projectiles now deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
-          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e16, 1, 1, 1, "Explosion power reduced to 0.7x but spawns gigazombies proportional to parts used.", "Nets now spawn zombies on impact!", 85),
-          new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e10, 1, 1, 1, "Zombies spawned by nets are prodigies with skeleton talents.", "Net zombies are now prodigies!", 86),
-          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e12, 1, 1, 1, "Each launch generates 1e9 bonus bones and spawns a temporary skeleton with stats scaling from launch cost.", "Nets now also spawn skeletons!", 87),
-          new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e16, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
-          new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e14, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
-          new UpgradeDef(91, "Pandemic Buff", this.types.spellBuff, this.costs.brains, 1e15, 1, 1, 1, "Unlock: Pandemic spell has 1/100 chance to zombify healthy humans.", null, 89),
-          new UpgradeDef(92, "Detonate Buff", this.types.spellBuff, this.costs.blood, 1e16, 1, 1, 1, "Unlock: Exploding zombies have 50% chance to survive and can chain-explode.", null, 89),
-          new UpgradeDef(93, "Energy Charge Buff", this.types.spellBuff, this.costs.parts, 1e14, 1, 1, 1, "Unlock: Energy charge multiplier tripled (5x becomes 15x).", null, 89),
-          new UpgradeDef(94, "Earth Freeze Buff", this.types.spellBuff, this.costs.bones, 1e15, 1, 1, 1, "Unlock: Earth Freeze also doubles friendly unit speed during freeze.", null, 89),
-          new UpgradeDef(95, "Time Warp Buff", this.types.spellBuff, this.costs.parts, 1e16, 1, 1, 1, "Unlock: Resource production tripled on top of time speed increase.", null, 89),
-          new UpgradeDef(96, "Gigazombie Buff", this.types.spellBuff, this.costs.brains, 1e17, 1, 1, 1, "Unlock: Gigazombies spawn by default; during spell, giga-giga (100x) are created.", null, 89),
-          new UpgradeDef(97, "Incinerate Buff", this.types.spellBuff, this.costs.blood, 1e15, 1, 1, 1, "Unlock: Each burning human spreads fire to nearby humans.", null, 89),
-          new UpgradeDef(98, "Expanded Buff Slots", this.types.expandedBuffSlots, this.costs.parts, 1e17, 10, 1, 2, "Increase the number of spell buff slots. Start with 1, each rank adds 1 more (max 3 total).", null, 89),
-          new UpgradeDef(99, "Tailoring", this.types.tailoring, this.costs.parts, 1e18, 1, 1, 1, "Unlock the Tailoring panel to combine equipment pieces into powerful patchwork armor.", "Tailoring unlocked! Combine equipment in the new panel.", 305)
+          new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e16, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
+          new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e13, 100, 1, 0, "Fuse spider silk with zombie flesh for massive power. Each rank: zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
+          new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e14, 1.25, 1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
+          new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e15, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
+          new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e18, 1, 1, 1, "Spiders weave collected parts into projectile nets, launched every 10 seconds. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
+          new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e17, 1, 1, 1, "Net projectiles now deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
+          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e19, 1, 1, 1, "Explosion power reduced to 0.7x but spawns gigazombies proportional to parts used.", "Nets now spawn zombies on impact!", 85),
+          new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e14, 1, 1, 1, "Zombies spawned by nets are prodigies with skeleton talents.", "Net zombies are now prodigies!", 86),
+          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e15, 1, 1, 1, "Each launch generates 1e9 bonus bones and spawns a temporary skeleton with stats scaling from launch cost.", "Nets now also spawn skeletons!", 87),
+          new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e18, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
+          new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e17, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
+          new UpgradeDef(91, "Pandemic Buff", this.types.spellBuff, this.costs.brains, 1e18, 1, 1, 1, "Unlock: Pandemic spell has 1/100 chance to zombify healthy humans.", null, 89),
+          new UpgradeDef(92, "Detonate Buff", this.types.spellBuff, this.costs.blood, 1e19, 1, 1, 1, "Unlock: Exploding zombies have 50% chance to survive and can chain-explode.", null, 89),
+          new UpgradeDef(93, "Energy Charge Buff", this.types.spellBuff, this.costs.parts, 1e17, 1, 1, 1, "Unlock: Energy charge multiplier tripled (5x becomes 15x).", null, 89),
+          new UpgradeDef(94, "Earth Freeze Buff", this.types.spellBuff, this.costs.bones, 1e18, 1, 1, 1, "Unlock: Earth Freeze also doubles friendly unit speed during freeze.", null, 89),
+          new UpgradeDef(95, "Time Warp Buff", this.types.spellBuff, this.costs.parts, 1e19, 1, 1, 1, "Unlock: Resource production tripled on top of time speed increase.", null, 89),
+          new UpgradeDef(96, "Gigazombie Buff", this.types.spellBuff, this.costs.brains, 1e20, 1, 1, 1, "Unlock: Gigazombies spawn by default; during spell, giga-giga (100x) are created.", null, 89),
+          new UpgradeDef(97, "Incinerate Buff", this.types.spellBuff, this.costs.blood, 1e18, 1, 1, 1, "Unlock: Each burning human spreads fire to nearby humans.", null, 89),
+          new UpgradeDef(98, "Expanded Buff Slots", this.types.expandedBuffSlots, this.costs.parts, 1e20, 10, 1, 2, "Increase the number of spell buff slots. Start with 1, each rank adds 1 more (max 3 total).", null, 89),
+          new UpgradeDef(99, "Tailoring", this.types.tailoring, this.costs.parts, 1e20, 1, 1, 1, "Unlock the Tailoring panel to combine equipment pieces into powerful patchwork armor.", "Tailoring unlocked! Combine equipment in the new panel.", 305)
         ],
         this.prestigeUpgrades = [new UpgradeDef(108, "A Small Investment", this.types.startingPC, this.costs.prestigePoints, 10, 1.25, 1, 0, "Each rank gives you an additional 500 blood, 50 brains, and 200 bones when starting a new level.", null, null),
           new UpgradeDef(109, "Time Warp", this.types.unlockSpell, this.costs.prestigePoints, 50, 1, 1, 1, "Unlock the Time Warp spell in order to speed up the flow of time.", null, null),
@@ -4650,30 +4659,30 @@ var Incremancer;
    * ================================================================ */
   class SpiderCollector {
     constructor() {
-      if (this.sprites = [], this.maxSpeed = 100, this.scaling = 1.5, this.collectDistance = 10, this.fastDistance = i, SpiderCollector.instance) return SpiderCollector.instance;
+      if (this.sprites = [], this.maxSpeed = 100, this.scaling = 2.0, this.collectDistance = 10, this.fastDistance = i, SpiderCollector.instance) return SpiderCollector.instance;
       SpiderCollector.instance = this
     }
     getTexture() {
       if (this._texture) return this._texture;
       const e = document.createElement("canvas");
-      e.width = 16, e.height = 12;
+      e.width = 24, e.height = 18;
       const t = e.getContext("2d");
-      t.fillStyle = "#333333", t.beginPath(), t.ellipse(8, 6, 5, 4, 0, 0, 2 * Math.PI), t.fill();
-      t.strokeStyle = "#222222", t.lineWidth = 1;
+      t.fillStyle = "#2a1a2a", t.beginPath(), t.ellipse(12, 9, 7.5, 6, 0, 0, 2 * Math.PI), t.fill();
+      t.strokeStyle = "#1a0a1a", t.lineWidth = 1.5;
       const legs = [
-        [-4, -2, -7, -5],
-        [4, -2, 7, -5],
-        [-3, 0, -7, 2],
-        [3, 0, 7, 2],
-        [-3, 2, -6, 5],
-        [3, 2, 6, 5],
-        [-2, 3, -5, 6],
-        [2, 3, 5, 6]
+        [-6, -3, -10.5, -7.5],
+        [6, -3, 10.5, -7.5],
+        [-4.5, 0, -10.5, 3],
+        [4.5, 0, 10.5, 3],
+        [-4.5, 3, -9, 7.5],
+        [4.5, 3, 9, 7.5],
+        [-3, 4.5, -7.5, 9],
+        [3, 4.5, 7.5, 9]
       ];
-      for (const l of legs) t.beginPath(), t.moveTo(8 + l[0], 6 + l[1]), t.lineTo(8 + l[2], 6 + l[3]), t.stroke();
-      t.fillStyle = "#880000";
-      t.beginPath(), t.arc(6, 4, 1, 0, 2 * Math.PI), t.fill();
-      t.beginPath(), t.arc(10, 4, 1, 0, 2 * Math.PI), t.fill();
+      for (const l of legs) t.beginPath(), t.moveTo(12 + l[0], 9 + l[1]), t.lineTo(12 + l[2], 9 + l[3]), t.stroke();
+      t.fillStyle = "#ff0000";
+      t.beginPath(), t.arc(9, 6, 1.5, 0, 2 * Math.PI), t.fill();
+      t.beginPath(), t.arc(15, 6, 1.5, 0, 2 * Math.PI), t.fill();
       return this._texture = PIXI.Texture.from(e), this._texture
     }
     populate() {
@@ -4689,7 +4698,7 @@ var Incremancer;
       if (this.sprites.length < count) {
         const tex = this.getTexture();
         const e = new PIXI.Sprite(tex);
-        e.anchor.set(.5, .5), e.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y), e.zIndex = e.position.y, e.visible = !0, e.scale.set(Math.random() > .5 ? this.scaling : -1 * this.scaling, this.scaling), e.xSpeed = 0, e.ySpeed = 0, e.carriedBones = 0, e.carriedParts = 0, e.speedFactor = 0, e.state = Zt.collecting, e.target = !1, e.boneList = [], this.sprites.push(e), g.addChild(e)
+        e.anchor.set(.5, 1), e.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y), e.zIndex = e.position.y, e.visible = !0, e.scale.set(Math.random() > .5 ? this.scaling : -1 * this.scaling, this.scaling), e.xSpeed = 0, e.ySpeed = 0, e.carriedBones = 0, e.carriedParts = 0, e.speedFactor = 0, e.state = Zt.collecting, e.target = !1, e.boneList = [], this.sprites.push(e), g.addChild(e)
       }
     }
     update(e) {
@@ -5528,9 +5537,11 @@ var Incremancer;
     }, c.setBoneCollectors = function(e) {
       e >= 0 && c.model.getEnergyRate() >= e - c.model.persistentData.boneCollectors && (c.model.persistentData.boneCollectors = e)
     }, c.setHarpies = function(e) {
-      (e >= 0 && e < c.model.persistentData.harpies || c.model.getEnergyRate() >= 1 && e > 0) && (c.model.persistentData.harpies = e)
+      const costPer = c.model.getHarpyCostPerUnit();
+      (e >= 0 && e < c.model.persistentData.harpies || c.model.getEnergyRate() >= costPer && e > 0) && (c.model.persistentData.harpies = e)
     }, c.maxHarpies = function() {
-      return Math.floor(c.model.getEnergyRate() + c.model.persistentData.harpies)
+      const costPer = c.model.getHarpyCostPerUnit();
+      return Math.floor((c.model.getEnergyRate() + c.model.persistentData.harpies * costPer) / costPer)
     }, c.setSpiders = function(e) {
       e >= 0 && (e < c.model.persistentData.spiders || c.model.getEnergyRate() >= 10) && (c.model.persistentData.spiders = e)
     }, c.maxSpiders = function() {
