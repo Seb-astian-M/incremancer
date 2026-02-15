@@ -37,9 +37,9 @@
       <button ng-click="zm.adjustNets('zombie', 1)" ng-disabled="zm.model.zombieNets >= zm.model.maxZombieNets">+</button>
     </div>
     <div class="bone-collectors bones" ng-if="zm.model.maxProdigyNets > 0">
-      <h4>Prodigy Nets: {{zm.model.prodigyNets}} / {{zm.model.maxProdigyNets}} <span style="opacity:0.6">(also capped by Zombie Nets)</span></h4>
+      <h4>Prodigy Nets: {{zm.model.prodigyNets}} / {{zm.model.maxProdigyNets}} <span style="opacity:0.6">(upgrades zombie nets to prodigies)</span></h4>
       <button ng-click="zm.adjustNets('prodigy', -1)" ng-disabled="zm.model.prodigyNets <= 0">-</button>
-      <button ng-click="zm.adjustNets('prodigy', 1)" ng-disabled="zm.model.prodigyNets >= zm.model.maxProdigyNets || zm.model.prodigyNets >= zm.model.zombieNets">+</button>
+      <button ng-click="zm.adjustNets('prodigy', 1)" ng-disabled="zm.model.prodigyNets >= zm.model.maxProdigyNets">+</button>
     </div>
     <div class="bone-collectors bones" ng-if="zm.model.maxGolemNets > 0">
       <h4>Golem Nets: {{zm.model.golemNets}} / {{zm.model.maxGolemNets}}</h4>

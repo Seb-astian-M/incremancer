@@ -2228,7 +2228,7 @@ var Incremancer;
         this.gameModel.skeletonNets = Math.min(nd.skeleton || 0, this.gameModel.maxSkeletonNets);
       } else {
         this.gameModel.zombieNets = this.gameModel.maxZombieNets;
-        this.gameModel.prodigyNets = this.gameModel.maxProdigyNets;
+        this.gameModel.prodigyNets = Math.min(this.gameModel.maxProdigyNets, this.gameModel.zombieNets);
         this.gameModel.golemNets = this.gameModel.maxGolemNets;
         this.gameModel.skeletonNets = this.gameModel.maxSkeletonNets;
       }
@@ -6058,7 +6058,9 @@ var Incremancer;
           if (m.prodigyNets > m.zombieNets) m.prodigyNets = m.zombieNets;
           break;
         case "prodigy":
-          m.prodigyNets = Math.max(0, Math.min(Math.min(m.maxProdigyNets, m.zombieNets), m.prodigyNets + delta));
+          var newProd = Math.max(0, Math.min(m.maxProdigyNets, m.prodigyNets + delta));
+          if (newProd > m.zombieNets) m.zombieNets = Math.min(m.maxZombieNets, newProd);
+          m.prodigyNets = Math.min(newProd, m.zombieNets);
           break;
         case "golem":
           m.golemNets = Math.max(0, Math.min(m.maxGolemNets, m.golemNets + delta));
