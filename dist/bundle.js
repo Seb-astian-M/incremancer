@@ -2010,7 +2010,7 @@ var Incremancer;
           new Construction(305, "Spider Lair", this.constructionTypes.spiderLair, {
             parts: 1e14,
             brains: 1e9
-          }, 300, 1, 1, 1, 302, "Construct a dark lair beneath the graveyard where spiders can be bred and trained. These arachnid servants will serve as utility collectors, draining energy to sustain themselves.", "Spider Lair constructed! Spiders are now available in the graveyard menu.")
+          }, 300, 1, 1, 1, 211, "Construct a dark lair beneath the graveyard where spiders can be bred and trained. These arachnid servants will serve as utility collectors, draining energy to sustain themselves.", "Spider Lair constructed! Spiders are now available in the graveyard menu.")
         ],
 
         this.upgrades = [new UpgradeDef(1, "Bloodthirst", this.types.damage, this.costs.blood, 50, 1.2, 1, 40, "Your zombies thirst for blood and do +1 damage for each rank of Bloodthirst.", null, null),
