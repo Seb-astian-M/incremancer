@@ -1128,6 +1128,7 @@ var Incremancer;
         this.tailoring = !1,
         this.netLauncherTimer = 0,
         this.netLauncherParts = 0,
+        this.netCooldown = 10,
         this.bossFailCount = 0,
         this.lastFailedBoss = 0,
         this.partsGenerated = 0,
@@ -1312,7 +1313,8 @@ var Incremancer;
         this.spellBuffSlots = 1,
         this.tailoring = !1,
         this.netLauncherTimer = 0,
-        this.netLauncherParts = 0
+        this.netLauncherParts = 0,
+        this.netCooldown = 10
     }
     addEnergy(e) {
       this.energy += e, this.energy > this.energyMax && (this.energy = this.energyMax)
@@ -1425,7 +1427,7 @@ var Incremancer;
       if (!this.netLaunchers || this.currentState != this.states.playingLevel) return;
       this.netLauncherTimer -= e;
       if (this.netLauncherTimer <= 0) {
-        this.netLauncherTimer = 10;
+        this.netLauncherTimer = this.netCooldown || 10;
         if (this.netLauncherParts <= 0 || this.energy < 100) return;
         const bloodCost = this.persistentData.blood * 0.1;
         this.energy -= 100;
@@ -1454,24 +1456,24 @@ var Incremancer;
             this.zombies.createZombie(zx, zy);
           }
         }
-        if (this.golemNets) {
+        if (this.golemNets || this.skeletonNets) {
           const ah = this.humans.aliveHumans;
-          const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
-          const gx = t ? t.x : this.graveyard.sprite.x;
-          const gy = t ? t.y : this.graveyard.sprite.y;
           const costScale = Math.max(1, partsUsed / 1e6);
-          this.creatures.spawnNetGolem(costScale, gx, gy);
-          this.sendMessage("Golem Net: +1 golem!", "chat-construction")
-        }
-        if (this.skeletonNets) {
-          this.addBones(1e9);
-          const ah = this.humans.aliveHumans;
-          const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
-          const sx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
-          const sy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
-          const costScale = Math.max(1, partsUsed / 1e6);
-          this.humans.skeleton.spawnNetSkeleton(costScale, sx, sy);
-          this.sendMessage("Skeleton Net: +1B bones, +1 skeleton!", "chat-construction")
+          const spiderCount = this.persistentData.spiders || 1;
+          if (this.skeletonNets && spiderCount <= 1) {
+            this.addBones(1e9);
+            const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+            const sx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
+            const sy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
+            this.humans.skeleton.spawnNetSkeleton(costScale, sx, sy);
+            this.sendMessage("Skeleton Net: +1B bones, +1 skeleton!", "chat-construction")
+          } else {
+            const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+            const gx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
+            const gy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
+            this.creatures.spawnNetGolem(costScale, gx, gy);
+            this.sendMessage("Golem Net: +1 golem!", "chat-construction")
+          }
         }
         this.sendMessage("Net launched! " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
       }
@@ -1884,6 +1886,7 @@ var Incremancer;
           prodigyNets: "prodigyNets",
           golemNets: "golemNets",
           skeletonNets: "skeletonNets",
+          netCooldown: "netCooldown",
           magicalTraining: "magicalTraining",
           expandedBuffSlots: "expandedBuffSlots",
           spellBuff: "spellBuff",
@@ -2139,7 +2142,7 @@ var Incremancer;
           new UpgradeDef(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e14, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222),
           new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e14, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
           new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e6, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
-          new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 100, 1, 0, "Fuse spider silk with zombie flesh for massive power. Each rank: zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
+          new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 1, 1, 1, "Fuse spider silk with zombie flesh for massive power. Zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
           new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 1, 1, 1, "Spiders weave collected parts into projectile nets, launched every 10 seconds. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
@@ -2148,6 +2151,7 @@ var Incremancer;
           new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e4, 1, 1, 1, "Zombies spawned by nets are prodigies with skeleton talents.", "Net zombies are now prodigies!", 86),
           new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 1e7, 1, 1, 1, "Each net launch spawns a temporary golem at the impact site. Golem stats scale with parts used. Does not count toward creature limit.", "Nets now spawn golems on impact!", 87),
           new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e5, 1, 1, 1, "Each launch generates 1e9 bonus bones and spawns a temporary skeleton at impact. Stats scale from launch cost.", "Nets now also spawn skeletons!", 100),
+          new UpgradeDef(101, "Rapid Deployment", this.types.netCooldown, this.costs.parts, 1e8, 10, 1, 2, "Reduce net launcher cooldown. Rank 1: 5 seconds. Rank 2: 3 seconds.", null, 84),
           new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e8, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
           new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e7, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
           new UpgradeDef(91, "Pandemic Buff", this.types.spellBuff, this.costs.brains, 1e8, 1, 1, 1, "Unlock: Pandemic spell has 1/100 chance to zombify healthy humans.", null, 89),
@@ -2369,6 +2373,8 @@ var Incremancer;
           return void(this.gameModel.golemNets = !0);
         case this.types.skeletonNets:
           return void(this.gameModel.skeletonNets = !0);
+        case this.types.netCooldown:
+          return void(this.gameModel.netCooldown = t >= 2 ? 3 : 5);
         case this.types.magicalTraining:
           return void(this.gameModel.magicalTraining = !0);
         case this.types.expandedBuffSlots:
