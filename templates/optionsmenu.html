@@ -71,6 +71,11 @@
           <button ng-click="zm.toggleZoomButtons();">{{zm.model.persistentData.zoomButtons ? "On" : "Off"}}</button>
       </div>
       <div class="upgrade">
+          <h4>Loot Chat Filter</h4>
+          <p>Hide loot notifications below a certain rarity. Click to cycle through ranks.</p>
+          <button ng-click="zm.cycleLootFilter();">{{zm.lootFilterLabel()}}</button>
+      </div>
+      <div class="upgrade">
           <h4>Show Framerate Counter</h4>
           <p>Used for performance testing</p>
           <button ng-click="zm.toggleShowFps();">{{zm.model.persistentData.showfps ? "On" : "Off"}}</button>

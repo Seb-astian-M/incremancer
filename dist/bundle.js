@@ -4266,7 +4266,8 @@ var Incremancer;
       if (this.persistent.skeletons > 0 && Math.random() < this.lootChance) {
         const e = this.generateLoot(this.persistent.level);
         const t = "chat-loot-" + (e.r <= 1 ? "common" : e.r == 2 ? "rare" : e.r == 3 ? "epic" : e.r == 4 ? "legendary" : e.r == 5 ? "ancient" : e.r == 6 ? "divine" : "chaos");
-        this.model.sendMessage(this.getLootName(e) + " collected!", t), this.persistent.items.push(e)
+        const lootFilter = this.model.persistentData.lootChatFilter || 0;
+        e.r > lootFilter && this.model.sendMessage(this.getLootName(e) + " collected!", t), this.persistent.items.push(e)
       }
     }
     generateLoot(e) {
@@ -5945,6 +5946,13 @@ var Incremancer;
       c.model.zoom(e)
     }, c.resetZoom = function() {
       c.model.centerGameContainer(!0)
+    }, c.cycleLootFilter = function() {
+      const ranks = [0, 1, 2, 3, 4, 5, 6];
+      const cur = c.model.persistentData.lootChatFilter || 0;
+      c.model.persistentData.lootChatFilter = ranks[(ranks.indexOf(cur) + 1) % ranks.length];
+    }, c.lootFilterLabel = function() {
+      const labels = { 0: "Show All", 1: "Rare+", 2: "Epic+", 3: "Legendary+", 4: "Ancient+", 5: "Divine+", 6: "Chaos Only" };
+      return labels[c.model.persistentData.lootChatFilter || 0];
     }, c.toggleShowFps = function() {
       c.model.persistentData.showfps = !c.model.persistentData.showfps
     }, c.toggleParticles = function() {
