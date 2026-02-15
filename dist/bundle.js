@@ -4784,7 +4784,7 @@ var Incremancer;
           if (!e.target || !e.target.value || !e.target.visible) {
             e.boneList = [], e.speedFactor = 0, this.findNearestTarget(e);
           }
-          if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= 500 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
+          if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= 40 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
         case Zt.returning:
           e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * 0.5), e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0)
