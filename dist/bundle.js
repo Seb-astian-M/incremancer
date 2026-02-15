@@ -2576,6 +2576,9 @@ var Incremancer;
       if (e.cap > 0 && this.currentRank(e) >= e.cap) {
         return e.auto = !1, !1;
       }
+      if (e.type == this.types.strapem) {
+        if (this.gameModel.zombieCost * 10 > this.gameModel.energyMax) return !1;
+      }
       switch (e.costType) {
         case this.costs.energy:
           return this.gameModel.energy >= this.upgradePrice(e);
