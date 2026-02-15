@@ -2396,7 +2396,7 @@ var Incremancer;
         case this.constructionTypes.TechThinkTank:
           return this.gameModel.constructions.TechThinkTank = 1, this.gameModel.brainsStorePCMod *= 2, void(this.gameModel.bloodStorePCMod *= 2);
         case this.constructionTypes.spiderLair:
-          return void(this.gameModel.constructions.spiderLair = !0);
+          return this.gameModel.constructions.spiderLair = !0, void(this.gameModel.boneCollectorCapacity = 50);
       }
     }
     displayStatValue(e) {
@@ -4809,7 +4809,7 @@ var Incremancer;
           if (!e.target || !e.target.value || !e.target.visible) {
             e.boneList = [], e.speedFactor = 0, this.findNearestTarget(e);
           }
-          if (e.carriedBones >= 50 || e.carriedParts >= 40 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
+          if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= this.gameModel.boneCollectorCapacity || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
         case Zt.returning:
           e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * 0.5), (e.carriedBones > 0 || e.carriedParts > 0) && this.gameModel.sendMessage("Spider returned: " + (e.carriedBones > 0 ? Math.floor(e.carriedBones) + " bones" : "") + (e.carriedBones > 0 && e.carriedParts > 0 ? ", " : "") + (e.carriedParts > 0 ? Math.floor(e.carriedParts) + " parts" : ""), "chat-construction"), e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0)
