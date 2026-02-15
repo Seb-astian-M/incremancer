@@ -977,7 +977,7 @@ var Incremancer;
       this.levelPrice(e) < this.gameModel.persistentData.parts && (this.gameModel.persistentData.parts -= this.levelPrice(e), e.level++, this.gameModel.persistentData.creatureLevels[e.id] = e.level)
     }
     canAffordCreature(e) {
-      return this.purchasePrice(e) < this.gameModel.persistentData.parts
+      return this.purchasePrice(e) <= this.gameModel.persistentData.parts
     }
     creaturesBuildingCount() {
       let e = 0;
