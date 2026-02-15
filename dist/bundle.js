@@ -4987,7 +4987,7 @@ var Incremancer;
       const cx = spider.position.x, cy = spider.position.y;
       const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
       const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
-      const radius = 5 + spider.stringDist * 0.6;
+      const radius = 5 + spider.stringDist * 0.3;
       const r2 = radius * radius;
       const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
       const checkItem = (item, isParts) => {
@@ -5087,7 +5087,7 @@ var Incremancer;
       const gcx = this.graveyard.sprite.x, gcy = this.graveyard.sprite.y;
       const speedMod = 1 + (this.gameModel.spiderSpeedMod || 0);
       const moveSpeed = 100 * speedMod;
-      const silkSpeed = Math.max(P.x, P.y) / 24;
+      const silkSpeed = Math.max(P.x, P.y) / 12;
       const fenceR = this.gameModel.fenceRadius || 50;
       switch (spider.state) {
         case Zt.idle:
