@@ -1,4 +1,4 @@
-console.log("[Incremancer fork] bundle version: 20260215b");
+console.log("[Incremancer fork] bundle version: 20260215c");
 var Incremancer;
 (() => {
   "use strict";
@@ -1477,7 +1477,7 @@ var Incremancer;
       this.level++, this.currentState = this.states.playingLevel, this.setupLevel(), this.updatePlayingLevel(), this.persistentData.autoRelease && this.releaseCagedZombies()
     }
     setupLevel() {
-      this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), this.addStartLevelResources(), this.populateStats()
+      this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), this.addStartLevelResources(), this.populateStats(), SpiderCollector.instance && (SpiderCollector.instance.spiderTotalBones = 0, SpiderCollector.instance.spiderTotalParts = 0)
     }
     populateStats() {
       this.stats = {
@@ -4830,12 +4830,8 @@ var Incremancer;
             const boneAmt = e.carriedBones * this.gameModel.bonesPCMod;
             const partsAmt = e.carriedParts * this.gameModel.partsPCMod;
             this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts * this.gameModel.partsPCMod, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * this.gameModel.partsPCMod * 0.5);
-            if (boneAmt > 0 || partsAmt > 0) {
-              this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
-              this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
-              const msg = "Spiders collected: " + (this.spiderTotalBones > 0 ? n(this.spiderTotalBones) + " bones" : "") + (this.spiderTotalBones > 0 && this.spiderTotalParts > 0 ? ", " : "") + (this.spiderTotalParts > 0 ? n(this.spiderTotalParts) + " parts" : "");
-              this.gameModel.sendMessageKeyed("spider-collect", msg, "chat-spider");
-            }
+            this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
+            this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
             e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0;
           })())
       }
@@ -5630,6 +5626,12 @@ var Incremancer;
       e >= 0 && (e < c.model.persistentData.spiders || c.model.getEnergyRate() >= 10) && (c.model.persistentData.spiders = e)
     }, c.maxSpiders = function() {
       return Math.floor((c.model.getEnergyRate() + (c.model.persistentData.spiders || 0) * 10) / 10)
+    }, c.spiderTotalBones = function() {
+      const sc = SpiderCollector.instance;
+      return sc ? (sc.spiderTotalBones || 0) : 0;
+    }, c.spiderTotalParts = function() {
+      const sc = SpiderCollector.instance;
+      return sc ? (sc.spiderTotalParts || 0) : 0;
     }, c.spellBuffList = [
       { id: 90, name: "Slowing Nets", description: "Idle spiders shoot freezing nets at enemies" },
       { id: 91, name: "Pandemic+", description: "1/100 chance to zombify healthy humans" },

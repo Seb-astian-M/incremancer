@@ -33,7 +33,7 @@
     <script src="js/lz-string.min.js"></script>
     <script src="js/pixi-legacy.min.js"></script>
     <script src="js/angular.min.js"></script>
-    <script src="dist/bundle.js?v=20260215b"></script>
+    <script src="dist/bundle.js?v=20260215c"></script>
     <link rel="stylesheet" type="text/css" href="zombiemancer.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
   </head>
@@ -75,6 +75,11 @@
             <div ng-repeat="msg in zm.model.chatLog track by msg.id" class="chatlog-msg {{msg.cls}}">
                 <span ng-if="msg.count > 1" class="chat-count">{{msg.count}}x</span> {{msg.text}}
             </div>
+        </div>
+        <div class="spider-collections" ng-if="zm.spiderTotalBones() > 0 || zm.spiderTotalParts() > 0">
+            <h4>Spider Collections</h4>
+            <label class="bones" ng-if="zm.spiderTotalBones() > 0">Bones:<span class="value">+{{zm.spiderTotalBones()|whole}}</span></label>
+            <label class="parts" ng-if="zm.spiderTotalParts() > 0">Parts:<span class="value">+{{zm.spiderTotalParts()|whole}}</span></label>
         </div>
       </div>
     </div>

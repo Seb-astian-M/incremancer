@@ -657,6 +657,32 @@ div.spells > div.chatlog {
 .chat-loot-divine { color: #22d3ee; }
 .chat-loot-chaos { color: #c084fc; }
 
+div.spells > div.spider-collections {
+  position: relative;
+  margin-top: 4px;
+  background: rgba(0,0,0,0.5);
+  padding: 4px 8px;
+  width: 250px;
+  font-size: 0.9em;
+  pointer-events: none;
+}
+div.spider-collections h4 {
+  margin: 0 0 2px 0;
+  font-size: 0.85em;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+div.spider-collections label {
+  display: block;
+  position: relative;
+  text-shadow: 1px 1px #000;
+}
+div.spider-collections label > span.value {
+  float: right;
+  margin-left: 0.5em;
+}
+
 #prestige-bg {
   position: absolute;
   width: 100%;
