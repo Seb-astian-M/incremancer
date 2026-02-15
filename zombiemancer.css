@@ -686,6 +686,11 @@ div.spider-collections label.net-pool {
   cursor: help;
   pointer-events: auto;
 }
+div.spider-collections .net-timer {
+  margin-left: 0.4em;
+  color: #aaa;
+  font-size: 0.8em;
+}
 
 #prestige-bg {
   position: absolute;

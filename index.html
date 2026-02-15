@@ -33,7 +33,7 @@
     <script src="js/lz-string.min.js"></script>
     <script src="js/pixi-legacy.min.js"></script>
     <script src="js/angular.min.js"></script>
-    <script src="dist/bundle.js?v=20260215c"></script>
+    <script src="dist/bundle.js?v=20260215d"></script>
     <link rel="stylesheet" type="text/css" href="zombiemancer.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
   </head>
@@ -80,7 +80,7 @@
             <h4>Spider Collections</h4>
             <label class="bones" ng-if="zm.spiderTotalBones() > 0">Bones:<span class="value">+{{zm.spiderTotalBones()|whole}}</span></label>
             <label class="parts" ng-if="zm.spiderTotalParts() > 0">Parts:<span class="value">+{{zm.spiderTotalParts()|whole}}</span></label>
-            <label class="net-pool" ng-if="zm.model.netLaunchers" title="Parts pooled for next net launch (fires every 10s, costs 100 energy + 10% blood)">Net:<span class="value">{{zm.model.netLauncherParts|whole}}</span></label>
+            <label class="net-pool" ng-if="zm.model.netLaunchers" title="Parts pooled for next net launch (fires every 10s, costs 100 energy + 10% blood)">Net:<span class="value">{{zm.model.netLauncherParts|whole}}</span><span class="net-timer">{{zm.model.netLauncherTimer|decimal}}s</span></label>
         </div>
       </div>
     </div>

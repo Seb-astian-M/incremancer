@@ -1,4 +1,4 @@
-console.log("[Incremancer fork] bundle version: 20260215c");
+console.log("[Incremancer fork] bundle version: 20260215d");
 var Incremancer;
 (() => {
   "use strict";
@@ -1425,6 +1425,9 @@ var Incremancer;
         const partsUsed = this.netLauncherParts * (this.persistentData.spiders || 1);
         this.netLauncherParts = 0;
         const totalCost = bloodCost + partsUsed;
+        if (NetProjectile.instance && this.humans.aliveHumans.length > 0) {
+          NetProjectile.instance.launch(this.graveyard.sprite.x, this.graveyard.sprite.y - 20, this.humans.aliveHumans);
+        }
         if (this.explosiveNets) {
           const dmgMult = this.zombieNets ? 0.7 : 1;
           const aoeHumans = this.humans.aliveHumans;
@@ -1445,7 +1448,7 @@ var Incremancer;
           this.addBones(1e9);
           this.sendMessage("Skeleton Net: +1B bones!", "chat-construction")
         }
-        this.sendMessage("Net launched! " + Math.floor(partsUsed) + " parts expended.", "chat-construction")
+        this.sendMessage("Net launched! " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
       }
     }
     releaseCagedZombies() {
@@ -4554,7 +4557,7 @@ var Incremancer;
       Graveyard.instance = this
     }
     initialize() {
-      this.boneCollectors = new BoneCollectors, this.zmMap = new LevelMap, this.zombies = new Zombies, this.bones = new Bones, this.partsPiles = new PartsPiles, this.gameModel = GameModel.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.spiders = new SpiderCollector, this.blood = new _e, this.humans = new Humans, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), void 0 === this.gameModel.persistentData.spiders && (this.gameModel.persistentData.spiders = 0), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.partsPiles.initialize(), SpiderCollector.partsPiles = this.partsPiles, this.boneCollectors.populate(), this.harpies.populate(), this.spiders.populate()
+      this.boneCollectors = new BoneCollectors, this.zmMap = new LevelMap, this.zombies = new Zombies, this.bones = new Bones, this.partsPiles = new PartsPiles, this.gameModel = GameModel.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.spiders = new SpiderCollector, this.netProjectile = new NetProjectile, this.blood = new _e, this.humans = new Humans, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), void 0 === this.gameModel.persistentData.spiders && (this.gameModel.persistentData.spiders = 0), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.partsPiles.initialize(), SpiderCollector.partsPiles = this.partsPiles, this.boneCollectors.populate(), this.harpies.populate(), this.spiders.populate()
     }
     damageGraveyard(e) {
       this.gameModel.isBossStage(this.gameModel.level) && (this.graveyardHealth -= e, this.graveyardHealth < 0 && (
@@ -4610,7 +4613,7 @@ var Incremancer;
       if (this.boneCollectors.addAndRemoveBoneCollectors(), this.harpies.addAndRemoveHarpies(), this.spiders.addAndRemoveSpiders(), this.gameModel.isBossStage(this.gameModel.level) && this.updateHealthBar(), !this.gameModel.constructions.graveyard || this.gameModel.currentState != this.gameModel.states.playingLevel) return this.sprite.visible = !1, void(this.fence.visible = !1);
       if ((this.level < 2 && this.gameModel.constructions.crypt || this.level < 3 && this.gameModel.constructions.fort || this.level < 4 && this.gameModel.constructions.fortress || this.level < 5 && this.gameModel.constructions.citadel) && this.drawGraveyard(), this.sprite.visible = !0, this.fortSprite && (this.fortSprite.visible = !0), 5 == this.level && Math.random() > .9 && (Math.random() > .5 ? this.smoke.newFireSmoke(this.sprite.x - 20, this.sprite.y - 113) : this.smoke.newFireSmoke(this.sprite.x + 20, this.sprite.y - 113)), this.gameModel.energy >= this.gameModel.energyMax && !this.gameModel.hidden)
         for (let e = 0; e < this.gameModel.persistentData.graveyardZombies; e++) this.zombies.spawnZombie(this.sprite.x, this.sprite.y + (this.level > 2 ? 8 : 0));
-      this.bones.update(e), this.partsPiles.update(e), this.boneCollectors.update(e), this.harpies.update(e), this.spiders.update(e), this.gameModel.constructions.fence && this.gameModel.currentState == this.gameModel.states.playingLevel ? (this.fenceRadius !== this.gameModel.fenceRadius && this.drawFence(), this.fence.visible = !0) : this.fence.visible = !1, this.updatePlagueSpikes(e), this.updateSpikeSprites(e)
+      this.bones.update(e), this.partsPiles.update(e), this.boneCollectors.update(e), this.harpies.update(e), this.spiders.update(e), this.netProjectile.update(e), this.gameModel.constructions.fence && this.gameModel.currentState == this.gameModel.states.playingLevel ? (this.fenceRadius !== this.gameModel.fenceRadius && this.drawFence(), this.fence.visible = !0) : this.fence.visible = !1, this.updatePlagueSpikes(e), this.updateSpikeSprites(e)
     }
     updatePlagueSpikes(e) {
       if (this.gameModel.constructions.plagueSpikes && (this.spikeTimer -= e, this.spikeTimer < 0)) {
@@ -4850,6 +4853,60 @@ var Incremancer;
     }
   }
   SpiderCollector.partsPiles = null;
+  /* ================================================================
+   * Net Launcher Visuals — arc projectiles
+   * ================================================================ */
+  class NetProjectile {
+    constructor() {
+      if (NetProjectile.instance) return NetProjectile.instance;
+      NetProjectile.instance = this;
+      this.projectiles = [];
+      this.texture = null;
+    }
+    getTexture() {
+      if (this.texture) return this.texture;
+      const c = document.createElement("canvas");
+      c.width = 12, c.height = 12;
+      const ctx = c.getContext("2d");
+      ctx.strokeStyle = "#8cf", ctx.lineWidth = 1.5;
+      ctx.beginPath(), ctx.moveTo(1, 1), ctx.lineTo(11, 1), ctx.lineTo(11, 11), ctx.lineTo(1, 11), ctx.closePath(), ctx.stroke();
+      ctx.beginPath(), ctx.moveTo(1, 1), ctx.lineTo(11, 11), ctx.stroke();
+      ctx.beginPath(), ctx.moveTo(11, 1), ctx.lineTo(1, 11), ctx.stroke();
+      return this.texture = PIXI.Texture.from(c), this.texture;
+    }
+    launch(startX, startY, targets) {
+      const count = Math.min(targets.length, 5);
+      for (let i = 0; i < count; i++) {
+        const t = targets[Math.floor(Math.random() * targets.length)];
+        if (!t || t.flags.dead) continue;
+        const sprite = new PIXI.Sprite(this.getTexture());
+        sprite.anchor.set(.5, .5), sprite.scale.set(2, 2), sprite.alpha = 0.9;
+        sprite.x = startX, sprite.y = startY;
+        sprite.destX = t.x, sprite.destY = t.y;
+        sprite.progress = 0, sprite.duration = 0.6 + Math.random() * 0.3;
+        sprite.startX = startX, sprite.startY = startY;
+        sprite.arcHeight = 80 + Math.random() * 60;
+        b.addChild(sprite);
+        this.projectiles.push(sprite);
+      }
+    }
+    update(dt) {
+      for (let i = this.projectiles.length - 1; i >= 0; i--) {
+        const p = this.projectiles[i];
+        p.progress += dt / p.duration;
+        if (p.progress >= 1) {
+          b.removeChild(p), p.destroy(), this.projectiles.splice(i, 1);
+          continue;
+        }
+        const t = p.progress;
+        p.x = p.startX + (p.destX - p.startX) * t;
+        p.y = p.startY + (p.destY - p.startY) * t - p.arcHeight * 4 * t * (1 - t);
+        p.rotation += dt * 4;
+        p.alpha = t > 0.8 ? (1 - t) * 5 : 0.9;
+      }
+    }
+  }
+  NetProjectile.instance = null;
   ! function(e) {
     e[e.bombing = 0] = "bombing", e[e.returning = 1] = "returning"
   }(qe || (qe = {}));
