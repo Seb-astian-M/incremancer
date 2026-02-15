@@ -1121,12 +1121,12 @@ var Incremancer;
         this.strapemRank = 0,
         this.spiderSpeedMod = 0,
         this.spiderEfficiency = 0,
-        this.netLaunchers = !1,
+        this.netLaunchers = 0,
         this.explosiveNets = !1,
-        this.zombieNets = !1,
-        this.prodigyNets = !1,
-        this.golemNets = !1,
-        this.skeletonNets = !1,
+        this.zombieNets = 0,
+        this.prodigyNets = 0,
+        this.golemNets = 0,
+        this.skeletonNets = 0,
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
         this.tailoring = !1,
@@ -1307,12 +1307,12 @@ var Incremancer;
         this.strapemRank = 0,
         this.spiderSpeedMod = 0,
         this.spiderEfficiency = 0,
-        this.netLaunchers = !1,
+        this.netLaunchers = 0,
         this.explosiveNets = !1,
-        this.zombieNets = !1,
-        this.prodigyNets = !1,
-        this.golemNets = !1,
-        this.skeletonNets = !1,
+        this.zombieNets = 0,
+        this.prodigyNets = 0,
+        this.golemNets = 0,
+        this.skeletonNets = 0,
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
         this.tailoring = !1,
@@ -1433,53 +1433,52 @@ var Incremancer;
       if (this.netLauncherTimer <= 0) {
         this.netLauncherTimer = this.netCooldown || 10;
         if (this.netLauncherParts <= 0 || this.energy < 100) return;
+        const netCount = this.netLaunchers;
         const bloodCost = this.persistentData.blood * 0.1;
         this.energy -= 100;
         this.persistentData.blood -= bloodCost;
         const partsUsed = this.netLauncherParts * (this.persistentData.spiders || 1);
         this.netLauncherParts = 0;
         const totalCost = bloodCost + partsUsed;
-        if (NetProjectile.instance && this.humans.aliveHumans.length > 0) {
-          NetProjectile.instance.launch(this.graveyard.sprite.x, this.graveyard.sprite.y - 20, this.humans.aliveHumans);
+        const costPerNet = totalCost / netCount;
+        const ah = this.humans.aliveHumans;
+        if (NetProjectile.instance && ah.length > 0) {
+          NetProjectile.instance.launch(this.graveyard.sprite.x, this.graveyard.sprite.y - 20, ah, netCount);
         }
-        if (this.explosiveNets) {
-          const dmgMult = this.zombieNets ? 0.7 : 1;
-          const aoeHumans = this.humans.aliveHumans;
-          const dmg = totalCost * 0.01 * dmgMult;
-          for (let i = 0; i < Math.min(aoeHumans.length, 20); i++) {
-            if (!aoeHumans[i].flags.dead) this.humans.damageHuman(aoeHumans[i], dmg)
+        for (let i = 0; i < netCount; i++) {
+          if (this.explosiveNets) {
+            const dmgMult = this.zombieNets ? 0.7 : 1;
+            const dmg = costPerNet * 0.01 * dmgMult;
+            for (let j = 0; j < Math.min(ah.length, 20); j++) {
+              if (!ah[j].flags.dead) this.humans.damageHuman(ah[j], dmg)
+            }
           }
-        }
-        if (this.zombieNets) {
-          const spawnCount = Math.min(Math.floor(partsUsed / 1e6), 10);
-          const ah = this.humans.aliveHumans;
-          for (let i = 0; i < spawnCount; i++) {
-            const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
-            const zx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
-            const zy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
-            this.zombies.createZombie(zx, zy);
+          if (i < this.zombieNets) {
+            const spawnCount = Math.min(Math.floor(partsUsed / netCount / 1e6), 10);
+            for (let j = 0; j < spawnCount; j++) {
+              const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+              const zx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
+              const zy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
+              this.zombies.createZombie(zx, zy, !1, i < this.prodigyNets);
+            }
           }
-        }
-        if (this.golemNets || this.skeletonNets) {
-          const ah = this.humans.aliveHumans;
-          const costScale = Math.max(1, partsUsed / 1e6);
-          const spiderCount = this.persistentData.spiders || 1;
-          if (this.skeletonNets && spiderCount <= 1) {
-            this.addBones(1e9);
-            const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
-            const sx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
-            const sy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
-            this.humans.skeleton.spawnNetSkeleton(costScale, sx, sy);
-            this.sendMessage("Skeleton Net: +1B bones, +1 skeleton!", "chat-construction")
-          } else {
+          if (i < this.golemNets) {
+            const costScale = Math.max(1, partsUsed / netCount / 1e6);
             const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
             const gx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
             const gy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
             this.creatures.spawnNetGolem(costScale, gx, gy);
-            this.sendMessage("Golem Net: +1 golem!", "chat-construction")
+          }
+          if (i < this.skeletonNets) {
+            this.addBones(1e9);
+            const costScale = Math.max(1, partsUsed / netCount / 1e6);
+            const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+            const sx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
+            const sy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
+            this.humans.skeleton.spawnNetSkeleton(costScale, sx, sy);
           }
         }
-        this.sendMessage("Net launched! " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
+        this.sendMessage("Net launched! " + netCount + " nets, " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
       }
     }
     releaseCagedZombies() {
@@ -2149,12 +2148,12 @@ var Incremancer;
           new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 1, 1, 1, "Fuse spider silk with zombie flesh for massive power. Zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", "Strapped! Zombies are now fused with spider silk.", 305),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
-          new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 1, 1, 1, "Spiders weave collected parts into projectile nets, launched every 10 seconds. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
-          new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "Net projectiles now deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
-          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 1, "Explosion power reduced to 0.7x but spawns gigazombies proportional to parts used.", "Nets now spawn zombies on impact!", 85),
-          new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e4, 1, 1, 1, "Zombies spawned by nets are prodigies with skeleton talents.", "Net zombies are now prodigies!", 86),
-          new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 1e7, 1, 1, 1, "Each net launch spawns a temporary golem at the impact site. Golem stats scale with parts used. Does not count toward creature limit.", "Nets now spawn golems on impact!", 87),
-          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e5, 1, 1, 1, "Each launch generates 1e9 bonus bones and spawns a temporary skeleton at impact. Stats scale from launch cost.", "Nets now also spawn skeletons!", 100),
+          new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 3, 1, 10, "Each rank adds one more net per launch. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
+          new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "All nets deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
+          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 10, "Each rank assigns one more net to spawn zombies on impact. Capped by Net Launchers rank.", "Nets now spawn zombies on impact!", 85),
+          new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e4, 2, 1, 10, "Each rank upgrades one more zombie net to spawn prodigies. Capped by Zombie Nets rank.", "Net zombies are now prodigies!", 86),
+          new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 1e7, 10, 1, 10, "Each rank assigns one more net to spawn a golem on impact. Capped by Prodigy Nets rank.", "Nets now spawn golems on impact!", 87),
+          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e5, 100, 1, 10, "Each rank assigns one more net to spawn a skeleton and generate 1B bones. Capped by Golem Nets rank.", "Nets now also spawn skeletons!", 100),
           new UpgradeDef(101, "Rapid Deployment", this.types.netCooldown, this.costs.parts, 1e8, 10, 1, 2, "Reduce net launcher cooldown. Rank 1: 5 seconds. Rank 2: 3 seconds.", null, 84),
           new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e8, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
           new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e7, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
@@ -2197,9 +2196,9 @@ var Incremancer;
         case this.costs.brains:
         case this.costs.bones:
         case this.costs.parts:
-          return this.upgrades.filter((t => t.costType == e && (0 == t.cap || this.currentRank(t) < t.cap) && this.hasRequirement(t)));
+          return this.upgrades.filter((t => t.costType == e && (0 == this.getEffectiveCap(t) || this.currentRank(t) < this.getEffectiveCap(t)) && this.hasRequirement(t)));
         case "completed":
-          return this.upgrades.filter((e => e.cap > 0 && this.currentRank(e) >= e.cap))
+          return this.upgrades.filter((e => this.getEffectiveCap(e) > 0 && this.currentRank(e) >= this.getEffectiveCap(e)))
       }
     }
     applyUpgrades() {
@@ -2366,17 +2365,17 @@ var Incremancer;
         case this.types.spiderSpeed:
           return void(this.gameModel.spiderSpeedMod = t * e.effect);
         case this.types.netLaunchers:
-          return void(this.gameModel.netLaunchers = !0);
+          return void(this.gameModel.netLaunchers = t);
         case this.types.explosiveNets:
           return void(this.gameModel.explosiveNets = !0);
         case this.types.zombieNets:
-          return void(this.gameModel.zombieNets = !0);
+          return void(this.gameModel.zombieNets = t);
         case this.types.prodigyNets:
-          return void(this.gameModel.prodigyNets = !0);
+          return void(this.gameModel.prodigyNets = t);
         case this.types.golemNets:
-          return void(this.gameModel.golemNets = !0);
+          return void(this.gameModel.golemNets = t);
         case this.types.skeletonNets:
-          return void(this.gameModel.skeletonNets = !0);
+          return void(this.gameModel.skeletonNets = t);
         case this.types.netCooldown:
           return void(this.gameModel.netCooldown = t >= 2 ? 3 : 5);
         case this.types.magicalTraining:
@@ -2578,17 +2577,17 @@ var Incremancer;
         case this.types.recollectionEfficiency:
           return "Spider collection bonus: +" + (this.currentRank(e) * 10) + "%";
         case this.types.netLaunchers:
-          return "Net launcher cooldown: " + this.gameModel.netCooldown + "s";
+          return "Nets per launch: " + this.gameModel.netLaunchers + " (cooldown: " + this.gameModel.netCooldown + "s)";
         case this.types.explosiveNets:
           return "Nets deal AoE damage on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
         case this.types.zombieNets:
-          return "Nets spawn zombies on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+          return "Nets spawning zombies: " + this.gameModel.zombieNets + " / " + this.gameModel.netLaunchers;
         case this.types.prodigyNets:
-          return "Net zombies are prodigies: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+          return "Zombie nets with prodigies: " + this.gameModel.prodigyNets + " / " + this.gameModel.zombieNets;
         case this.types.golemNets:
-          return "Nets spawn temporary golems: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+          return "Nets spawning golems: " + this.gameModel.golemNets + " / " + this.gameModel.prodigyNets;
         case this.types.skeletonNets:
-          return "Nets spawn temporary skeletons: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+          return "Nets spawning skeletons: " + this.gameModel.skeletonNets + " / " + this.gameModel.golemNets;
         case this.types.netCooldown:
           return "Net cooldown: " + this.gameModel.netCooldown + " seconds";
         case this.types.magicalTraining:
@@ -2607,6 +2606,21 @@ var Incremancer;
         if (e.id == s.id) return s.rank
       }
       return 0
+    }
+    getEffectiveCap(e) {
+      if (e.cap === 0) return 0;
+      switch (e.type) {
+        case this.types.zombieNets:
+          return Math.min(e.cap, this.gameModel.netLaunchers || 0);
+        case this.types.prodigyNets:
+          return Math.min(e.cap, this.gameModel.zombieNets || 0);
+        case this.types.golemNets:
+          return Math.min(e.cap, this.gameModel.prodigyNets || 0);
+        case this.types.skeletonNets:
+          return Math.min(e.cap, this.gameModel.golemNets || 0);
+        default:
+          return e.cap;
+      }
     }
     currentRankConstruction(e) {
       if (this.gameModel.persistentData.constructions)
@@ -2638,7 +2652,7 @@ var Incremancer;
         case this.costs.prestigePoints:
           s = h(e.basePrice, e.multiplier, t, this.gameModel.persistentData.prestigePointsToSpend)
       }
-      return 0 != e.cap ? Math.min(s, e.cap - t) : s
+      return 0 != e.cap ? Math.min(s, this.getEffectiveCap(e) - t) : s
     }
     upgradeMaxPrice(e, t) {
       return l(e.basePrice, e.multiplier, this.currentRank(e), t)
@@ -3689,11 +3703,11 @@ var Incremancer;
         }, this.zombieCursorText.scale.x = this.zombieCursorText.scale.y = .1, this.zombieCursorText.y = -9, this.zombieCursorText.visible = !1, this.zombieCursorText.alpha = .7, this.zombieCursor.addChild(e), this.zombieCursor.addChild(this.zombieCursorText), m.addChild(this.zombieCursor)
       }
     }
-    createZombie(e, t, s = !1) {
+    createZombie(e, t, s = !1, forceProdigy = !1) {
       const i = Math.floor(Math.random() * this.textures.length);
       let a;
       this.discardedZombies.length > 0 ? (a = this.discardedZombies.pop(), a.textures = s ? this.dogTexture : this.textures[i].animated) : a = new Ee(s ? this.dogTexture : this.textures[i].animated), a.zombie = !0, a.mod = 1, a.scaleMod = 1, this.super && (a.mod = 10, a.scaleMod = 1.5), a.flags = new Fe, a.flags.dog = s, a.flags.super = this.super, a.deadTexture = a.flags.dog ? this.deadDogTexture : this.textures[i].dead, a.textureId = i, a.burnDamage = 0, a.lastKnownBuilding = !1, a.alpha = 1, a.animationSpeed = .15, a.anchor.set(35 / 80, 1), a.bloodbornTimer = this.bloodborn, a.position.set(e, t), a.target = null, a.zIndex = a.position.y, a.visible = !0, a.maxHealth = a.health = this.model.zombieHealth * a.mod, a.regenTimer = 5, a.state = be.lookingForTarget;
-      this.model.zombieTalents && Math.random() < .01 && (
+      (forceProdigy || this.model.zombieTalents && Math.random() < .01) && (
         a.flags.talented = !0, a.tint = 0xffaa00,
         a.darkorbTimer = Math.random() * 10,
         a.boneshield = 0, a.boneshieldTimer = 3,
@@ -5062,10 +5076,10 @@ var Incremancer;
       }
       return null;
     }
-    launch(startX, startY, targets) {
+    launch(startX, startY, targets, netCount) {
       const origin = this.getLaunchOrigin();
       const ox = origin ? origin.x : startX, oy = origin ? origin.y : startY;
-      const count = Math.min(targets.length, 5);
+      const count = Math.min(targets.length, netCount || 1);
       for (let i = 0; i < count; i++) {
         const t = targets[Math.floor(Math.random() * targets.length)];
         if (!t || t.flags.dead) continue;
@@ -5097,10 +5111,10 @@ var Incremancer;
           continue;
         }
         const t = p.progress;
-        const eased = t < 0.5 ? 2 * t * t * t : 1 - Math.pow(2 * (1 - t), 1.5) / 2;
+        const eased = t * t * t * (t * (6 * t - 15) + 10);
         p.x = p.startX + (p.destX - p.startX) * eased;
         p.y = p.startY + (p.destY - p.startY) * eased - p.arcHeight * 4 * t * (1 - t);
-        const speed = t < 0.5 ? 6 * t * t : 3 * Math.pow(2 * (1 - t), 0.5);
+        const speed = 30 * t * t * (t * (t - 2) + 1);
         p.rotation += dt * (0.5 + 4 * speed);
         p.alpha = t > 0.8 ? (1 - t) * 5 : 0.9;
       }
@@ -6135,7 +6149,7 @@ var Incremancer;
     }, c.currentRankConstruction = function(e) {
       return h.currentRankConstruction(e)
     }, c.upgradeTooExpensive = function(e) {
-      return c.sidePanels.factory ? !r.canAffordGenerator(e) : !h.canAffordUpgrade(e) || 0 != e.cap && h.currentRank(e) >= e.cap
+      return c.sidePanels.factory ? !r.canAffordGenerator(e) : !h.canAffordUpgrade(e) || 0 != h.getEffectiveCap(e) && h.currentRank(e) >= h.getEffectiveCap(e)
     }, c.requiredForUpgrade = function(e) {
       const t = c.upgradePrice(e);
       switch (e.costType) {
@@ -6273,7 +6287,7 @@ var Incremancer;
       }
       return !1
     }, c.upgradeButtonText = function(e) {
-      if (0 != e.cap && c.currentRank(e) >= e.cap) return "Sold Out";
+      if (0 != h.getEffectiveCap(e) && c.currentRank(e) >= h.getEffectiveCap(e)) return "Sold Out";
       const t = c.upgradePrice(e);
       if (c.upgradeTooExpensive(e)) {
         return c.costAboveCap(e, t) || c.requiredForUpgrade(e)
