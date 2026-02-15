@@ -5235,7 +5235,7 @@ var Incremancer;
       this.discardedBombSprites.length > 0 ? t = this.discardedBombSprites.pop() : (t = new $e(this.bombTexture), this.bombSprites.push(t), b.addChild(t)), t.scale.x = t.scale.y = 2, t.rotation = 0, t.rotSpeed = Math.random() > .5 ? 4 : -4, t.ySpeed = 0, t.visible = !0, t.dropped = !1, (() => {
         if (this.model.zombieHarpies) {
           t.texture = this.zombieBombTextures[Math.floor(Math.random() * this.zombieBombTextures.length)];
-          t.tint = 0xff8800;
+          t.tint = 0xffffff;
         } else {
           t.texture = this.bombTexture;
           t.tint = 0xffffff;
