@@ -4852,7 +4852,7 @@ var Incremancer;
   }
   var Zt;
   ! function(e) {
-    e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle", e[e.extending = 3] = "extending", e[e.retracting = 4] = "retracting"
+    e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle", e[e.extending = 3] = "extending", e[e.retracting = 4] = "retracting", e[e.moving = 5] = "moving"
   }(Zt || (Zt = {}));
 
   /* ================================================================
@@ -4983,7 +4983,7 @@ var Incremancer;
       return true;
     }
     collectAlongString(spider) {
-      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      const cx = spider.position.x, cy = spider.position.y;
       const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
       const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
       const radius = 5 + spider.stringDist * 0.02;
@@ -5032,16 +5032,16 @@ var Incremancer;
       spider.collectedVisuals++;
     }
     updateSilkVisuals(spider) {
-      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
-      const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
-      const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
+      const sx = spider.position.x, sy = spider.position.y;
+      const tipX = sx + Math.cos(spider.aimAngle) * spider.stringDist;
+      const tipY = sy + Math.sin(spider.aimAngle) * spider.stringDist;
       if (!spider.silkLine) {
         spider.silkLine = new PIXI.Graphics;
         this.silkContainer.addChild(spider.silkLine);
       }
       spider.silkLine.clear();
       spider.silkLine.lineStyle(1, 0xcccccc, 0.7);
-      spider.silkLine.moveTo(cx, cy);
+      spider.silkLine.moveTo(sx, sy);
       spider.silkLine.lineTo(tipX, tipY);
       if (spider.ballContainer) {
         spider.ballContainer.x = tipX;
@@ -5083,11 +5083,14 @@ var Incremancer;
       return Math.max(maxDist, 0);
     }
     updateSpider(spider, dt) {
-      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      const gcx = this.graveyard.sprite.x, gcy = this.graveyard.sprite.y;
       const speedMod = 1 + (this.gameModel.spiderSpeedMod || 0);
-      const speed = Math.max(P.x, P.y) / 5 * speedMod;
+      const moveSpeed = 100 * speedMod;
+      const silkSpeed = Math.max(P.x, P.y) / 8;
+      const fenceR = this.gameModel.fenceRadius || 50;
       switch (spider.state) {
         case Zt.idle:
+          spider.position.set(gcx, gcy);
           if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * this.sprites.length)) {
             this.refreshAnglePool();
           }
@@ -5095,17 +5098,34 @@ var Incremancer;
           const isBest = !this.bestAngleGiven;
           if (isBest) this.bestAngleGiven = true;
           if (!this.pickAngle(spider, isBest)) return;
-          spider.state = Zt.extending;
+          spider.fenceX = gcx + Math.cos(spider.aimAngle) * fenceR;
+          spider.fenceY = gcy + Math.sin(spider.aimAngle) * fenceR;
+          spider.state = Zt.moving;
           spider.stringDist = 0;
           spider.carriedParts = 0;
           spider.carriedBones = 0;
           spider.collectedVisuals = 0;
           this.shotsSinceRefresh++;
           break;
+        case Zt.moving:
+          const dx = spider.fenceX - spider.position.x;
+          const dy = spider.fenceY - spider.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < moveSpeed * dt) {
+            spider.position.set(spider.fenceX, spider.fenceY);
+            spider.zIndex = spider.position.y;
+            spider.state = Zt.extending;
+          } else {
+            const step = moveSpeed * dt / dist;
+            spider.position.x += dx * step;
+            spider.position.y += dy * step;
+            spider.zIndex = spider.position.y;
+          }
+          break;
         case Zt.extending:
-          spider.stringDist += speed * dt;
+          spider.stringDist += silkSpeed * dt;
           this.collectAlongString(spider);
-          const maxDist = this._maxDistToEdge(cx, cy, spider.aimAngle);
+          const maxDist = this._maxDistToEdge(spider.position.x, spider.position.y, spider.aimAngle);
           if (spider.stringDist >= maxDist) {
             spider.stringDist = maxDist;
             spider.state = Zt.retracting;
@@ -5113,7 +5133,7 @@ var Incremancer;
           this.updateSilkVisuals(spider);
           break;
         case Zt.retracting:
-          spider.stringDist -= speed * dt;
+          spider.stringDist -= silkSpeed * dt;
           if (spider.stringDist <= 0) {
             spider.stringDist = 0;
             this.depositResources(spider);
