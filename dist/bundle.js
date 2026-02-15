@@ -3,6 +3,10 @@ var Incremancer;
   "use strict";
   var e = {};
   //hahahah
+
+  /* ================================================================
+   *  UTILITY FUNCTIONS
+   * ================================================================ */
   function t(e, t) {
     return Math.sqrt(e * e + t * t)
   }
@@ -281,6 +285,10 @@ var Incremancer;
     }
     return !1
   };
+
+  /* ================================================================
+   *  SPELLS & COMBAT
+   * ================================================================ */
   class Spell {
     constructor(e, t, s, i, a, r, n, o, h) {
       this.id = e, this.name = t, this.tooltip = s, this.itemText = i, this.cooldown = a, this.duration = r, this.energyCost = n, this.start = o, this.end = h, this.timer = 0, this.onCooldown = !1, this.active = !1, this.cooldownLeft = 0
@@ -378,6 +386,10 @@ var Incremancer;
       }
     }
   }
+
+  /* ================================================================
+   *  PIXI GRAPHICS BASE
+   * ================================================================ */
   class V extends PIXI.TilingSprite {
     constructor(e) {
       super(e), this.collisionX = 0, this.collisionY = 0, this.collisionWidth = 0, this.collisionHeight = 0
@@ -433,6 +445,10 @@ var Incremancer;
       return this.container.addChild(e), this.sprites.push(e), e
     }
   }
+
+  /* ================================================================
+   *  MAP & LEVEL GENERATION
+   * ================================================================ */
   class LevelMap {
     constructor() {
       if (this.gameModel = GameModel.getInstance(), this.humans = new Humans, this.discardedWalls = [], this.discardedContainers = [], this.discardedFloorSprites = [], this.buildings = [], this.buildingsByPopularity = [], this.buildingMap = [], this.roadSprite = null, this.roadTexture = null, this.entranceWidth = 16, this.entranceDepth = 16, this.cornerDistance = 16, this.minBuildings = 3, this.wallWidth = 4, this.graveyardCollision = null, this.graveYardLocation = {
@@ -818,6 +834,10 @@ var Incremancer;
       }
     }
   }
+
+  /* ================================================================
+   *  CREATURE TEMPLATES & FACTORY
+   * ================================================================ */
   class te {
     constructor() {
       this.x = !1, this.y = !1, this.validX = 0, this.validY = 0
@@ -1015,6 +1035,10 @@ var Incremancer;
       this.id = e, this.type = t, this.name = s, this.baseHealth = i, this.baseDamage = a, this.speed = r, this.baseCost = n, this.description = o, this.time = 3, this.building = !1, this.timeLeft = 10, this.autobuild = 0, this.autoLevel = !1, this.level = 1
     }
   }
+
+  /* ================================================================
+   *  GAME MODEL
+   * ================================================================ */
   class GameModel {
     constructor() {
       this.storageName = "ZombieData",
@@ -1686,6 +1710,10 @@ var Incremancer;
       return this.lastPlayFabSave + 15e3 < Date.now()
     }
   }
+
+  /* ================================================================
+   *  UPGRADES & PROGRESSION
+   * ================================================================ */
   class UpgradeManager {
     constructor() {
       if (this.gameModel = GameModel.getInstance(), this.spells = new SpellSystem, this.skeleton = new SkeletonChampion, this.partFactory = new se, this.types = {
@@ -2707,6 +2735,10 @@ var Incremancer;
       this.gameModel.runeEffects = e
     }
   }
+
+  /* ================================================================
+   *  CONSTRUCTION & UPGRADE DEFINITIONS
+   * ================================================================ */
   class Construction {
     constructor(e, t, s, i, a, r, n, o, h, l, d) {
       this.id = e, this.name = t, this.type = s, this.costs = i, this.time = a, this.multiplier = r, this.effect = n, this.cap = o, this.requires = h, this.description = l, this.completeMessage = d
@@ -2835,6 +2867,10 @@ var Incremancer;
       super(...arguments), this.maxSpeed = 0, this.flags = new xe, this.target = null, this.speedMod = 0, this.human = !0, this.plagueTicks = 0, this.plagueDamage = 0, this.visionDistance = 0, this.timer = new ye
     }
   }
+
+  /* ================================================================
+   *  HUMANS (BASE)
+   * ================================================================ */
   class Humans {
     constructor() {
       if (this.maxWalkSpeed = 15, this.maxRunSpeed = 35, this.minSecondsTostand = 1, this.maxSecondsToStand = 60, this.chanceToStayInCurrentBuilding = .95, this.textures = [], this.doctorTextures = [], this.humans = [], this.discardedHumans = [], this.aliveHumans = [], this.graveyardAttackers = [], this.humansPerLevel = 50, this.maxHumans = 1e3, this.scaling = 2, this.visionDistance = 60, this.vipEscaping = !1, this.fleeChancePerZombie = .1, this.fleeTime = 10, this.scanTime = 3, this.attackDistance = 20, this.moveTargetDistance = 3, this.attackSpeed = 2, this.attackDamage = 5, this.fadeSpeed = .1, this.plagueTickTimer = 5, this.healTickTimer = 5, this.burnTickTimer = 5, this.smokeTimer = .3, this.fastDistance = i, this.frozen = !1, this.pandemic = !1, this.graveYardPosition = null, this.drawTargets = !1, Humans.instance) return Humans.instance;
@@ -3024,6 +3060,10 @@ var Incremancer;
       return s
     }
   }
+
+  /* ================================================================
+   *  HUMAN ENEMIES
+   * ================================================================ */
   class PoliceUnit extends ve {
     constructor() {
       super(...arguments), this.radioTime = 0, this.followTimer = 0
@@ -3170,6 +3210,10 @@ var Incremancer;
   }! function(e) {
     e[e.shooting = 0] = "shooting", e[e.attacking = 1] = "attacking", e[e.walking = 2] = "walking", e[e.running = 3] = "running", e[e.standing = 4] = "standing"
   }(pe || (pe = {}));
+
+  /* ================================================================
+   *  ARMY / MILITARY
+   * ================================================================ */
   class Te {
     constructor() {
       if (this.maxWalkSpeed = 20, this.maxRunSpeed = 50, this.armymen = [], this.discardedArmymen = [], this.textures = [], this.aliveZombies = [], this.armyPerLevel = .9, this.attackSpeed = 2, this.attackDamage = 20, this.attackDistance = 25, this.moveTargetDistance = 5, this.shootDistance = 130, this.visionDistance = 200, this.scaling = 2, this.shotsPerBurst = 3, this.droneStrikeTimer = 0, this.droneStrikeTime = 35, this.assaultStarted = !1, this.droneStrike = null, this.droneActive = !1, this.droneBlastRadius = 35, Te.instance) return Te.instance;
@@ -3314,6 +3358,10 @@ var Incremancer;
   function(e) {
     e[e.horizontal = 0] = "horizontal", e[e.vertical = 1] = "vertical"
   }(me || (me = {}));
+
+  /* ================================================================
+   *  TANKS
+   * ================================================================ */
   class De {
     constructor() {
       if (this.speed = 20, this.tanks = [], this.aliveTanks = [], this.attackDamage = 0, this.attackSpeed = 3, this.scaling = 3, this.moveTargetDistance = 20, this.shootDistance = 300, this.aliveZombies = null, De.instance) return De.instance;
@@ -3448,6 +3496,10 @@ var Incremancer;
       super(...arguments), this.flags = new Fe, this.mod = 1, this.scaleMod = 1, this.textureId = 0, this.turnTimer = 0
     }
   }
+
+  /* ================================================================
+   *  ZOMBIES
+   * ================================================================ */
   class Zombies {
     constructor() {
       if (this.zombies = [], this.discardedZombies = [], this.aliveZombies = [], this.aliveHumans = [], this.zombiePartition = [], this.scaling = 2, this.moveTargetDistance = 15, this.attackDistance = 15, this.attackSpeed = 3, this.targetDistance = 100, this.fadeSpeed = .1, this.refundChance = 0, this.currId = 1, this.scanTime = 3, this.textures = [], this.dogTexture = [], this.deadDogTexture = [], this.maxSpeed = 10, this.zombieCursor = null, this.zombieCursorText = null, this.zombieCursorScale = 3, this.mouseOutOfBounds = !1, this.burnTickTimer = 5, this.bloodpact = 1, this.bloodborn = 0, this.gigamutagen = 0, this.gigamutationTimer = 10, this.smokeTimer = .3, this.fastDistance = i, this.magnitude = t, this.detonate = !1, this.super = !1, this.reactionTime = 0, this.graveyardAttackers = [], this.spaceNeeded = 3, Zombies.instance) return Zombies.instance;
@@ -3729,6 +3781,10 @@ var Incremancer;
       for (let t = 0; t < this.bones.length; t++) this.bones[t].visible = t < e
     }
   }
+
+  /* ================================================================
+   *  SKELETON CHAMPION
+   * ================================================================ */
   class SkeletonChampion {
     constructor() {
       if (this.skeletons = [], this.aliveSkeletons = [], this.discardedSprites = [], this.aliveHumans = [], this.scaling = 1, this.moveTargetDistance = 15, this.attackDistance = 25, this.attackSpeed = 3, this.targetDistance = 100, this.fadeSpeed = .1, this.currId = 1, this.scanTime = 3, this.spawnTimer = 0, this.respawnTime = 10, this.moveSpeed = 40, this.lastKillingBlow = 0, this.randomSpells = [], this.lootChance = .001, this.spellTimer = 3, this.textures = {
@@ -4257,6 +4313,10 @@ var Incremancer;
       return (this.xpForItems() - this.xpForAncient - this.xpForDivine - this.xpForChaos)
     }
   }
+
+  /* ================================================================
+   *  CREATURES & NPCs
+   * ================================================================ */
   class Ue {
     constructor() {
       if (this.creatureFactory = new ae, this.zombies = new Zombies, this.creatures = [], this.creatureCount = [], this.aliveCreatures = [], this.aliveZombies = [], this.graveyardAttackers = [], this.discardedSprites = [], this.aliveHumans = [], this.scaling = 1.6, this.moveTargetDistance = 15, this.attackDistance = 20, this.attackSpeed = 3, this.targetDistance = 100, this.fadeSpeed = .1, this.currId = 1, this.scanTime = 3, this.refundChance = 0, this.creatureTypes = this.creatureFactory.types, this.golemTextures = {
@@ -4409,6 +4469,10 @@ var Incremancer;
       super(...arguments), this.graveyard = !0
     }
   }
+
+  /* ================================================================
+   *  GRAVEYARD
+   * ================================================================ */
   class Graveyard {
     constructor() {
       if (this.spikeSprites = [], this.level = 1, this.spikeTimer = 5, this.fenceRadius = 50, this.fastDistance = i, this.graveyardHealth = 0, this.graveyardMaxHealth = 0, this.target = {
@@ -4508,6 +4572,10 @@ var Incremancer;
   ! function(e) {
     e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.waiting = 2] = "waiting"
   }(We || (We = {}));
+
+  /* ================================================================
+   *  GRAVEYARD & BONE COLLECTORS
+   * ================================================================ */
   class BoneCollectors {
     constructor() {
       if (this.sprites = [], this.maxSpeed = 125, this.scaling = 2, this.collectDistance = 10, this.fastDistance = i, BoneCollectors.instance) return BoneCollectors.instance;
@@ -4576,6 +4644,10 @@ var Incremancer;
   ! function(e) {
     e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle"
   }(Zt || (Zt = {}));
+
+  /* ================================================================
+   *  SPIDER SYSTEM
+   * ================================================================ */
   class SpiderCollector {
     constructor() {
       if (this.sprites = [], this.maxSpeed = 100, this.scaling = 1.5, this.collectDistance = 10, this.fastDistance = i, SpiderCollector.instance) return SpiderCollector.instance;
@@ -4793,6 +4865,10 @@ var Incremancer;
       return !1;
     }
   }
+
+  /* ================================================================
+   *  PARTICLES & EFFECTS
+   * ================================================================ */
   class Qe {
     constructor() {
       if (this.blood = new _e, this.smoke = new ot, this.prestigePoints = new Je, this.bullets = new rt, this.exclamations = new it, this.blasts = new nt, this.fragments = new lt, Qe.instance) return Qe.instance;
@@ -5230,6 +5306,10 @@ var Incremancer;
     bt = "Zombie Mastery",
     ft = "Skeleton Mastery",
     yt = "Spell Mastery";
+
+  /* ================================================================
+   *  LOOT & EQUIPMENT
+   * ================================================================ */
   class xt {
     constructor(e, t, s, i, a, r) {
       this.id = 0, this.maxPoints = 0, this.active = function() {
@@ -5354,6 +5434,10 @@ var Incremancer;
       e.group == mt && (t = "parts"), e.group == ft && (t = "bones"), e.group == yt && (t = "energy"), e.group == bt && (t = "brains"), Mt.push(new vt(e.group, t))
     }
     Mt.filter((t => t.name == e.group))[0].talents.push(e), dt.talents[e.id] || (dt.talents[e.id] = 0)
+
+  /* ================================================================
+   *  ANGULARJS UI
+   * ================================================================ */
   })), angular.module("zombieApp", []).filter("decimal", (function() {
     return r
   })).filter("whole", (function() {
