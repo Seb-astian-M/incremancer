@@ -4830,7 +4830,8 @@ var Incremancer;
           if (!e.target || !e.target.value || !e.target.visible) {
             e.boneList = [], e.speedFactor = 0, this.findNearestTarget(e);
           }
-          if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= this.gameModel.boneCollectorCapacity || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
+          const spiderCap = this.gameModel.boneCollectorCapacity * 20;
+          if (e.carriedBones >= spiderCap || e.carriedParts >= spiderCap || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
         case Zt.returning:
           e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, (() => {
