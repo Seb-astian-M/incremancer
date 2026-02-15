@@ -80,6 +80,7 @@
             <h4>Spider Collections</h4>
             <label class="bones" ng-if="zm.spiderTotalBones() > 0">Bones:<span class="value">+{{zm.spiderTotalBones()|whole}}</span></label>
             <label class="parts" ng-if="zm.spiderTotalParts() > 0">Parts:<span class="value">+{{zm.spiderTotalParts()|whole}}</span></label>
+            <label class="net-pool" ng-if="zm.model.netLaunchers" title="Parts pooled for next net launch (fires every 10s, costs 100 energy + 10% blood)">Net:<span class="value">{{zm.model.netLauncherParts|whole}}</span></label>
         </div>
       </div>
     </div>

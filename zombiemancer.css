@@ -681,6 +681,11 @@ div.spider-collections label > span.value {
   float: right;
   margin-left: 0.5em;
 }
+div.spider-collections label.net-pool {
+  color: #8cf;
+  cursor: help;
+  pointer-events: auto;
+}
 
 #prestige-bg {
   position: absolute;
