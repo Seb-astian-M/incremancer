@@ -328,11 +328,9 @@ var Incremancer;
           (new SpellSystem).zombies.super = !1
         })), new Spell(6, "Incinerate", "Burns humans near the skeleton champion", "Has a chance to cast Incinerate when attacking, burning all humans within a large radius of the Skeleton", 1, 10, 10, (function() {
           (new SpellSystem).skeleton.incinerate(), this.timer = 1
-        }), (function() {})), new Spell(7, "Pandemic", "Causes plague to spread", "Has a chance to cast Pandemic when attacking, causing infected humans to spread the plague to each other for 20 seconds", 10, 20, 10, (function() {
-          (new SpellSystem).humans.pandemic = !0
-        }), (function() {
-          (new SpellSystem).humans.pandemic = !1
-        })), new Spell(8, "Part Storm", "Doubles parts", "Has a chance to cast Part Storm when attacking, doubling the parts production of your factory machines for 15 seconds", 10, 15, 10, (function() {
+        }), (function() {})), new Spell(7, "Pandemic", "Infects nearby humans with plague", "Has a chance to cast Pandemic when attacking, instantly infecting all humans near the Skeleton with plague", 10, 1, 10, (function() {
+          const sk = new SkeletonChampion; let s; for (let t = 0; t < sk.skeletons.length; t++) sk.skeletons[t].visible && (s = sk.skeletons[t]); if (s) { const z = new Zombies; for (let t = 0; t < sk.aliveHumans.length; t++) Math.abs(sk.aliveHumans[t].x - s.x) < 200 && Math.abs(sk.aliveHumans[t].y - s.y) < 200 && z.inflictPlague(sk.aliveHumans[t]) }
+        }), (function() {})), new Spell(8, "Part Storm", "Doubles parts", "Has a chance to cast Part Storm when attacking, doubling the parts production of your factory machines for 15 seconds", 10, 15, 10, (function() {
           (new se).storm = !0
         }), (function() {
           (new se).storm = !1
@@ -3095,7 +3093,7 @@ var Incremancer;
       }), this.vipText.anchor.set(.5, 1), this.vipText.scale.x = .25, this.vipText.scale.y = .25, b.addChild(this.vipText)), this.vipText.visible = !0, this.vipText.human = e, this.vipText.yOffset = -20, this.vipText.x = e.x, this.vipText.y = e.y + this.vipText.yOffset
     }
     populate() {
-      this.pandemic = !1, this.frozen = !1, this.speedDebuff = 1;
+      this.frozen = !1, this.speedDebuff = 1;
       if (this.map = new LevelMap, this.zombies = new Zombies, this.gameModel = GameModel.getInstance(), this.blood = new _e, this.smoke = new ot, this.bones = new Bones, this.skeleton = new SkeletonChampion, this.blasts = new nt, this.fragments = new lt, this.trophies = new TrophyDef, this.exclamations = new it, this.bullets = new rt, this.police = new PoliceManager, this.army = new Te, this.tanks = new De, this.map.populatePois(), 0 == this.textures.length)
         for (let e = 0; e < 6; e++) {
           const t = [];
@@ -3180,10 +3178,7 @@ var Incremancer;
       e && (e.flags.burning ? e.burnDamage += t : (e.timer.burnTick = this.burnTickTimer, e.timer.smoke = this.smokeTimer, this.exclamations.newFire(e), e.burnDamage = t), e.flags.burning = !0)
     }
     updatePlague(e, t) {
-      e.timer.plagueTick -= t, e.timer.plagueTick < 0 && (this.damageHuman(e, e.plagueDamage), e.timer.plagueTick = this.plagueTickTimer * (1 / this.gameModel.runeEffects.attackSpeed), this.exclamations.newPoison(e), e.plagueTicks--, this.pandemic && this.pandemicBullet(e), e.plagueTicks <= 0 && (e.flags.infected = !1, e.plagueDamage = 0))
-    }
-    pandemicBullet(e) {
-      for (let t = 0; t < this.aliveHumans.length; t++) Math.abs(this.aliveHumans[t].x - e.x) < 30 && Math.abs(this.aliveHumans[t].y - e.y) < 30 && Math.random() < .3 && this.bullets.newBullet(e, this.aliveHumans[t], this.gameModel.zombieDamage / 2, !0)
+      e.timer.plagueTick -= t, e.timer.plagueTick < 0 && (this.damageHuman(e, e.plagueDamage), e.timer.plagueTick = this.plagueTickTimer * (1 / this.gameModel.runeEffects.attackSpeed), this.exclamations.newPoison(e), e.plagueTicks--, e.plagueTicks <= 0 && (e.flags.infected = !1, e.plagueDamage = 0))
     }
     healHuman(e) {
       e.health < e.maxHealth && (e.flags.infected && e.plagueTicks > 0 && e.plagueTicks--, e.health += 2 * this.attackDamage, e.health > e.maxHealth && (e.health = e.maxHealth, e.speedMod = Math.max(Math.min(1, e.health / e.maxHealth), .25)), this.exclamations.newHealing(e))
