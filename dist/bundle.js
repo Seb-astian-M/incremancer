@@ -1,4 +1,4 @@
-const FORK_VERSION = "v1.6.0";
+const FORK_VERSION = "v1.7.0";
 const FORK_VERSION_DATE = "2026-02-15";
 console.log("[Incremancer fork] " + FORK_VERSION + " (" + FORK_VERSION_DATE + ")");
 var Incremancer;
