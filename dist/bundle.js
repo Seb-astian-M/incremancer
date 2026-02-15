@@ -1338,9 +1338,31 @@ var Incremancer;
     }
     getHarpyCostPerUnit() {
       let cost = 1;
-      if (this.zombieHarpies && this.skeleton.persistent && this.skeleton.persistent.skeletons > 0) cost = 5;
       if (this.strapemRank > 0) cost *= Math.pow(10, this.strapemRank);
       return cost;
+    }
+    getTotalHarpyCost(n) {
+      let harpyCost = n;
+      if (this.zombieHarpies && this.skeleton.persistent && this.skeleton.persistent.skeletons > 0) {
+        const needed = Math.max(0, this.skeleton.persistent.skeletons - this.skeleton.aliveSkeletons.length);
+        const skeletonHarpies = Math.min(needed, n);
+        harpyCost += skeletonHarpies * 4;
+      }
+      if (this.strapemRank > 0) harpyCost *= Math.pow(10, this.strapemRank);
+      return harpyCost;
+    }
+    getEnergyBudgetForHarpies() {
+      return this.energySpellMultiplier * this.energyRate - (this.persistentData.boneCollectors + (this.persistentData.spiders || 0) * 10);
+    }
+    computeMaxHarpies() {
+      const budget = this.getEnergyBudgetForHarpies();
+      if (budget <= 0) return 0;
+      let lo = 0, hi = Math.ceil(budget) + 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >>> 1;
+        this.getTotalHarpyCost(mid) <= budget ? lo = mid : hi = mid - 1;
+      }
+      return lo;
     }
     update(e, t) {
       if (this.currentState != this.states.levelCompleted && this.currentState != this.states.failed) {
@@ -1417,11 +1439,7 @@ var Incremancer;
       }
     }
     setMaxHarpies() {
-      const costPer = this.getHarpyCostPerUnit();
-      const available = this.getEnergyRate() + this.persistentData.harpies * costPer;
-      let e = Math.floor(available / costPer);
-      if (e < 0) e = 0;
-      this.persistentData.harpies = e;
+      this.persistentData.harpies = this.computeMaxHarpies();
     }
     startLevel(e) {
       this.level = e, this.startGame()
@@ -5540,8 +5558,7 @@ var Incremancer;
       const costPer = c.model.getHarpyCostPerUnit();
       (e >= 0 && e < c.model.persistentData.harpies || c.model.getEnergyRate() >= costPer && e > 0) && (c.model.persistentData.harpies = e)
     }, c.maxHarpies = function() {
-      const costPer = c.model.getHarpyCostPerUnit();
-      return Math.floor((c.model.getEnergyRate() + c.model.persistentData.harpies * costPer) / costPer)
+      return c.model.computeMaxHarpies()
     }, c.setSpiders = function(e) {
       e >= 0 && (e < c.model.persistentData.spiders || c.model.getEnergyRate() >= 10) && (c.model.persistentData.spiders = e)
     }, c.maxSpiders = function() {
