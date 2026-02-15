@@ -2346,7 +2346,7 @@ var Incremancer;
           return this.gameModel.constructions.AdvHybridLab = 1, this.gameModel.brainsStorePCMod *= 2, void(this.gameModel.bloodStorePCMod *= 2);
         case this.constructionTypes.MiniAssembLine:
           return this.gameModel.constructions.MiniAssembLine = 1, this.gameModel.brainsStorePCMod *= 2, void(this.gameModel.bloodStorePCMod *= 2);
-        case this.constructionTypes.AdvHybridLab:
+        case this.constructionTypes.TechThinkTank:
           return this.gameModel.constructions.TechThinkTank = 1, this.gameModel.brainsStorePCMod *= 2, void(this.gameModel.bloodStorePCMod *= 2);
         case this.constructionTypes.spiderLair:
           return void(this.gameModel.constructions.spiderLair = !0);
@@ -2538,7 +2538,7 @@ var Incremancer;
       this.gameModel.saveData()
     }
     purchaseUpgrade(e, t = !0) {
-      if (this.canAffordUpgrade(e)) {
+      if (this.hasRequirement(e) && this.canAffordUpgrade(e)) {
         let s, i = !1;
         switch (e.costType) {
           case this.costs.energy:
@@ -2606,8 +2606,8 @@ var Incremancer;
     }
     updateAutoUpgrades() {
       if (this.gameModel.autoUpgrades) {
-        for (let e = 0; e < this.upgrades.length; e++)(this.gameModel.persistentData.autoAuto || this.upgrades[e].auto) && this.purchaseUpgrade(this.upgrades[e], !1);
-        for (let e = 0; e < this.prestigeUpgrades.length; e++)(this.gameModel.persistentData.autoAuto || this.prestigeUpgrades[e].auto) && this.purchaseUpgrade(this.prestigeUpgrades[e], !1);
+        for (let e = 0; e < this.upgrades.length; e++)(this.gameModel.persistentData.autoAuto || this.upgrades[e].auto) && this.hasRequirement(this.upgrades[e]) && this.purchaseUpgrade(this.upgrades[e], !1);
+        for (let e = 0; e < this.prestigeUpgrades.length; e++)(this.gameModel.persistentData.autoAuto || this.prestigeUpgrades[e].auto) && this.hasRequirement(this.prestigeUpgrades[e]) && this.purchaseUpgrade(this.prestigeUpgrades[e], !1);
         if (this.gameModel.constructions.factory)
           for (let e = 0; e < this.partFactory.generators.length; e++)(this.gameModel.persistentData.autoAuto || this.partFactory.generators[e].auto) && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1);
         if (this.gameModel.constructions.monsterFactory) {
