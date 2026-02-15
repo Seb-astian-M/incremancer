@@ -1125,6 +1125,10 @@ var Incremancer;
         this.prodigyNets = 0,
         this.golemNets = 0,
         this.skeletonNets = 0,
+        this.maxZombieNets = 0,
+        this.maxProdigyNets = 0,
+        this.maxGolemNets = 0,
+        this.maxSkeletonNets = 0,
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
         this.tailoring = !1,
@@ -1308,10 +1312,10 @@ var Incremancer;
         this.spiderEfficiency = 0,
         this.netLaunchers = 0,
         this.explosiveNets = !1,
-        this.zombieNets = 0,
-        this.prodigyNets = 0,
-        this.golemNets = 0,
-        this.skeletonNets = 0,
+        this.maxZombieNets = 0,
+        this.maxProdigyNets = 0,
+        this.maxGolemNets = 0,
+        this.maxSkeletonNets = 0,
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
         this.tailoring = !1,
@@ -2215,7 +2219,19 @@ var Incremancer;
         this.gameModel.zombieDamage *= this.gameModel.zombieDamagePCMod,
         this.gameModel.zombieHealth *= this.gameModel.zombieHealthPCMod,
         this.gameModel.persistentData.runeshatter && (this.gameModel.zombieDamage *= this.shatterEffect(), this.gameModel.zombieHealth *= this.shatterEffect(), this.gameModel.zombieCost += this.gameModel.persistentData.runeshatter),
-        this.gameModel.strapemRank > 0 && (this.gameModel.zombieDamage *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieHealth *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieCost *= Math.pow(10, this.gameModel.strapemRank))
+        this.gameModel.strapemRank > 0 && (this.gameModel.zombieDamage *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieHealth *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieCost *= Math.pow(10, this.gameModel.strapemRank));
+      const nd = this.gameModel.persistentData.netDistribution;
+      if (nd) {
+        this.gameModel.zombieNets = Math.min(nd.zombie || 0, this.gameModel.maxZombieNets);
+        this.gameModel.prodigyNets = Math.min(nd.prodigy || 0, this.gameModel.maxProdigyNets, this.gameModel.zombieNets);
+        this.gameModel.golemNets = Math.min(nd.golem || 0, this.gameModel.maxGolemNets);
+        this.gameModel.skeletonNets = Math.min(nd.skeleton || 0, this.gameModel.maxSkeletonNets);
+      } else {
+        this.gameModel.zombieNets = this.gameModel.maxZombieNets;
+        this.gameModel.prodigyNets = this.gameModel.maxProdigyNets;
+        this.gameModel.golemNets = this.gameModel.maxGolemNets;
+        this.gameModel.skeletonNets = this.gameModel.maxSkeletonNets;
+      }
     }
     applyUpgrade(e, t) {
       switch (e.type) {
@@ -2368,13 +2384,13 @@ var Incremancer;
         case this.types.explosiveNets:
           return void(this.gameModel.explosiveNets = !0);
         case this.types.zombieNets:
-          return void(this.gameModel.zombieNets = t);
+          return void(this.gameModel.maxZombieNets = t);
         case this.types.prodigyNets:
-          return void(this.gameModel.prodigyNets = t);
+          return void(this.gameModel.maxProdigyNets = t);
         case this.types.golemNets:
-          return void(this.gameModel.golemNets = t);
+          return void(this.gameModel.maxGolemNets = t);
         case this.types.skeletonNets:
-          return void(this.gameModel.skeletonNets = t);
+          return void(this.gameModel.maxSkeletonNets = t);
         case this.types.netCooldown:
           return void(this.gameModel.netCooldown = t >= 2 ? 3 : 5);
         case this.types.magicalTraining:
@@ -2581,13 +2597,13 @@ var Incremancer;
         case this.types.explosiveNets:
           return "Nets deal AoE damage on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
         case this.types.zombieNets:
-          return "Nets spawning zombies: " + this.gameModel.zombieNets + " / " + this.gameModel.netLaunchers;
+          return "Zombie net cap: " + this.gameModel.maxZombieNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.zombieNets + ")";
         case this.types.prodigyNets:
-          return "Zombie nets with prodigies: " + this.gameModel.prodigyNets + " / " + this.gameModel.zombieNets;
+          return "Prodigy net cap: " + this.gameModel.maxProdigyNets + " / " + this.gameModel.maxZombieNets + " (assigned: " + this.gameModel.prodigyNets + ")";
         case this.types.golemNets:
-          return "Nets spawning golems: " + this.gameModel.golemNets + " / " + this.gameModel.prodigyNets;
+          return "Golem net cap: " + this.gameModel.maxGolemNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.golemNets + ")";
         case this.types.skeletonNets:
-          return "Nets spawning skeletons: " + this.gameModel.skeletonNets + " / " + this.gameModel.golemNets;
+          return "Skeleton net cap: " + this.gameModel.maxSkeletonNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.skeletonNets + ")";
         case this.types.netCooldown:
           return "Net cooldown: " + this.gameModel.netCooldown + " seconds";
         case this.types.magicalTraining:
@@ -2613,7 +2629,7 @@ var Incremancer;
         case this.types.zombieNets:
           return Math.min(e.cap, this.gameModel.netLaunchers || 0);
         case this.types.prodigyNets:
-          return Math.min(e.cap, this.gameModel.zombieNets || 0);
+          return Math.min(e.cap, this.gameModel.maxZombieNets || 0);
         case this.types.golemNets:
           return Math.min(e.cap, this.gameModel.netLaunchers || 0);
         case this.types.skeletonNets:
@@ -6038,19 +6054,20 @@ var Incremancer;
       const m = c.model;
       switch(type) {
         case "zombie":
-          m.zombieNets = Math.max(0, Math.min(m.netLaunchers, m.zombieNets + delta));
+          m.zombieNets = Math.max(0, Math.min(m.maxZombieNets, m.zombieNets + delta));
           if (m.prodigyNets > m.zombieNets) m.prodigyNets = m.zombieNets;
           break;
         case "prodigy":
-          m.prodigyNets = Math.max(0, Math.min(Math.min(m.netLaunchers, m.zombieNets), m.prodigyNets + delta));
+          m.prodigyNets = Math.max(0, Math.min(Math.min(m.maxProdigyNets, m.zombieNets), m.prodigyNets + delta));
           break;
         case "golem":
-          m.golemNets = Math.max(0, Math.min(m.netLaunchers, m.golemNets + delta));
+          m.golemNets = Math.max(0, Math.min(m.maxGolemNets, m.golemNets + delta));
           break;
         case "skeleton":
-          m.skeletonNets = Math.max(0, Math.min(m.netLaunchers, m.skeletonNets + delta));
+          m.skeletonNets = Math.max(0, Math.min(m.maxSkeletonNets, m.skeletonNets + delta));
           break;
       }
+      m.persistentData.netDistribution = {zombie: m.zombieNets, prodigy: m.prodigyNets, golem: m.golemNets, skeleton: m.skeletonNets};
     },
     c.totalAssignedNets = function() {
       return c.model.zombieNets + c.model.prodigyNets + c.model.golemNets + c.model.skeletonNets;
