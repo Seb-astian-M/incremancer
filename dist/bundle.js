@@ -4812,7 +4812,25 @@ var Incremancer;
           if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= this.gameModel.boneCollectorCapacity || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
         case Zt.returning:
-          e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * 0.5), (e.carriedBones > 0 || e.carriedParts > 0) && this.gameModel.sendMessage("Spider returned: " + (e.carriedBones > 0 ? Math.floor(e.carriedBones) + " bones" : "") + (e.carriedBones > 0 && e.carriedParts > 0 ? ", " : "") + (e.carriedParts > 0 ? Math.floor(e.carriedParts) + " parts" : ""), "chat-construction"), e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0)
+          e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, (() => {
+            const boneAmt = e.carriedBones * this.gameModel.bonesPCMod;
+            const partsAmt = e.carriedParts * this.gameModel.partsPCMod;
+            this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts * this.gameModel.partsPCMod, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * this.gameModel.partsPCMod * 0.5);
+            if (boneAmt > 0 || partsAmt > 0) {
+              this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
+              this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
+              const msg = "Spiders collected: " + (this.spiderTotalBones > 0 ? Math.floor(this.spiderTotalBones) + " bones" : "") + (this.spiderTotalBones > 0 && this.spiderTotalParts > 0 ? ", " : "") + (this.spiderTotalParts > 0 ? Math.floor(this.spiderTotalParts) + " parts" : "");
+              const log = this.gameModel.chatLog;
+              if (log.length > 0 && log[0].cls === "chat-spider") {
+                log[0].text = msg, log[0].id = this.gameModel.chatLogId++;
+              } else {
+                this.spiderTotalBones = boneAmt, this.spiderTotalParts = partsAmt;
+                const freshMsg = "Spiders collected: " + (boneAmt > 0 ? Math.floor(boneAmt) + " bones" : "") + (boneAmt > 0 && partsAmt > 0 ? ", " : "") + (partsAmt > 0 ? Math.floor(partsAmt) + " parts" : "");
+                log.unshift({ id: this.gameModel.chatLogId++, text: freshMsg, cls: "chat-spider", count: 1 }), log.length > 30 && log.pop();
+              }
+            }
+            e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0;
+          })())
       }
     }
     updateSpeed(e, t) {
