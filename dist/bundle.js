@@ -1633,10 +1633,24 @@ var Incremancer;
       this.persistentData.constructions || (this.persistentData.constructions = []), this.persistentData.generators || (this.persistentData.generators = []), this.persistentData.parts || (this.persistentData.parts = 0), this.persistentData.creatureLevels || (this.persistentData.creatureLevels = []), this.persistentData.creatureAutobuild || (this.persistentData.creatureAutobuild = []), this.persistentData.savedCreatures || (this.persistentData.savedCreatures = []), this.persistentData.levelsCompleted || (this.persistentData.levelsCompleted = []), this.persistentData.saveCreated || (this.persistentData.saveCreated = Date.now()), void 0 === this.persistentData.particles && (this.persistentData.particles = !0), this.persistentData.runeshatter || (this.persistentData.runeshatter = 0), this.creatureFactory.updateAutoBuild()
     }
     sendMessage(e, t) {
-      if (this.chatLog.length > 0 && this.chatLog[0].text === e) {
-        this.chatLog[0].count++, this.chatLog[0].id = this.chatLogId++
+      const idx = this.chatLog.findIndex(m => m.text === e && m.cls === (t || ""));
+      if (idx >= 0) {
+        const entry = this.chatLog.splice(idx, 1)[0];
+        entry.count++, entry.id = this.chatLogId++;
+        this.chatLog.unshift(entry);
       } else {
         this.chatLog.unshift({ id: this.chatLogId++, text: e, cls: t || "", count: 1 }),
+          this.chatLog.length > 30 && this.chatLog.pop()
+      }
+    }
+    sendMessageKeyed(key, e, t) {
+      const idx = this.chatLog.findIndex(m => m.key === key);
+      if (idx >= 0) {
+        const entry = this.chatLog.splice(idx, 1)[0];
+        entry.text = e, entry.id = this.chatLogId++;
+        this.chatLog.unshift(entry);
+      } else {
+        this.chatLog.unshift({ id: this.chatLogId++, text: e, cls: t || "", key: key, count: 1 }),
           this.chatLog.length > 30 && this.chatLog.pop()
       }
     }
@@ -4820,17 +4834,7 @@ var Incremancer;
               this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
               this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
               const msg = "Spiders collected: " + (this.spiderTotalBones > 0 ? n(this.spiderTotalBones) + " bones" : "") + (this.spiderTotalBones > 0 && this.spiderTotalParts > 0 ? ", " : "") + (this.spiderTotalParts > 0 ? n(this.spiderTotalParts) + " parts" : "");
-              const log = this.gameModel.chatLog;
-              const idx = log.findIndex(m => m.cls === "chat-spider");
-              if (idx >= 0) {
-                const entry = log.splice(idx, 1)[0];
-                entry.text = msg, entry.id = this.gameModel.chatLogId++;
-                log.unshift(entry);
-              } else {
-                this.spiderTotalBones = boneAmt, this.spiderTotalParts = partsAmt;
-                const freshMsg = "Spiders collected: " + (boneAmt > 0 ? n(boneAmt) + " bones" : "") + (boneAmt > 0 && partsAmt > 0 ? ", " : "") + (partsAmt > 0 ? n(partsAmt) + " parts" : "");
-                log.unshift({ id: this.gameModel.chatLogId++, text: freshMsg, cls: "chat-spider", count: 1 }), log.length > 30 && log.pop();
-              }
+              this.gameModel.sendMessageKeyed("spider-collect", msg, "chat-spider");
             }
             e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0;
           })())
