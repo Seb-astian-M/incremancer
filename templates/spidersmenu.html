@@ -27,27 +27,27 @@
 
   <div class="upgrades" ng-if="zm.spidersTab == 'launchers'">
     <div class="bone-collectors bones">
-      <h4>Net Distribution</h4>
-      <p>Total nets per launch: {{zm.model.netLaunchers}} — Assigned: {{zm.totalAssignedNets()}} — Unassigned: {{zm.unassignedNets()}}</p>
-      <p>Assign each net to a type. Per-type caps are set by shop upgrades.</p>
+      <h4>Slingshot Distribution</h4>
+      <p>Total slings per launch: {{zm.model.netLaunchers}} — Assigned: {{zm.totalAssignedNets()}} — Unassigned: {{zm.unassignedNets()}}</p>
+      <p>Assign each sling to a type. Per-type caps are set by shop upgrades.</p>
     </div>
     <div class="bone-collectors bones" ng-if="zm.model.maxZombieNets > 0">
-      <h4>Zombie Nets: {{zm.model.zombieNets}} / {{zm.model.maxZombieNets}}</h4>
+      <h4>Zombie Slings: {{zm.model.zombieNets}} / {{zm.model.maxZombieNets}}</h4>
       <button ng-click="zm.adjustNets('zombie', -1)" ng-disabled="zm.model.zombieNets <= 0">-</button>
       <button ng-click="zm.adjustNets('zombie', 1)" ng-disabled="zm.model.zombieNets >= zm.model.maxZombieNets || zm.unassignedNets() <= 0">+</button>
     </div>
     <div class="bone-collectors bones" ng-if="zm.model.maxProdigyNets > 0">
-      <h4>Prodigy Nets: {{zm.model.prodigyNets}} / {{zm.model.maxProdigyNets}} <span style="opacity:0.6">(upgrades zombie nets to prodigies)</span></h4>
+      <h4>Prodigy Slings: {{zm.model.prodigyNets}} / {{zm.model.maxProdigyNets}} <span style="opacity:0.6">(upgrades zombie slings to prodigies)</span></h4>
       <button ng-click="zm.adjustNets('prodigy', -1)" ng-disabled="zm.model.prodigyNets <= 0">-</button>
       <button ng-click="zm.adjustNets('prodigy', 1)" ng-disabled="zm.model.prodigyNets >= zm.model.maxProdigyNets || (zm.model.prodigyNets >= zm.model.zombieNets && zm.unassignedNets() <= 0)">+</button>
     </div>
     <div class="bone-collectors bones" ng-if="zm.model.maxGolemNets > 0">
-      <h4>Golem Nets: {{zm.model.golemNets}} / {{zm.model.maxGolemNets}}</h4>
+      <h4>Golem Slings: {{zm.model.golemNets}} / {{zm.model.maxGolemNets}}</h4>
       <button ng-click="zm.adjustNets('golem', -1)" ng-disabled="zm.model.golemNets <= 0">-</button>
       <button ng-click="zm.adjustNets('golem', 1)" ng-disabled="zm.model.golemNets >= zm.model.maxGolemNets || zm.unassignedNets() <= 0">+</button>
     </div>
     <div class="bone-collectors bones" ng-if="zm.model.maxSkeletonNets > 0">
-      <h4>Skeleton Nets: {{zm.model.skeletonNets}} / {{zm.model.maxSkeletonNets}}</h4>
+      <h4>Skeleton Slings: {{zm.model.skeletonNets}} / {{zm.model.maxSkeletonNets}}</h4>
       <button ng-click="zm.adjustNets('skeleton', -1)" ng-disabled="zm.model.skeletonNets <= 0">-</button>
       <button ng-click="zm.adjustNets('skeleton', 1)" ng-disabled="zm.model.skeletonNets >= zm.model.maxSkeletonNets || zm.unassignedNets() <= 0">+</button>
     </div>

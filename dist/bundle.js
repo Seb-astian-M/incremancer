@@ -1,4 +1,4 @@
-const FORK_VERSION = "v1.9.0";
+const FORK_VERSION = "v1.10.0";
 const FORK_VERSION_DATE = "2026-02-15";
 console.log("[Incremancer fork] " + FORK_VERSION + " (" + FORK_VERSION_DATE + ")");
 var Incremancer;
@@ -1415,7 +1415,7 @@ var Incremancer;
         this.addBones(endBones);
         if (this.netLaunchers && endParts > 0) {
           this.netLauncherParts += endParts;
-          if (endParts > 0 || endBones > 0) this.sendMessage("Spiders loaded " + n(endParts) + " parts into net" + (endBones > 0 ? ", collected " + n(endBones) + " bones" : ""), "chat-construction");
+          if (endParts > 0 || endBones > 0) this.sendMessage("Spiders loaded " + n(endParts) + " parts into slingshot" + (endBones > 0 ? ", collected " + n(endBones) + " bones" : ""), "chat-construction");
         } else {
           this.persistentData.parts += endParts;
           if (endParts > 0 || endBones > 0) this.sendMessage("Spiders collected remaining: " + (endBones > 0 ? n(endBones) + " bones" : "") + (endBones > 0 && endParts > 0 ? ", " : "") + (endParts > 0 ? n(endParts) + " parts" : ""), "chat-construction");
@@ -1481,7 +1481,7 @@ var Incremancer;
             this.humans.skeleton.spawnNetSkeleton(costScale, sx, sy);
           }
         }
-        this.sendMessage("Net launched! " + netCount + " nets, " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
+        this.sendMessage("Slingshot launched! " + netCount + " shots, " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
       }
     }
     releaseCagedZombies() {
@@ -1581,7 +1581,13 @@ var Incremancer;
           healthRegen: 0,
           damageReflection: 0
         }, this.bossFailCount = 0, this.bossRushMode = !1, this.bossRushOffered = !1, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.level = 1, this.currentState = this.states.prestiged, this.skeleton.persistent.talentReset = !0, this.setupLevel(), this.saveData();
-
+        if (this.persistentData.rememberMinions && this.persistentData.rememberedMinions) {
+          var rm = this.persistentData.rememberedMinions;
+          this.persistentData.boneCollectors = rm.boneCollectors || 0;
+          this.persistentData.graveyardZombies = rm.graveyardZombies || 1;
+          this.persistentData.harpies = rm.harpies || 0;
+          this.persistentData.spiders = rm.spiders || 0;
+        }
       }
     }
     //o
@@ -2088,7 +2094,7 @@ var Incremancer;
           new Construction(305, "Spider Lair", this.constructionTypes.spiderLair, {
             parts: 50e3,
             brains: 1e4
-          }, 30, 1, 1, 1, 211, "Construct a dark lair beneath the graveyard where spiders can be bred and trained. These arachnid servants will serve as utility collectors, draining energy to sustain themselves.", "Spider Lair constructed! Spiders are now available in the graveyard menu.")
+          }, 30, 1, 1, 1, [211, 219], "Construct a dark lair beneath the graveyard where spiders can be bred and trained. These arachnid servants will serve as utility collectors, draining energy to sustain themselves.", "Spider Lair constructed! Spiders are now available in the graveyard menu.")
         ],
 
         this.upgrades = [new UpgradeDef(1, "Bloodthirst", this.types.damage, this.costs.blood, 50, 1.2, 1, 40, "Your zombies thirst for blood and do +1 damage for each rank of Bloodthirst.", null, null),
@@ -2152,13 +2158,13 @@ var Incremancer;
           new UpgradeDef(120, "Strap 'em Tighter!", this.types.strapem, this.costs.blood, 1e30, 1, 1, 1, "Further fuse spider silk with zombie flesh. Zombie damage x225, health x225, energy cost x100, harpy energy drain x100.", "Double-strapped! Spider silk reinforcement complete.", 81),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
-          new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 3, 1, 10, "Each rank adds one more net per launch. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
-          new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "All nets deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
-          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 10, "Each rank assigns one more net to spawn zombies on impact. Capped by Net Launchers rank.", "Nets now spawn zombies on impact!", 84),
-          new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e4, 2, 1, 10, "Each rank upgrades one more zombie net to spawn prodigies. Capped by Zombie Nets rank.", "Net zombies are now prodigies!", 86),
-          new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 5e8, 10, 1, 10, "Each rank assigns one more net to spawn a golem on impact. Capped by Net Launchers rank.", "Nets now spawn golems on impact!", 84),
-          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 5e6, 100, 1, 10, "Each rank assigns one more net to spawn a skeleton and generate 1B bones. Capped by Net Launchers rank.", "Nets now also spawn skeletons!", 84),
-          new UpgradeDef(101, "Rapid Deployment", this.types.netCooldown, this.costs.parts, 1e8, 10, 1, 2, "Reduce net launcher cooldown. Rank 1: 5 seconds. Rank 2: 3 seconds.", null, 84),
+          new UpgradeDef(84, "Slingshot Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 3, 1, 10, "Each rank adds one more slingshot per launch. Costs 100 energy + 10% blood per launch.", "Slingshot Launchers online! Projectiles will be launched periodically.", 305),
+          new UpgradeDef(85, "Explosive Shots", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "All slingshot shots deal AoE damage on impact based on resources expended.", "Shots now explode on impact!", 84),
+          new UpgradeDef(86, "Zombie Slings", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 10, "Each rank assigns one more slingshot to spawn zombies on impact. Capped by Slingshot Launchers rank.", "Slingshots now spawn zombies on impact!", 84),
+          new UpgradeDef(87, "Prodigy Slings", this.types.prodigyNets, this.costs.brains, 1e4, 2, 1, 10, "Each rank upgrades one more zombie sling to spawn prodigies. Capped by Zombie Slings rank.", "Slingshot zombies are now prodigies!", 86),
+          new UpgradeDef(100, "Golem Slings", this.types.golemNets, this.costs.parts, 5e8, 10, 1, 10, "Each rank assigns one more slingshot to spawn a golem on impact. Capped by Slingshot Launchers rank.", "Slingshots now spawn golems on impact!", 84),
+          new UpgradeDef(88, "Skeleton Slings", this.types.skeletonNets, this.costs.bones, 5e6, 100, 1, 10, "Each rank assigns one more slingshot to spawn a skeleton and generate 1B bones. Capped by Slingshot Launchers rank.", "Slingshots now spawn skeletons!", 84),
+          new UpgradeDef(101, "Rapid Deployment", this.types.netCooldown, this.costs.parts, 1e8, 10, 1, 2, "Reduce slingshot cooldown. Rank 1: 5 seconds. Rank 2: 3 seconds.", null, 84),
           new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e8, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
           new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e7, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
           new UpgradeDef(91, "Pandemic Buff", this.types.spellBuff, this.costs.brains, 1e8, 1, 1, 1, "Unlock: Pandemic spell has 1/100 chance to zombify healthy humans.", null, 89),
@@ -2593,19 +2599,19 @@ var Incremancer;
         case this.types.recollectionEfficiency:
           return "Spider collection bonus: +" + (this.currentRank(e) * 10) + "%";
         case this.types.netLaunchers:
-          return "Nets per launch: " + this.gameModel.netLaunchers + " (cooldown: " + this.gameModel.netCooldown + "s)";
+          return "Slings per launch: " + this.gameModel.netLaunchers + " (cooldown: " + this.gameModel.netCooldown + "s)";
         case this.types.explosiveNets:
-          return "Nets deal AoE damage on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+          return "Shots deal AoE damage on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
         case this.types.zombieNets:
-          return "Zombie net cap: " + this.gameModel.maxZombieNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.zombieNets + ")";
+          return "Zombie sling cap: " + this.gameModel.maxZombieNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.zombieNets + ")";
         case this.types.prodigyNets:
-          return "Prodigy net cap: " + this.gameModel.maxProdigyNets + " / " + this.gameModel.maxZombieNets + " (assigned: " + this.gameModel.prodigyNets + ")";
+          return "Prodigy sling cap: " + this.gameModel.maxProdigyNets + " / " + this.gameModel.maxZombieNets + " (assigned: " + this.gameModel.prodigyNets + ")";
         case this.types.golemNets:
-          return "Golem net cap: " + this.gameModel.maxGolemNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.golemNets + ")";
+          return "Golem sling cap: " + this.gameModel.maxGolemNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.golemNets + ")";
         case this.types.skeletonNets:
-          return "Skeleton net cap: " + this.gameModel.maxSkeletonNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.skeletonNets + ")";
+          return "Skeleton sling cap: " + this.gameModel.maxSkeletonNets + " / " + this.gameModel.netLaunchers + " (assigned: " + this.gameModel.skeletonNets + ")";
         case this.types.netCooldown:
-          return "Net cooldown: " + this.gameModel.netCooldown + " seconds";
+          return "Slingshot cooldown: " + this.gameModel.netCooldown + " seconds";
         case this.types.magicalTraining:
           return "Spell buff system: " + (this.currentRank(e) > 0 ? "Unlocked" : "Locked");
         case this.types.spellBuff:
@@ -4999,12 +5005,12 @@ var Incremancer;
     getTexture() {
       if (this.texture) return this.texture;
       const c = document.createElement("canvas");
-      c.width = 12, c.height = 12;
+      c.width = 10, c.height = 10;
       const ctx = c.getContext("2d");
-      ctx.strokeStyle = "#8cf", ctx.lineWidth = 1.5;
-      ctx.beginPath(), ctx.moveTo(1, 1), ctx.lineTo(11, 1), ctx.lineTo(11, 11), ctx.lineTo(1, 11), ctx.closePath(), ctx.stroke();
-      ctx.beginPath(), ctx.moveTo(1, 1), ctx.lineTo(11, 11), ctx.stroke();
-      ctx.beginPath(), ctx.moveTo(11, 1), ctx.lineTo(1, 11), ctx.stroke();
+      ctx.fillStyle = "#8B6914", ctx.strokeStyle = "#6a4f10", ctx.lineWidth = 1;
+      ctx.beginPath(), ctx.arc(5, 5, 4, 0, 2 * Math.PI), ctx.fill(), ctx.stroke();
+      ctx.fillStyle = "#a07820";
+      ctx.beginPath(), ctx.arc(4, 4, 1.5, 0, 2 * Math.PI), ctx.fill();
       return this.texture = PIXI.Texture.from(c), this.texture;
     }
     getLauncherTextures() {
@@ -5012,46 +5018,78 @@ var Incremancer;
       this.launcherTextures = [];
       const W = 24, H = 28;
       const makeCanvas = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; return c; };
-      // State 0: Empty frame — wooden tripod launcher
+      const drawYFrame = (ctx) => {
+        ctx.strokeStyle = "#8B6914", ctx.lineWidth = 2.5;
+        ctx.beginPath(), ctx.moveTo(12, H - 2), ctx.lineTo(12, 14), ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.beginPath(), ctx.moveTo(12, 14), ctx.lineTo(4, 4), ctx.stroke();
+        ctx.beginPath(), ctx.moveTo(12, 14), ctx.lineTo(20, 4), ctx.stroke();
+        ctx.fillStyle = "#8B6914";
+        ctx.beginPath(), ctx.arc(4, 4, 2, 0, 2 * Math.PI), ctx.fill();
+        ctx.beginPath(), ctx.arc(20, 4, 2, 0, 2 * Math.PI), ctx.fill();
+      };
+      // Frame 0: Slingshot at rest — Y-frame with loose band
       const c0 = makeCanvas(), x0 = c0.getContext("2d");
-      x0.strokeStyle = "#8B6914", x0.lineWidth = 2;
-      x0.beginPath(), x0.moveTo(4, H - 2), x0.lineTo(12, 4), x0.lineTo(20, H - 2), x0.stroke();
-      x0.beginPath(), x0.moveTo(7, H - 10), x0.lineTo(17, H - 10), x0.stroke();
-      x0.strokeStyle = "#666", x0.lineWidth = 1.5;
-      x0.beginPath(), x0.arc(12, 6, 4, 0, 2 * Math.PI), x0.stroke();
+      drawYFrame(x0);
+      x0.strokeStyle = "#888", x0.lineWidth = 1.5;
+      x0.beginPath(), x0.moveTo(4, 4), x0.quadraticCurveTo(12, 10, 20, 4), x0.stroke();
       this.launcherTextures.push(PIXI.Texture.from(c0));
-      // State 1: Net loaded — tripod with blue net draped
+      // Frame 1: Band pulled back slightly, empty pouch
       const c1 = makeCanvas(), x1 = c1.getContext("2d");
-      x1.strokeStyle = "#8B6914", x1.lineWidth = 2;
-      x1.beginPath(), x1.moveTo(4, H - 2), x1.lineTo(12, 4), x1.lineTo(20, H - 2), x1.stroke();
-      x1.beginPath(), x1.moveTo(7, H - 10), x1.lineTo(17, H - 10), x1.stroke();
-      x1.fillStyle = "rgba(100,170,255,0.5)", x1.strokeStyle = "#8cf", x1.lineWidth = 1;
-      x1.beginPath(), x1.moveTo(6, 6), x1.lineTo(18, 6), x1.lineTo(16, 14), x1.lineTo(8, 14), x1.closePath(), x1.fill(), x1.stroke();
-      x1.beginPath(), x1.moveTo(9, 6), x1.lineTo(10, 14), x1.stroke();
-      x1.beginPath(), x1.moveTo(12, 6), x1.lineTo(12, 14), x1.stroke();
-      x1.beginPath(), x1.moveTo(15, 6), x1.lineTo(14, 14), x1.stroke();
-      x1.beginPath(), x1.moveTo(6, 10), x1.lineTo(18, 10), x1.stroke();
+      drawYFrame(x1);
+      x1.strokeStyle = "#888", x1.lineWidth = 1.5;
+      x1.beginPath(), x1.moveTo(4, 4), x1.quadraticCurveTo(12, 14, 20, 4), x1.stroke();
+      x1.fillStyle = "#6a4f10";
+      x1.beginPath(), x1.ellipse(12, 12, 3, 2, 0, 0, 2 * Math.PI), x1.fill();
       this.launcherTextures.push(PIXI.Texture.from(c1));
-      // State 2: Net + parts — tripod with glowing net bundle
+      // Frame 2: Band pulled further, creature dots loaded
       const c2 = makeCanvas(), x2 = c2.getContext("2d");
-      x2.strokeStyle = "#8B6914", x2.lineWidth = 2;
-      x2.beginPath(), x2.moveTo(4, H - 2), x2.lineTo(12, 4), x2.lineTo(20, H - 2), x2.stroke();
-      x2.beginPath(), x2.moveTo(7, H - 10), x2.lineTo(17, H - 10), x2.stroke();
-      const glow = x2.createRadialGradient(12, 9, 0, 12, 9, 8);
-      glow.addColorStop(0, "rgba(140,200,255,0.8)"), glow.addColorStop(0.6, "rgba(100,170,255,0.4)"), glow.addColorStop(1, "rgba(60,100,200,0)");
-      x2.fillStyle = glow, x2.fillRect(4, 1, 16, 16);
-      x2.fillStyle = "rgba(100,170,255,0.7)", x2.strokeStyle = "#adf", x2.lineWidth = 1;
-      x2.beginPath(), x2.moveTo(6, 5), x2.lineTo(18, 5), x2.lineTo(17, 14), x2.lineTo(7, 14), x2.closePath(), x2.fill(), x2.stroke();
-      x2.beginPath(), x2.moveTo(9, 5), x2.lineTo(10, 14), x2.stroke();
-      x2.beginPath(), x2.moveTo(12, 5), x2.lineTo(12, 14), x2.stroke();
-      x2.beginPath(), x2.moveTo(15, 5), x2.lineTo(14, 14), x2.stroke();
-      x2.beginPath(), x2.moveTo(6, 8), x2.lineTo(18, 8), x2.stroke();
-      x2.beginPath(), x2.moveTo(6, 11), x2.lineTo(18, 11), x2.stroke();
-      x2.fillStyle = "#cda63c";
-      for (let i = 0; i < 4; i++) {
-        x2.beginPath(), x2.arc(8 + i * 3, 10 + (i % 2), 1.5, 0, 2 * Math.PI), x2.fill();
-      }
+      drawYFrame(x2);
+      x2.strokeStyle = "#888", x2.lineWidth = 1.5;
+      x2.beginPath(), x2.moveTo(4, 4), x2.quadraticCurveTo(12, 18, 20, 4), x2.stroke();
+      x2.fillStyle = "#6a4f10";
+      x2.beginPath(), x2.ellipse(12, 16, 4, 2.5, 0, 0, 2 * Math.PI), x2.fill();
+      x2.fillStyle = "#8f8";
+      x2.beginPath(), x2.arc(10, 15, 1.5, 0, 2 * Math.PI), x2.fill();
+      x2.beginPath(), x2.arc(14, 15, 1.5, 0, 2 * Math.PI), x2.fill();
       this.launcherTextures.push(PIXI.Texture.from(c2));
+      // Frame 3: Fully drawn back, creatures visible, band taut
+      const c3 = makeCanvas(), x3 = c3.getContext("2d");
+      drawYFrame(x3);
+      x3.strokeStyle = "#777", x3.lineWidth = 2;
+      x3.beginPath(), x3.moveTo(4, 4), x3.quadraticCurveTo(12, 22, 20, 4), x3.stroke();
+      x3.fillStyle = "#6a4f10";
+      x3.beginPath(), x3.ellipse(12, 20, 4, 3, 0, 0, 2 * Math.PI), x3.fill();
+      x3.fillStyle = "#8f8";
+      x3.beginPath(), x3.arc(10, 19, 1.5, 0, 2 * Math.PI), x3.fill();
+      x3.fillStyle = "#f88";
+      x3.beginPath(), x3.arc(14, 19, 1.5, 0, 2 * Math.PI), x3.fill();
+      x3.fillStyle = "#88f";
+      x3.beginPath(), x3.arc(12, 21, 1.5, 0, 2 * Math.PI), x3.fill();
+      this.launcherTextures.push(PIXI.Texture.from(c3));
+      // Frame 4: Hold frame — same as 3 with slight glow
+      const c4 = makeCanvas(), x4 = c4.getContext("2d");
+      drawYFrame(x4);
+      x4.strokeStyle = "#777", x4.lineWidth = 2;
+      x4.beginPath(), x4.moveTo(4, 4), x4.quadraticCurveTo(12, 22, 20, 4), x4.stroke();
+      const glow = x4.createRadialGradient(12, 20, 0, 12, 20, 6);
+      glow.addColorStop(0, "rgba(255,255,200,0.4)"), glow.addColorStop(1, "rgba(255,255,200,0)");
+      x4.fillStyle = glow, x4.fillRect(6, 14, 12, 12);
+      x4.fillStyle = "#6a4f10";
+      x4.beginPath(), x4.ellipse(12, 20, 4, 3, 0, 0, 2 * Math.PI), x4.fill();
+      x4.fillStyle = "#8f8";
+      x4.beginPath(), x4.arc(10, 19, 1.5, 0, 2 * Math.PI), x4.fill();
+      x4.fillStyle = "#f88";
+      x4.beginPath(), x4.arc(14, 19, 1.5, 0, 2 * Math.PI), x4.fill();
+      x4.fillStyle = "#88f";
+      x4.beginPath(), x4.arc(12, 21, 1.5, 0, 2 * Math.PI), x4.fill();
+      this.launcherTextures.push(PIXI.Texture.from(c4));
+      // Frame 5: Release — band snaps forward, pouch empty
+      const c5 = makeCanvas(), x5 = c5.getContext("2d");
+      drawYFrame(x5);
+      x5.strokeStyle = "#999", x5.lineWidth = 1.5;
+      x5.beginPath(), x5.moveTo(4, 4), x5.quadraticCurveTo(12, 2, 20, 4), x5.stroke();
+      this.launcherTextures.push(PIXI.Texture.from(c5));
       return this.launcherTextures;
     }
     setupLauncher(graveyardSprite) {
@@ -5071,12 +5109,26 @@ var Incremancer;
     updateLauncher(model) {
       if (!this.launcherSprite) return;
       if (!model.netLaunchers) { this.launcherSprite.visible = !1; return; }
+      if (!model.netLaunchers || model.netLauncherParts <= 0) {
+        this.launcherSprite.visible = model.netLaunchers > 0;
+        if (this.currentState !== 0) {
+          this.currentState = 0;
+          this.launcherSprite.texture = this.getLauncherTextures()[0];
+        }
+        return;
+      }
       this.launcherSprite.visible = !0;
-      const parts = model.netLauncherParts;
-      const newState = parts > 10 ? 2 : parts > 0 ? 1 : 0;
-      if (newState !== this.currentState) {
-        this.currentState = newState;
-        this.launcherSprite.texture = this.getLauncherTextures()[newState];
+      const t = model.netLauncherTimer;
+      var frame;
+      if (t > 3) frame = 0;
+      else if (t > 2) frame = 1;
+      else if (t > 1) frame = 2;
+      else if (t > 0.5) frame = 3;
+      else if (t > 0) frame = 4;
+      else frame = 5;
+      if (frame !== this.currentState) {
+        this.currentState = frame;
+        this.launcherSprite.texture = this.getLauncherTextures()[frame];
       }
     }
     getLaunchOrigin() {
@@ -5106,15 +5158,9 @@ var Incremancer;
         const cInfo = this.getCreatureInfo(i, model);
         let p;
         if (cInfo) {
-          p = new PIXI.Container();
-          const creatureSprite = new PIXI.Sprite(PIXI.Texture.from(cInfo.texture));
-          creatureSprite.anchor.set(.5, .5);
-          creatureSprite.tint = cInfo.tint;
-          p.addChild(creatureSprite);
-          const netSprite = new PIXI.Sprite(this.getTexture());
-          netSprite.anchor.set(.5, .5);
-          netSprite.scale.set(2, 2);
-          p.addChild(netSprite);
+          p = new PIXI.Sprite(PIXI.Texture.from(cInfo.texture));
+          p.anchor.set(.5, .5);
+          p.tint = cInfo.tint;
         } else {
           p = new PIXI.Sprite(this.getTexture());
           p.anchor.set(.5, .5), p.scale.set(2, 2);
@@ -6310,8 +6356,8 @@ var Incremancer;
     }, c.startBossRush = function() {
       c.model.bossRushOffered = !0;
       c.model.bossRushMode = !0;
-      c.model.startLevel(50);
       c.model.sendMessage("Boss Rush started! Jumping to boss levels.", "chat-upgrade");
+      c.model.startLevel(Math.ceil((c.model.level + 1) / 50) * 50);
     }, c.nextLevel = function() {
       c.model.nextLevel()
     }, c.toggleAutoStart = function() {
@@ -6324,23 +6370,26 @@ var Incremancer;
       c.model.persistentData.autoSellGearLegendary ? c.model.persistentData.autoSellGearLegendary = !1 : c.model.persistentData.autoSellGearLegendary = !0
     }, c.toggleAutoPrestige = function() {
       c.model.persistentData.autoPrestige = !c.model.persistentData.autoPrestige
-    }, c.toggleAutoAuto = function() {
-      c.model.persistentData.autoAuto = !c.model.persistentData.autoAuto;
-      if (c.model.persistentData.autoAuto) {
-        for (let i = 0; i < h.upgrades.length; i++) h.upgrades[i].auto = !0;
-        for (let i = 0; i < h.prestigeUpgrades.length; i++) h.prestigeUpgrades[i].auto = !0;
-        for (let i = 0; i < r.generators.length; i++) r.generators[i].auto = !0;
-        for (let i = 0; i < o.creatures.length; i++) o.creatures[i].autoLevel = !0;
-        for (let i = 0; i < o.creatures.length; i++) {
-          o.creatures[i].autobuild = c.model.creatureLimit;
-          c.model.persistentData.creatureAutobuild[o.creatures[i].id] = c.model.creatureLimit;
+    }, c.toggleTabAuto = function(panel) {
+      var items = c.upgrades;
+      var allOn = items.every(function(u) { return u.auto || u.autoLevel; });
+      if (panel === "factory" && c.factoryTab === "creatures") {
+        for (var i = 0; i < items.length; i++) {
+          items[i].autobuild = allOn ? 0 : c.model.creatureLimit;
+          c.model.persistentData.creatureAutobuild[items[i].id] = items[i].autobuild;
         }
-        c.model.autoconstruction = !0;
-        c.model.persistentData.autoMaxHarpies = !0;
-        c.model.persistentData.autoRelease = !0;
-        c.model.persistentData.autoPrestige = !0;
-        c.model.autoShatter = !0;
+      } else if (panel === "factory" && c.factoryTab === "level") {
+        for (var i = 0; i < items.length; i++) items[i].autoLevel = !allOn;
+      } else {
+        for (var i = 0; i < items.length; i++) items[i].auto = !allOn;
       }
+    }, c.isTabAutoOn = function(panel) {
+      if (!c.upgrades || c.upgrades.length === 0) return false;
+      if (panel === "factory" && c.factoryTab === "creatures")
+        return c.upgrades.every(function(u) { return u.autobuild > 0; });
+      if (panel === "factory" && c.factoryTab === "level")
+        return c.upgrades.every(function(u) { return u.autoLevel; });
+      return c.upgrades.every(function(u) { return u.auto; });
     }, c.toggleResolution = function(e) {
       c.model.persistentData.resolution = e, c.model.setResolution(c.model.persistentData.resolution)
     }, c.getResolution = function() {
@@ -6368,6 +6417,16 @@ var Incremancer;
       c.model.saveData();
     }, c.isShowPrestige = function() {
       return void 0 !== c.model.persistentData.prestigePointsEarned && c.model.persistentData.allTimeHighestLevel > 5
+    }, c.toggleRememberMinions = function() {
+      c.model.persistentData.rememberMinions = !c.model.persistentData.rememberMinions;
+      if (c.model.persistentData.rememberMinions) c.saveCurrentMinions();
+    }, c.saveCurrentMinions = function() {
+      c.model.persistentData.rememberedMinions = {
+        boneCollectors: c.model.persistentData.boneCollectors,
+        graveyardZombies: c.model.persistentData.graveyardZombies,
+        harpies: c.model.persistentData.harpies,
+        spiders: c.model.persistentData.spiders || 0
+      };
     }, c.doPrestige = function() {
       c.confirmMessage = "Are you sure you want to prestige now?", c.confirmCallback = function() {
         c.model.prestige(), c.confirmCallback = !1

@@ -9,6 +9,13 @@
     <button ng-if="zm.model.magicalTraining" ng-click="zm.graveyardTabSelect('spellbuffs')" class="{{zm.graveyardTab == 'spellbuffs' ? 'active' : ''}}">Spell Buffs</button>
   </div>
   <div class="upgrades" ng-if="zm.graveyardTab == 'minions'">
+    <div class="bone-collectors bones" ng-if="zm.model.constructions.graveyard">
+      <h4>Remember Minions</h4>
+      <p>Restore bone collectors, zombies, harpies, and spiders to saved amounts after prestige.</p>
+      <button ng-click="zm.toggleRememberMinions()" class="{{zm.model.persistentData.rememberMinions ? 'active' : ''}}">
+        {{zm.model.persistentData.rememberMinions ? 'On' : 'Off'}}</button>
+      <button ng-click="zm.saveCurrentMinions()" ng-if="zm.model.persistentData.rememberMinions">Save Current</button>
+    </div>
     <div class="bone-collectors bones">
       <h4>Bone Collectors <button ng-click="zm.bcinfo = !zm.bcinfo" class="{{zm.bcinfo ? 'active' : ''}}">Info</button></h4>
       <p ng-show="zm.bcinfo">Hire bone collectors to gather bones from the town's dead and your own fallen zombies. Each bone collector consumes 1 energy per second. They're hungry little creatures. Must be all that running around.</p>

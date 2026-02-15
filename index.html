@@ -33,7 +33,7 @@
     <script src="js/lz-string.min.js"></script>
     <script src="js/pixi-legacy.min.js"></script>
     <script src="js/angular.min.js"></script>
-    <script src="dist/bundle.js?v=v1.9.0"></script>
+    <script src="dist/bundle.js?v=v1.10.0"></script>
     <link rel="stylesheet" type="text/css" href="zombiemancer.css">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
   </head>
@@ -80,7 +80,7 @@
             <h4>Spider Collections</h4>
             <label class="bones" ng-if="zm.spiderTotalBones() > 0">Bones:<span class="value">+{{zm.spiderTotalBones()|whole}}</span></label>
             <label class="parts" ng-if="zm.spiderTotalParts() > 0">Parts:<span class="value">+{{zm.spiderTotalParts()|whole}}</span></label>
-            <label class="net-pool" ng-if="zm.model.netLaunchers" title="Parts pooled for next net launch (fires every 10s, costs 100 energy + 10% blood)">Net:<span class="value">{{zm.model.netLauncherParts|whole}}</span><span class="net-timer">{{zm.model.netLauncherTimer|decimal}}s</span></label>
+            <label class="net-pool" ng-if="zm.model.netLaunchers" title="Parts pooled for next net launch (fires every 10s, costs 100 energy + 10% blood)">Sling:<span class="value">{{zm.model.netLauncherParts|whole}}</span><span class="net-timer">{{zm.model.netLauncherTimer|decimal}}s</span></label>
         </div>
       </div>
     </div>
@@ -146,6 +146,7 @@
       <h4 ng-if="zm.model.prestigePointsEarned > 0">You have earned {{zm.model.prestigePointsEarned}} prestige points</h4>
       <h4 ng-if="zm.model.endLevelBones" style="margin:1em">Your bone collectors have gathered the remaining {{zm.model.endLevelBones}} bones from the town</h4>
       <button ng-click="zm.nextLevel();">Start Level {{zm.model.level + 1}}</button>
+      <button ng-click="zm.startBossRush();" ng-if="zm.model.level == 50 && !zm.model.bossRushOffered">Boss Rush (100, 150, 200...)</button>
     </div>
 
     <div class="start-game" ng-if="zm.model.currentState == zm.model.states.prestiged">
@@ -155,7 +156,6 @@
       <p>It is recommended to spend your points before clicking start game</p>
       <p>as some of their effects will only activate when a new level is started.</p>
       <button ng-click="zm.startGame();">Start Level {{zm.model.level}}</button>
-      <button ng-click="zm.startBossRush();" ng-if="!zm.model.bossRushOffered">Boss Rush (50, 100, 150...)</button>
     </div>
   </body>
 </html>

@@ -1,6 +1,8 @@
 <div class="shop" ng-if="zm.sidePanels.prestige">
   <div class="shop-title">
     <h2>Prestige Menu</h2>
+    <button ng-click="zm.toggleTabAuto('prestige')" ng-if="zm.model.autoUpgrades"
+      class="{{zm.isTabAutoOn('prestige') ? 'active' : ''}}">{{zm.isTabAutoOn('prestige') ? 'Auto On' : 'Auto Off'}}</button>
     <button ng-click="zm.closeSidePanels()">Close</button>
   </div>
   <h3>Prestige now to unlock {{zm.model.persistentData.prestigePointsEarned|whole}} prestige points</h3>

@@ -1,6 +1,8 @@
 <div class="shop" ng-if="zm.sidePanels.shop">
   <div class="shop-title">
     <h2>Shop</h2>
+    <button ng-click="zm.toggleTabAuto('shop')" ng-if="zm.model.autoUpgrades && zm.currentShopFilter != 'completed'"
+      class="{{zm.isTabAutoOn('shop') ? 'active' : ''}}">{{zm.isTabAutoOn('shop') ? 'Auto On' : 'Auto Off'}}</button>
     <button ng-click="zm.closeSidePanels();">Close</button>
   </div>
   <div class="tabs">
