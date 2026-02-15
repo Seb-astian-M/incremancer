@@ -4883,7 +4883,7 @@ var Incremancer;
         sprite.anchor.set(.5, .5), sprite.scale.set(2, 2), sprite.alpha = 0.9;
         sprite.x = startX, sprite.y = startY;
         sprite.destX = t.x, sprite.destY = t.y;
-        sprite.progress = 0, sprite.duration = 0.6 + Math.random() * 0.3;
+        sprite.progress = 0, sprite.duration = 1.5 + Math.random() * 0.5;
         sprite.startX = startX, sprite.startY = startY;
         sprite.arcHeight = 80 + Math.random() * 60;
         b.addChild(sprite);
@@ -4899,9 +4899,10 @@ var Incremancer;
           continue;
         }
         const t = p.progress;
-        p.x = p.startX + (p.destX - p.startX) * t;
-        p.y = p.startY + (p.destY - p.startY) * t - p.arcHeight * 4 * t * (1 - t);
-        p.rotation += dt * 4;
+        const eased = 0.5 - 0.5 * Math.cos(t * Math.PI);
+        p.x = p.startX + (p.destX - p.startX) * eased;
+        p.y = p.startY + (p.destY - p.startY) * eased - p.arcHeight * 4 * t * (1 - t);
+        p.rotation += dt * (1 + 3 * Math.cos(t * Math.PI) * Math.cos(t * Math.PI));
         p.alpha = t > 0.8 ? (1 - t) * 5 : 0.9;
       }
     }
