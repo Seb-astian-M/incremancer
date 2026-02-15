@@ -1401,7 +1401,7 @@ var Incremancer;
           }
         }
         this.persistentData.parts += endParts, this.addBones(endBones);
-        if (endParts > 0 || endBones > 0) this.sendMessage("Spiders collected remaining: " + (endBones > 0 ? Math.floor(endBones) + " bones" : "") + (endBones > 0 && endParts > 0 ? ", " : "") + (endParts > 0 ? Math.floor(endParts) + " parts" : ""), "chat-construction");
+        if (endParts > 0 || endBones > 0) this.sendMessage("Spiders collected remaining: " + (endBones > 0 ? n(endBones) + " bones" : "") + (endBones > 0 && endParts > 0 ? ", " : "") + (endParts > 0 ? n(endParts) + " parts" : ""), "chat-construction");
       }
     }
     calculateEndLevelZombieCages() {
@@ -4819,7 +4819,7 @@ var Incremancer;
             if (boneAmt > 0 || partsAmt > 0) {
               this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
               this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
-              const msg = "Spiders collected: " + (this.spiderTotalBones > 0 ? Math.floor(this.spiderTotalBones) + " bones" : "") + (this.spiderTotalBones > 0 && this.spiderTotalParts > 0 ? ", " : "") + (this.spiderTotalParts > 0 ? Math.floor(this.spiderTotalParts) + " parts" : "");
+              const msg = "Spiders collected: " + (this.spiderTotalBones > 0 ? n(this.spiderTotalBones) + " bones" : "") + (this.spiderTotalBones > 0 && this.spiderTotalParts > 0 ? ", " : "") + (this.spiderTotalParts > 0 ? n(this.spiderTotalParts) + " parts" : "");
               const log = this.gameModel.chatLog;
               const idx = log.findIndex(m => m.cls === "chat-spider");
               if (idx >= 0) {
@@ -4828,7 +4828,7 @@ var Incremancer;
                 log.unshift(entry);
               } else {
                 this.spiderTotalBones = boneAmt, this.spiderTotalParts = partsAmt;
-                const freshMsg = "Spiders collected: " + (boneAmt > 0 ? Math.floor(boneAmt) + " bones" : "") + (boneAmt > 0 && partsAmt > 0 ? ", " : "") + (partsAmt > 0 ? Math.floor(partsAmt) + " parts" : "");
+                const freshMsg = "Spiders collected: " + (boneAmt > 0 ? n(boneAmt) + " bones" : "") + (boneAmt > 0 && partsAmt > 0 ? ", " : "") + (partsAmt > 0 ? n(partsAmt) + " parts" : "");
                 log.unshift({ id: this.gameModel.chatLogId++, text: freshMsg, cls: "chat-spider", count: 1 }), log.length > 30 && log.pop();
               }
             }
