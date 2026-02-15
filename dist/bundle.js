@@ -1377,7 +1377,32 @@ var Incremancer;
       this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
     }
     calculateEndLevelBones() {
-      this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones))
+      this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones));
+      if ((this.persistentData.spiders || 0) > 0) {
+        let endParts = 0, endBones = 0;
+        const mult = 1 + (this.spiderEfficiency || 0) * 0.1;
+        const sc = SpiderCollector.instance;
+        if (this.partsRecollection && SpiderCollector.partsPiles) {
+          for (let i = 0; i < SpiderCollector.partsPiles.uncollected.length; i++) {
+            const p = SpiderCollector.partsPiles.uncollected[i];
+            if (p.value > 0) endParts += p.value * mult, p.value = 0;
+          }
+        }
+        if (this.bones.uncollected) {
+          for (let i = 0; i < this.bones.uncollected.length; i++) {
+            const p = this.bones.uncollected[i];
+            if (p.value > 0) endBones += p.value, p.value = 0;
+          }
+        }
+        if (sc) {
+          for (let i = 0; i < sc.sprites.length; i++) {
+            const s = sc.sprites[i];
+            endParts += s.carriedParts, endBones += s.carriedBones, s.carriedParts = 0, s.carriedBones = 0;
+          }
+        }
+        this.persistentData.parts += endParts, this.addBones(endBones);
+        if (endParts > 0 || endBones > 0) this.sendMessage("Spiders collected remaining: " + (endBones > 0 ? Math.floor(endBones) + " bones" : "") + (endBones > 0 && endParts > 0 ? ", " : "") + (endParts > 0 ? Math.floor(endParts) + " parts" : ""), "chat-construction");
+      }
     }
     calculateEndLevelZombieCages() {
       this.zombieCages > 0 && (this.zombiesInCages += this.zombieCount, this.zombiesInCages > this.zombieCages && (this.zombiesInCages = this.zombieCages))
@@ -4784,7 +4809,7 @@ var Incremancer;
           if (!e.target || !e.target.value || !e.target.visible) {
             e.boneList = [], e.speedFactor = 0, this.findNearestTarget(e);
           }
-          if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= 40 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
+          if (e.carriedBones >= 50 || e.carriedParts >= 40 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
         case Zt.returning:
           e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * 0.5), (e.carriedBones > 0 || e.carriedParts > 0) && this.gameModel.sendMessage("Spider returned: " + (e.carriedBones > 0 ? Math.floor(e.carriedBones) + " bones" : "") + (e.carriedBones > 0 && e.carriedParts > 0 ? ", " : "") + (e.carriedParts > 0 ? Math.floor(e.carriedParts) + " parts" : ""), "chat-construction"), e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0)
