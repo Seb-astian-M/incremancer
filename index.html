@@ -155,6 +155,7 @@
       <p>It is recommended to spend your points before clicking start game</p>
       <p>as some of their effects will only activate when a new level is started.</p>
       <button ng-click="zm.startGame();">Start Level {{zm.model.level}}</button>
+      <button ng-click="zm.startBossRush();" ng-if="!zm.model.bossRushOffered">Boss Rush (50, 100, 150...)</button>
     </div>
   </body>
 </html>

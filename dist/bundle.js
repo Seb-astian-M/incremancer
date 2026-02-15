@@ -1153,7 +1153,7 @@ var Incremancer;
           damageReduction: 1,
           healthRegen: 0,
           damageReflection: 0
-        }, this.encodedContent = "", this.savefilename = "", this.autoUpgrades = !1, this.autoconstruction = !1, this.autoconstructionUnlocked = !1, this.levelResourcesAdded = !1, this.bulletproofChance = 0, this.gameSpeed = 1, this.trophyHuntMode = !1, this.level = 1, this.currentState = "startGame", this.states = {
+        }, this.encodedContent = "", this.savefilename = "", this.autoUpgrades = !1, this.autoconstruction = !1, this.autoconstructionUnlocked = !1, this.levelResourcesAdded = !1, this.bulletproofChance = 0, this.gameSpeed = 1, this.trophyHuntMode = !1, this.bossRushMode = !1, this.bossRushOffered = !1, this.level = 1, this.currentState = "startGame", this.states = {
           playingLevel: "playingLevel",
           levelCompleted: "levelCompleted",
           startGame: "startGame",
@@ -1384,8 +1384,9 @@ var Incremancer;
         this.startTimer = 0
       }
       this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e), this.updateNetLauncher(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e);
-      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level);
-      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && !this.bossRushMode && this.startLevel(this.level);
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.bossRushMode && this.startLevel(Math.ceil((this.level + 1) / 50) * 50),
+      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
     }
     calculateEndLevelBones() {
       this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones));
@@ -1579,7 +1580,7 @@ var Incremancer;
           damageReduction: 1,
           healthRegen: 0,
           damageReflection: 0
-        }, this.bossFailCount = 0, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.level = 1, this.currentState = this.states.prestiged, this.skeleton.persistent.talentReset = !0, this.setupLevel(), this.saveData();
+        }, this.bossFailCount = 0, this.bossRushMode = !1, this.bossRushOffered = !1, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.level = 1, this.currentState = this.states.prestiged, this.skeleton.persistent.talentReset = !0, this.setupLevel(), this.saveData();
 
       }
     }
@@ -6165,6 +6166,7 @@ var Incremancer;
       },
       startLevel() {
         c.model.trophyHuntMode && (c.model.trophyHuntMode = !1, c.model.sendMessage("Trophy Hunt mode ended.", "chat-warning"));
+        c.model.bossRushMode && (c.model.bossRushMode = !1, c.model.sendMessage("Boss Rush ended.", "chat-warning"));
         c.model.startLevel(this.level.level), this.shown = !1
       }
     }, c.addToHomeScreen = function() {
@@ -6305,6 +6307,11 @@ var Incremancer;
       return h.displayStatValue(e)
     }, c.startGame = function() {
       c.model.startGame()
+    }, c.startBossRush = function() {
+      c.model.bossRushOffered = !0;
+      c.model.bossRushMode = !0;
+      c.model.startLevel(50);
+      c.model.sendMessage("Boss Rush started! Jumping to boss levels.", "chat-upgrade");
     }, c.nextLevel = function() {
       c.model.nextLevel()
     }, c.toggleAutoStart = function() {
