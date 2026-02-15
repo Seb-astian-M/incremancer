@@ -1119,6 +1119,7 @@ var Incremancer;
         this.strapemRank = 0,
         this.spiderSpeedMod = 0,
         this.spiderEfficiency = 0,
+        this.silkSpeedRank = 0,
         this.netLaunchers = 0,
         this.explosiveNets = !1,
         this.zombieNets = 0,
@@ -1310,6 +1311,7 @@ var Incremancer;
         this.strapemRank = 0,
         this.spiderSpeedMod = 0,
         this.spiderEfficiency = 0,
+        this.silkSpeedRank = 0,
         this.netLaunchers = 0,
         this.explosiveNets = !1,
         this.maxZombieNets = 0,
@@ -1903,7 +1905,8 @@ var Incremancer;
           magicalTraining: "magicalTraining",
           expandedBuffSlots: "expandedBuffSlots",
           spellBuff: "spellBuff",
-          tailoring: "tailoring"
+          tailoring: "tailoring",
+          silkSpeed: "silkSpeed"
         }, this.costs = {
           energy: "energy",
           blood: "blood",
@@ -2158,6 +2161,7 @@ var Incremancer;
           new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 1, 1, 1, "Fuse spider silk with zombie flesh for massive power. Zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", "Strapped! Zombies are now fused with spider silk.", 305),
           new UpgradeDef(120, "Strap 'em Tighter!", this.types.strapem, this.costs.blood, 1e30, 1, 1, 1, "Further fuse spider silk with zombie flesh. Zombie damage x225, health x225, energy cost x100, harpy energy drain x100.", "Double-strapped! Spider silk reinforcement complete.", 81),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
+          new UpgradeDef(121, "Silk Velocity", this.types.silkSpeed, this.costs.blood, 5e4, 2, 1, 5, "Strengthen spider silk for faster string deployment. Each rank increases silk extend/retract speed by 30%.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
           new UpgradeDef(84, "Slingshot Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 3, 1, 10, "Each rank adds one more slingshot per launch. Costs 100 energy + 10% blood per launch.", "Slingshot Launchers online! Projectiles will be launched periodically.", 305),
           new UpgradeDef(85, "Explosive Shots", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "All slingshot shots deal AoE damage on impact based on resources expended.", "Shots now explode on impact!", 84),
@@ -2386,6 +2390,8 @@ var Incremancer;
           return void(this.gameModel.strapemRank += t);
         case this.types.spiderSpeed:
           return void(this.gameModel.spiderSpeedMod = t * e.effect);
+        case this.types.silkSpeed:
+          return void(this.gameModel.silkSpeedRank = t);
         case this.types.netLaunchers:
           return void(this.gameModel.netLaunchers = t);
         case this.types.explosiveNets:
@@ -2597,6 +2603,8 @@ var Incremancer;
           return `Zombie damage x${Math.pow(15,sr)}, health x${Math.pow(15,sr)}, energy cost x${Math.pow(10,sr)}: ` + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
         case this.types.spiderSpeed:
           return "Spider speed bonus: +" + Math.round(100 * this.gameModel.spiderSpeedMod) + "%";
+        case this.types.silkSpeed:
+          return "Silk speed bonus: +" + Math.round((Math.pow(1.3, this.gameModel.silkSpeedRank) - 1) * 100) + "%";
         case this.types.recollectionEfficiency:
           return "Spider collection bonus: +" + (this.currentRank(e) * 10) + "%";
         case this.types.netLaunchers:
@@ -4972,16 +4980,54 @@ var Incremancer;
     }
     pickAngle(spider, isBest) {
       if (this.anglePool.length === 0) return false;
-      let idx;
-      if (isBest) {
-        idx = 0;
-      } else {
-        idx = (Math.random() * this.anglePool.length) | 0;
+      const minSep = 5 * Math.PI / 180;
+      const busy = [];
+      for (let i = 0; i < this.sprites.length; i++) {
+        const s = this.sprites[i];
+        if (s !== spider && (s.state === Zt.extending || s.state === Zt.moving)) {
+          busy.push(s.aimAngle);
+        }
       }
-      const picked = this.anglePool.splice(idx, 1)[0];
-      spider.aimAngle = picked.angle;
-      spider.rotation = picked.angle;
-      return true;
+      const tooClose = (ang) => {
+        for (let i = 0; i < busy.length; i++) {
+          let d = Math.abs(ang - busy[i]);
+          if (d > Math.PI) d = 2 * Math.PI - d;
+          if (d < minSep) return true;
+        }
+        return false;
+      };
+      if (isBest) {
+        for (let idx = 0; idx < this.anglePool.length; idx++) {
+          if (!tooClose(this.anglePool[idx].angle)) {
+            const picked = this.anglePool.splice(idx, 1)[0];
+            spider.aimAngle = picked.angle;
+            spider.rotation = picked.angle;
+            return true;
+          }
+        }
+      } else {
+        const valid = [];
+        for (let i = 0; i < this.anglePool.length; i++) {
+          if (!tooClose(this.anglePool[i].angle)) valid.push(i);
+        }
+        if (valid.length > 0) {
+          const idx = valid[(Math.random() * valid.length) | 0];
+          const picked = this.anglePool.splice(idx, 1)[0];
+          spider.aimAngle = picked.angle;
+          spider.rotation = picked.angle;
+          return true;
+        }
+      }
+      const busy2 = busy;
+      for (let tries = 0; tries < 20; tries++) {
+        const rndAng = Math.random() * 2 * Math.PI;
+        if (!tooClose(rndAng)) {
+          spider.aimAngle = rndAng;
+          spider.rotation = rndAng;
+          return true;
+        }
+      }
+      return false;
     }
     collectAlongString(spider) {
       const cx = spider.position.x, cy = spider.position.y;
@@ -5086,8 +5132,9 @@ var Incremancer;
     updateSpider(spider, dt) {
       const gcx = this.graveyard.sprite.x, gcy = this.graveyard.sprite.y;
       const speedMod = 1 + (this.gameModel.spiderSpeedMod || 0);
-      const moveSpeed = 100 * speedMod;
-      const silkSpeed = Math.max(P.x, P.y) / 12;
+      const maxMoveSpeed = 60 * speedMod;
+      const silkSpeedMult = Math.pow(1.3, this.gameModel.silkSpeedRank || 0);
+      const silkSpeed = Math.max(P.x, P.y) / 12 * silkSpeedMult;
       const fenceR = this.gameModel.fenceRadius || 50;
       switch (spider.state) {
         case Zt.idle:
@@ -5101,6 +5148,7 @@ var Incremancer;
           spider.fenceX = gcx + Math.cos(spider.aimAngle) * fenceR * 0.9;
           spider.fenceY = gcy + Math.sin(spider.aimAngle) * fenceR * 0.9;
           spider.state = Zt.moving;
+          spider.moveTotalDist = 0;
           spider.stringDist = 0;
           spider.carriedParts = 0;
           spider.carriedBones = 0;
@@ -5111,7 +5159,13 @@ var Incremancer;
           const dx = spider.fenceX - spider.position.x;
           const dy = spider.fenceY - spider.position.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const step = Math.min(moveSpeed * dt, dist);
+          if (!spider.moveTotalDist) spider.moveTotalDist = dist;
+          const totalD = spider.moveTotalDist;
+          const traveled = totalD - dist;
+          const t01 = totalD > 0 ? Math.min(traveled / totalD, 1) : 1;
+          const ease = t01 < 0.5 ? 2 * t01 : 2 * (1 - t01);
+          const curSpeed = maxMoveSpeed * (0.15 + 0.85 * ease);
+          const step = Math.min(curSpeed * dt, dist);
           if (dist > 0) {
             spider.position.x += dx / dist * step;
             spider.position.y += dy / dist * step;
@@ -5142,6 +5196,7 @@ var Incremancer;
           if (spider.stringDist <= 0) {
             spider.stringDist = 0;
             this.cleanupSilk(spider);
+            spider.returnTotalDist = 0;
             spider.state = Zt.returning;
           } else {
             this.updateSilkVisuals(spider);
@@ -5155,7 +5210,13 @@ var Incremancer;
             this.depositResources(spider);
             spider.state = Zt.idle;
           } else {
-            const rstep = Math.min(moveSpeed * dt, rdist);
+            if (!spider.returnTotalDist) spider.returnTotalDist = rdist;
+            const rtotalD = spider.returnTotalDist;
+            const rtraveled = rtotalD - rdist;
+            const rt01 = rtotalD > 0 ? Math.min(rtraveled / rtotalD, 1) : 1;
+            const rease = rt01 < 0.5 ? 2 * rt01 : 2 * (1 - rt01);
+            const rcurSpeed = maxMoveSpeed * (0.15 + 0.85 * rease);
+            const rstep = Math.min(rcurSpeed * dt, rdist);
             spider.position.x += rdx / rdist * rstep;
             spider.position.y += rdy / rdist * rstep;
             spider.zIndex = spider.position.y;
