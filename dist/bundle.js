@@ -4917,6 +4917,10 @@ var Incremancer;
       }
       this.anglePool = [];
       this.shotsSinceRefresh = 0;
+      const slAngle = Math.random() * 2 * Math.PI;
+      const slDist = (0.4 + Math.random() * 0.2) * (this.gameModel.fenceRadius || 50);
+      this.slingshotX = cx + Math.cos(slAngle) * slDist;
+      this.slingshotY = cy + Math.sin(slAngle) * slDist;
     }
     addAndRemoveSpiders() {
       const count = this.gameModel.persistentData.spiders || 0;
@@ -5169,7 +5173,7 @@ var Incremancer;
           const curSpeed = maxMoveSpeed * (0.15 + 0.85 * ease);
           const step = Math.min(curSpeed * dt, dist);
           if (dist > 0) {
-            spider.rotation = Math.atan2(dy, dx);
+            spider.rotation = Math.atan2(dy, dx) + Math.PI / 2;
             spider.position.x += dx / dist * step;
             spider.position.y += dy / dist * step;
           }
@@ -5186,11 +5190,12 @@ var Incremancer;
         }
         case Zt.aiming: {
           const turnSpeed = 3;
-          let diff = spider.aimAngle - spider.rotation;
+          const targetRot = spider.aimAngle + Math.PI / 2;
+          let diff = targetRot - spider.rotation;
           if (diff > Math.PI) diff -= 2 * Math.PI;
           if (diff < -Math.PI) diff += 2 * Math.PI;
           if (Math.abs(diff) < turnSpeed * dt) {
-            spider.rotation = spider.aimAngle;
+            spider.rotation = targetRot;
             spider.state = Zt.extending;
           } else {
             spider.rotation += Math.sign(diff) * turnSpeed * dt;
@@ -5219,7 +5224,7 @@ var Incremancer;
           }
           break;
         case Zt.returning: {
-          const slX = gcx + 35, slY = gcy + 5;
+          const slX = this.slingshotX || gcx, slY = this.slingshotY || gcy;
           const rdx = slX - spider.position.x, rdy = slY - spider.position.y;
           const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
           if (rdist < 30) {
