@@ -1149,7 +1149,7 @@ var Incremancer;
           damageReduction: 1,
           healthRegen: 0,
           damageReflection: 0
-        }, this.encodedContent = "", this.savefilename = "", this.autoUpgrades = !1, this.autoconstruction = !1, this.autoconstructionUnlocked = !1, this.levelResourcesAdded = !1, this.bulletproofChance = 0, this.gameSpeed = 1, this.level = 1, this.currentState = "startGame", this.states = {
+        }, this.encodedContent = "", this.savefilename = "", this.autoUpgrades = !1, this.autoconstruction = !1, this.autoconstructionUnlocked = !1, this.levelResourcesAdded = !1, this.bulletproofChance = 0, this.gameSpeed = 1, this.trophyHuntMode = !1, this.level = 1, this.currentState = "startGame", this.states = {
           playingLevel: "playingLevel",
           levelCompleted: "levelCompleted",
           startGame: "startGame",
@@ -3050,7 +3050,9 @@ var Incremancer;
     damageHuman(e, t) {
       this.gameModel.addBlood(Math.round(t / 3)), e.health -= t, e.timer.scan = 0, e.flags.tank ? this.fragments.newPart(e.x, e.y - 18, 8086798) : (this.blood.newSplatter(e.x, e.y), e.speedMod = Math.max(Math.min(1, e.health / e.maxHealth), .25)), e.health <= 0 && !e.flags.dead && (this.bones.newBones(e.x, e.y), PartsPiles.instance && PartsPiles.instance.newPartsDrop(e.x, e.y, e.maxHealth), e.flags.dead = !0, this.gameModel.addBrains(1), this.skeleton.addXp(this.gameModel.level), this.skeleton.testForLoot(), e.flags.tank ? (this.blasts.newDroneBlast(e.x, e.y - 5), this.fragments.newFragmentExplosion(e.x, e.y - 5, 8086798), e.visible = !1) : e.textures = e.deadTexture, e.flags.vip && (this.vipText.visible = !1, this.trophies.trophyAquired(this.gameModel.level), setTimeout((() => {
         this.vipEscaping = !1
-      }), 2e3))), this.army.assaultStarted || Math.random() > .9 && this.gameModel.isBossStage(this.gameModel.level) && (this.army.assaultStarted = !0, this.gameModel.sendMessage("The assault has begun!", "chat-warning"))
+      }), 2e3), this.gameModel.trophyHuntMode && setTimeout((() => {
+        this.gameModel.startLevel(this.gameModel.level + 5 - this.gameModel.level % 5)
+      }), 500))), this.army.assaultStarted || Math.random() > .9 && this.gameModel.isBossStage(this.gameModel.level) && (this.army.assaultStarted = !0, this.gameModel.sendMessage("The assault has begun!", "chat-warning"))
     }
     updateBurns(e, t) {
       e.timer.burnTick -= t, e.timer.smoke -= t, e.timer.smoke < 0 && (this.smoke.newFireSmoke(e.x, e.y - 14), e.timer.smoke = this.smokeTimer), e.timer.burnTick < 0 && (this.damageHuman(e, e.burnDamage), e.timer.burnTick = this.burnTickTimer, this.exclamations.newFire(e))
@@ -3210,7 +3212,7 @@ var Incremancer;
           this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.moveTargetDistance ? (e.target = void 0, e.zombieTarget = void 0, this.changeState(e, ce.standing)) : this.updateHumanSpeed(e, t);
           break;
         case ce.escaping:
-          this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.moveTargetDistance ? (this.smoke.newDroneCloud(e.x, e.y), e.flags.dead = !0, e.zombieTarget = void 0, e.visible = !1, this.vipText.visible = !1, this.gameModel.sendMessage("The VIP has escaped!", "chat-warning"), this.gameModel.vipEscaped(), setTimeout((() => {
+          this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.moveTargetDistance ? (this.smoke.newDroneCloud(e.x, e.y), e.flags.dead = !0, e.zombieTarget = void 0, e.visible = !1, this.vipText.visible = !1, this.gameModel.sendMessage("The VIP has escaped!", "chat-warning"), this.gameModel.vipEscaped(), this.gameModel.trophyHuntMode && (this.gameModel.trophyHuntMode = !1, this.gameModel.sendMessage("Trophy Hunt mode ended.", "chat-warning")), setTimeout((() => {
             this.vipEscaping = !1
           }), 2e3)) : this.updateHumanSpeed(e, t);
           break;
@@ -4686,6 +4688,7 @@ var Incremancer;
       this.gameModel.isBossStage(this.gameModel.level) && (this.graveyardHealth -= e, this.graveyardHealth < 0 && (
         this.gameModel.lastFailedBoss === this.gameModel.level ? this.gameModel.bossFailCount++ : (this.gameModel.lastFailedBoss = this.gameModel.level, this.gameModel.bossFailCount = 1),
         this.gameModel.currentState = this.gameModel.states.failed,
+        this.gameModel.trophyHuntMode && (this.gameModel.trophyHuntMode = !1, this.gameModel.sendMessage("Trophy Hunt mode ended.", "chat-warning")),
         this.gameModel.startTimer = 3
       ))
     }
@@ -6068,6 +6071,7 @@ var Incremancer;
         this.level = e
       },
       startLevel() {
+        c.model.trophyHuntMode && (c.model.trophyHuntMode = !1, c.model.sendMessage("Trophy Hunt mode ended.", "chat-warning"));
         c.model.startLevel(this.level.level), this.shown = !1
       }
     }, c.addToHomeScreen = function() {
@@ -6429,7 +6433,16 @@ var Incremancer;
       },
       resetFilter() { this.itemsFilters.se = [], this.itemsFilters.r = [], this.itemsFilters.t = [] },
       acceptOffer() {
-        i.acceptOffer(), this.isShown = !1
+        const wasAlreadyJoined = i.persistent.skeletons > 0;
+        i.acceptOffer(), this.isShown = !1;
+        if (wasAlreadyJoined) {
+          c.confirmMessage = "Your trophies are gone. Want to enter Trophy Hunt mode? The champion will rush through trophy levels (5, 10, 15...), advancing as soon as each VIP is slain.";
+          c.confirmCallback = function() {
+            c.model.trophyHuntMode = !0;
+            c.model.startLevel(5);
+            c.confirmCallback = !1;
+          };
+        }
       },
       anotherOffer: () => i.persistent.skeletons > 0 && c.model.persistentData.trophies.length >= (i.persistent.xpRate < 4 ? 20 * i.persistent.xpRate :
         i.persistent.xpRate < 8 ? 70 :
