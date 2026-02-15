@@ -5718,37 +5718,47 @@ var Incremancer;
       return c.model.skeleton.persistent.items.filter(function(i) { return i && !i.equipped })
     }, c.itemName = function(item) {
       if (!item) return "";
-      return (item.n || "Item") + " (Lv" + (item.l || 1) + " " + (item.pw ? "PW" + item.pw : "") + ")"
+      const skel = c.model.skeleton;
+      const name = skel.getLootName ? skel.getLootName(item) : (item.n || "Item");
+      return name + " (Lv" + (item.l || 1) + (item.pw ? " PW" : "") + ")"
     }, c.combinePatchwork = function() {
       if (!c.tailorSlot1 || !c.tailorSlot2 || c.tailorSlot1 === c.tailorSlot2) return;
       const a = c.tailorSlot1,
-        b = c.tailorSlot2;
+        bItem = c.tailorSlot2;
       const items = c.model.skeleton.persistent.items;
-      if (a.pw && b.pw) {
-        if (a.pw < 2 || b.pw < 2) { c.tailorMessage = "Both items must be pw:2 for reshuffling, or neither should be patchwork for first combine"; return }
-        const idx = items.indexOf(b);
+      const skel = c.model.skeleton;
+      if (a.pw && bItem.pw) {
+        if (a.pw < 2 || bItem.pw < 2) { c.tailorMessage = "Both items must be pw:2 for reshuffling, or neither should be patchwork for first combine"; return }
+        if (a.s !== bItem.s) { c.tailorMessage = "Both items must be the same equipment slot."; return }
+        const idx = items.indexOf(bItem);
         if (idx >= 0) items.splice(idx, 1);
-        a.l = Math.max(a.l || 1, b.l || 1);
-        c.tailorMessage = "Reshuffled! Sacrifice consumed.";
-      } else if (a.pw || b.pw) {
+        a.l = Math.max(a.l || 1, bItem.l || 1);
+        a.e = a.e || [];
+        if (bItem.e && bItem.e.length > 0) a.e.push(bItem.e[Math.floor(Math.random() * bItem.e.length)]);
+        c.tailorMessage = "Reshuffled! Sacrifice consumed, bonus stat added.";
+      } else if (a.pw || bItem.pw) {
         c.tailorMessage = "Cannot combine: one item is patchwork, the other is not. Both must be normal or both pw:2.";
         return;
       } else {
-        const result = {};
-        result.n = "Patchwork " + (a.n || b.n || "Armor");
-        result.l = Math.max(a.l || 1, b.l || 1);
-        result.r = Math.max(a.r || 0, b.r || 0);
-        result.pw = 2;
-        if (a.se || b.se) result.se = (a.se || b.se);
-        result.e = [];
-        const higher = (a.r || 0) >= (b.r || 0) ? a : b;
-        const lower = higher === a ? b : a;
+        if (a.s !== bItem.s) { c.tailorMessage = "Both items must be the same equipment slot."; return }
+        const higher = (a.r || 0) >= (bItem.r || 0) ? a : bItem;
+        const lower = higher === a ? bItem : a;
+        const result = {
+          id: skel.persistent.currItemId++,
+          s: higher.s,
+          l: Math.max(a.l || 1, bItem.l || 1),
+          r: Math.max(a.r || 0, bItem.r || 0),
+          p: higher.p,
+          pw: 2,
+          q: !1,
+          e: [],
+          se: (higher.se && higher.se.length > 0) ? higher.se : (lower.se || [])
+        };
         if (higher.e) result.e = result.e.concat(higher.e);
         if (lower.e && lower.e.length > 0) result.e.push(lower.e[Math.floor(Math.random() * lower.e.length)]);
-        const idxA = items.indexOf(a),
-          idxB = items.indexOf(b);
+        const idxA = items.indexOf(a);
         if (idxA >= 0) items.splice(idxA, 1);
-        const newIdxB = items.indexOf(b);
+        const newIdxB = items.indexOf(bItem);
         if (newIdxB >= 0) items.splice(newIdxB, 1);
         items.push(result);
         c.tailorMessage = "Patchwork armor created!";
