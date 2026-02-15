@@ -1447,7 +1447,7 @@ var Incremancer;
         if (this.skeletonNets) {
           this.addBones(1e9);
           const costScale = Math.max(1, partsUsed / 1e6);
-          this.skeleton.spawnNetSkeleton(costScale);
+          this.humans.skeleton.spawnNetSkeleton(costScale);
           this.sendMessage("Skeleton Net: +1B bones, +1 skeleton!", "chat-construction")
         }
         this.sendMessage("Net launched! " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
@@ -5004,10 +5004,11 @@ var Incremancer;
           continue;
         }
         const t = p.progress;
-        const eased = 0.5 - 0.5 * Math.cos(t * Math.PI);
+        const eased = t < 0.5 ? 2 * t * t * t : 1 - Math.pow(2 * (1 - t), 1.5) / 2;
         p.x = p.startX + (p.destX - p.startX) * eased;
         p.y = p.startY + (p.destY - p.startY) * eased - p.arcHeight * 4 * t * (1 - t);
-        p.rotation += dt * (1 + 3 * Math.cos(t * Math.PI) * Math.cos(t * Math.PI));
+        const speed = t < 0.5 ? 6 * t * t : 3 * Math.pow(2 * (1 - t), 0.5);
+        p.rotation += dt * (0.5 + 4 * speed);
         p.alpha = t > 0.8 ? (1 - t) * 5 : 0.9;
       }
     }
