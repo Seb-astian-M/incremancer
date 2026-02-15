@@ -2072,7 +2072,7 @@ var Incremancer;
           new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e15, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
           new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e16, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
           new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e13, 100, 1, 0, "Fuse spider silk with zombie flesh for massive power. Each rank: zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
-          new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e14, 1.25, 1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
+          new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e14, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e15, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
           new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e18, 1, 1, 1, "Spiders weave collected parts into projectile nets, launched every 10 seconds. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
           new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e17, 1, 1, 1, "Net projectiles now deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
@@ -2287,7 +2287,7 @@ var Incremancer;
         case this.types.strapem:
           return void(this.gameModel.strapemRank = t);
         case this.types.spiderSpeed:
-          return void(this.gameModel.spiderSpeedMod = t);
+          return void(this.gameModel.spiderSpeedMod = t * e.effect);
         case this.types.netLaunchers:
           return void(this.gameModel.netLaunchers = !0);
         case this.types.explosiveNets:
