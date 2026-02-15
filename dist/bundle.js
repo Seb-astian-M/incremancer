@@ -1,4 +1,4 @@
-console.log("[Incremancer fork] bundle version: 20260215d");
+console.log("[Incremancer fork] bundle version: 20260215e");
 var Incremancer;
 (() => {
   "use strict";
@@ -4557,7 +4557,7 @@ var Incremancer;
       Graveyard.instance = this
     }
     initialize() {
-      this.boneCollectors = new BoneCollectors, this.zmMap = new LevelMap, this.zombies = new Zombies, this.bones = new Bones, this.partsPiles = new PartsPiles, this.gameModel = GameModel.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.spiders = new SpiderCollector, this.netProjectile = new NetProjectile, this.blood = new _e, this.humans = new Humans, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), void 0 === this.gameModel.persistentData.spiders && (this.gameModel.persistentData.spiders = 0), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.partsPiles.initialize(), SpiderCollector.partsPiles = this.partsPiles, this.boneCollectors.populate(), this.harpies.populate(), this.spiders.populate()
+      this.boneCollectors = new BoneCollectors, this.zmMap = new LevelMap, this.zombies = new Zombies, this.bones = new Bones, this.partsPiles = new PartsPiles, this.gameModel = GameModel.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.spiders = new SpiderCollector, this.netProjectile = new NetProjectile, this.blood = new _e, this.humans = new Humans, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), void 0 === this.gameModel.persistentData.spiders && (this.gameModel.persistentData.spiders = 0), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.partsPiles.initialize(), SpiderCollector.partsPiles = this.partsPiles, this.boneCollectors.populate(), this.harpies.populate(), this.spiders.populate(), this.netProjectile.setupLauncher(this.sprite)
     }
     damageGraveyard(e) {
       this.gameModel.isBossStage(this.gameModel.level) && (this.graveyardHealth -= e, this.graveyardHealth < 0 && (
@@ -4613,7 +4613,7 @@ var Incremancer;
       if (this.boneCollectors.addAndRemoveBoneCollectors(), this.harpies.addAndRemoveHarpies(), this.spiders.addAndRemoveSpiders(), this.gameModel.isBossStage(this.gameModel.level) && this.updateHealthBar(), !this.gameModel.constructions.graveyard || this.gameModel.currentState != this.gameModel.states.playingLevel) return this.sprite.visible = !1, void(this.fence.visible = !1);
       if ((this.level < 2 && this.gameModel.constructions.crypt || this.level < 3 && this.gameModel.constructions.fort || this.level < 4 && this.gameModel.constructions.fortress || this.level < 5 && this.gameModel.constructions.citadel) && this.drawGraveyard(), this.sprite.visible = !0, this.fortSprite && (this.fortSprite.visible = !0), 5 == this.level && Math.random() > .9 && (Math.random() > .5 ? this.smoke.newFireSmoke(this.sprite.x - 20, this.sprite.y - 113) : this.smoke.newFireSmoke(this.sprite.x + 20, this.sprite.y - 113)), this.gameModel.energy >= this.gameModel.energyMax && !this.gameModel.hidden)
         for (let e = 0; e < this.gameModel.persistentData.graveyardZombies; e++) this.zombies.spawnZombie(this.sprite.x, this.sprite.y + (this.level > 2 ? 8 : 0));
-      this.bones.update(e), this.partsPiles.update(e), this.boneCollectors.update(e), this.harpies.update(e), this.spiders.update(e), this.netProjectile.update(e), this.gameModel.constructions.fence && this.gameModel.currentState == this.gameModel.states.playingLevel ? (this.fenceRadius !== this.gameModel.fenceRadius && this.drawFence(), this.fence.visible = !0) : this.fence.visible = !1, this.updatePlagueSpikes(e), this.updateSpikeSprites(e)
+      this.bones.update(e), this.partsPiles.update(e), this.boneCollectors.update(e), this.harpies.update(e), this.spiders.update(e), this.netProjectile.update(e), this.netProjectile.updateLauncher(this.gameModel), this.gameModel.constructions.fence && this.gameModel.currentState == this.gameModel.states.playingLevel ? (this.fenceRadius !== this.gameModel.fenceRadius && this.drawFence(), this.fence.visible = !0) : this.fence.visible = !1, this.updatePlagueSpikes(e), this.updateSpikeSprites(e)
     }
     updatePlagueSpikes(e) {
       if (this.gameModel.constructions.plagueSpikes && (this.spikeTimer -= e, this.spikeTimer < 0)) {
@@ -4862,6 +4862,9 @@ var Incremancer;
       NetProjectile.instance = this;
       this.projectiles = [];
       this.texture = null;
+      this.launcherSprite = null;
+      this.launcherTextures = null;
+      this.currentState = -1;
     }
     getTexture() {
       if (this.texture) return this.texture;
@@ -4874,17 +4877,97 @@ var Incremancer;
       ctx.beginPath(), ctx.moveTo(11, 1), ctx.lineTo(1, 11), ctx.stroke();
       return this.texture = PIXI.Texture.from(c), this.texture;
     }
+    getLauncherTextures() {
+      if (this.launcherTextures) return this.launcherTextures;
+      this.launcherTextures = [];
+      const W = 24, H = 28;
+      const makeCanvas = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; return c; };
+      // State 0: Empty frame — wooden tripod launcher
+      const c0 = makeCanvas(), x0 = c0.getContext("2d");
+      x0.strokeStyle = "#8B6914", x0.lineWidth = 2;
+      x0.beginPath(), x0.moveTo(4, H - 2), x0.lineTo(12, 4), x0.lineTo(20, H - 2), x0.stroke();
+      x0.beginPath(), x0.moveTo(7, H - 10), x0.lineTo(17, H - 10), x0.stroke();
+      x0.strokeStyle = "#666", x0.lineWidth = 1.5;
+      x0.beginPath(), x0.arc(12, 6, 4, 0, 2 * Math.PI), x0.stroke();
+      this.launcherTextures.push(PIXI.Texture.from(c0));
+      // State 1: Net loaded — tripod with blue net draped
+      const c1 = makeCanvas(), x1 = c1.getContext("2d");
+      x1.strokeStyle = "#8B6914", x1.lineWidth = 2;
+      x1.beginPath(), x1.moveTo(4, H - 2), x1.lineTo(12, 4), x1.lineTo(20, H - 2), x1.stroke();
+      x1.beginPath(), x1.moveTo(7, H - 10), x1.lineTo(17, H - 10), x1.stroke();
+      x1.fillStyle = "rgba(100,170,255,0.5)", x1.strokeStyle = "#8cf", x1.lineWidth = 1;
+      x1.beginPath(), x1.moveTo(6, 6), x1.lineTo(18, 6), x1.lineTo(16, 14), x1.lineTo(8, 14), x1.closePath(), x1.fill(), x1.stroke();
+      x1.beginPath(), x1.moveTo(9, 6), x1.lineTo(10, 14), x1.stroke();
+      x1.beginPath(), x1.moveTo(12, 6), x1.lineTo(12, 14), x1.stroke();
+      x1.beginPath(), x1.moveTo(15, 6), x1.lineTo(14, 14), x1.stroke();
+      x1.beginPath(), x1.moveTo(6, 10), x1.lineTo(18, 10), x1.stroke();
+      this.launcherTextures.push(PIXI.Texture.from(c1));
+      // State 2: Net + parts — tripod with glowing net bundle
+      const c2 = makeCanvas(), x2 = c2.getContext("2d");
+      x2.strokeStyle = "#8B6914", x2.lineWidth = 2;
+      x2.beginPath(), x2.moveTo(4, H - 2), x2.lineTo(12, 4), x2.lineTo(20, H - 2), x2.stroke();
+      x2.beginPath(), x2.moveTo(7, H - 10), x2.lineTo(17, H - 10), x2.stroke();
+      const glow = x2.createRadialGradient(12, 9, 0, 12, 9, 8);
+      glow.addColorStop(0, "rgba(140,200,255,0.8)"), glow.addColorStop(0.6, "rgba(100,170,255,0.4)"), glow.addColorStop(1, "rgba(60,100,200,0)");
+      x2.fillStyle = glow, x2.fillRect(4, 1, 16, 16);
+      x2.fillStyle = "rgba(100,170,255,0.7)", x2.strokeStyle = "#adf", x2.lineWidth = 1;
+      x2.beginPath(), x2.moveTo(6, 5), x2.lineTo(18, 5), x2.lineTo(17, 14), x2.lineTo(7, 14), x2.closePath(), x2.fill(), x2.stroke();
+      x2.beginPath(), x2.moveTo(9, 5), x2.lineTo(10, 14), x2.stroke();
+      x2.beginPath(), x2.moveTo(12, 5), x2.lineTo(12, 14), x2.stroke();
+      x2.beginPath(), x2.moveTo(15, 5), x2.lineTo(14, 14), x2.stroke();
+      x2.beginPath(), x2.moveTo(6, 8), x2.lineTo(18, 8), x2.stroke();
+      x2.beginPath(), x2.moveTo(6, 11), x2.lineTo(18, 11), x2.stroke();
+      x2.fillStyle = "#cda63c";
+      for (let i = 0; i < 4; i++) {
+        x2.beginPath(), x2.arc(8 + i * 3, 10 + (i % 2), 1.5, 0, 2 * Math.PI), x2.fill();
+      }
+      this.launcherTextures.push(PIXI.Texture.from(c2));
+      return this.launcherTextures;
+    }
+    setupLauncher(graveyardSprite) {
+      const textures = this.getLauncherTextures();
+      if (!this.launcherSprite) {
+        this.launcherSprite = new PIXI.Sprite(textures[0]);
+        this.launcherSprite.anchor.set(.5, 1);
+        this.launcherSprite.scale.set(2, 2);
+        this.launcherSprite.visible = !1;
+        g.addChild(this.launcherSprite);
+      }
+      this.launcherSprite.x = graveyardSprite.x + 35;
+      this.launcherSprite.y = graveyardSprite.y + 5;
+      this.launcherSprite.zIndex = this.launcherSprite.y;
+      this.currentState = -1;
+    }
+    updateLauncher(model) {
+      if (!this.launcherSprite) return;
+      if (!model.netLaunchers) { this.launcherSprite.visible = !1; return; }
+      this.launcherSprite.visible = !0;
+      const parts = model.netLauncherParts;
+      const newState = parts > 10 ? 2 : parts > 0 ? 1 : 0;
+      if (newState !== this.currentState) {
+        this.currentState = newState;
+        this.launcherSprite.texture = this.getLauncherTextures()[newState];
+      }
+    }
+    getLaunchOrigin() {
+      if (this.launcherSprite && this.launcherSprite.visible) {
+        return { x: this.launcherSprite.x, y: this.launcherSprite.y - 30 };
+      }
+      return null;
+    }
     launch(startX, startY, targets) {
+      const origin = this.getLaunchOrigin();
+      const ox = origin ? origin.x : startX, oy = origin ? origin.y : startY;
       const count = Math.min(targets.length, 5);
       for (let i = 0; i < count; i++) {
         const t = targets[Math.floor(Math.random() * targets.length)];
         if (!t || t.flags.dead) continue;
         const sprite = new PIXI.Sprite(this.getTexture());
         sprite.anchor.set(.5, .5), sprite.scale.set(2, 2), sprite.alpha = 0.9;
-        sprite.x = startX, sprite.y = startY;
+        sprite.x = ox, sprite.y = oy;
         sprite.destX = t.x, sprite.destY = t.y;
         sprite.progress = 0, sprite.duration = 4.5 + Math.random() * 1.5;
-        sprite.startX = startX, sprite.startY = startY;
+        sprite.startX = ox, sprite.startY = oy;
         sprite.arcHeight = 80 + Math.random() * 60;
         b.addChild(sprite);
         this.projectiles.push(sprite);
