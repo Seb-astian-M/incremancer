@@ -1345,7 +1345,7 @@ var Incremancer;
       }
       this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e), this.updateNetLauncher(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e);
       this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level);
-      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level - 49)), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
+      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
     }
     calculateEndLevelBones() {
       this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones))
@@ -5583,7 +5583,7 @@ var Incremancer;
         result.n = "Patchwork " + (a.n || b.n || "Armor");
         result.l = Math.max(a.l || 1, b.l || 1);
         result.r = Math.max(a.r || 0, b.r || 0);
-        result.pw = 1;
+        result.pw = 2;
         if (a.se || b.se) result.se = (a.se || b.se);
         result.e = [];
         const higher = (a.r || 0) >= (b.r || 0) ? a : b;
@@ -5836,6 +5836,7 @@ var Incremancer;
         c.model.persistentData.autoMaxHarpies = !0;
         c.model.persistentData.autoRelease = !0;
         c.model.persistentData.autoStart = !0;
+        c.model.persistentData.autoPrestige = !0;
         c.model.autoShatter = !0;
       }
     }, c.toggleResolution = function(e) {
