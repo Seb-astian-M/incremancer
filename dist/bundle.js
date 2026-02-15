@@ -1,3 +1,4 @@
+console.log("[Incremancer fork] bundle version: 20260215b");
 var Incremancer;
 (() => {
   "use strict";
