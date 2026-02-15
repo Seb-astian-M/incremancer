@@ -4821,8 +4821,9 @@ var Incremancer;
               this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
               const msg = "Spiders collected: " + (this.spiderTotalBones > 0 ? Math.floor(this.spiderTotalBones) + " bones" : "") + (this.spiderTotalBones > 0 && this.spiderTotalParts > 0 ? ", " : "") + (this.spiderTotalParts > 0 ? Math.floor(this.spiderTotalParts) + " parts" : "");
               const log = this.gameModel.chatLog;
-              if (log.length > 0 && log[0].cls === "chat-spider") {
-                log[0].text = msg, log[0].id = this.gameModel.chatLogId++;
+              const existing = log.find(m => m.cls === "chat-spider");
+              if (existing) {
+                existing.text = msg, existing.id = this.gameModel.chatLogId++;
               } else {
                 this.spiderTotalBones = boneAmt, this.spiderTotalParts = partsAmt;
                 const freshMsg = "Spiders collected: " + (boneAmt > 0 ? Math.floor(boneAmt) + " bones" : "") + (boneAmt > 0 && partsAmt > 0 ? ", " : "") + (partsAmt > 0 ? Math.floor(partsAmt) + " parts" : "");
