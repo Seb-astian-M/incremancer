@@ -4947,11 +4947,12 @@ var Incremancer;
       const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
       const binCount = 36;
       const binSize = 2 * Math.PI / binCount;
+      const binOffset = Math.random() * 9 * Math.PI / 180;
       const bins = new Float64Array(binCount);
       const addItem = (item, valMult) => {
         if (item.value <= 0) return;
         const ang = Math.atan2(item.y - cy, item.x - cx);
-        const idx = ((ang % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) / binSize) | 0;
+        const idx = (((ang - binOffset) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) / binSize) | 0;
         bins[Math.min(idx, binCount - 1)] += item.value * valMult;
       };
       if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
@@ -4962,7 +4963,7 @@ var Incremancer;
       for (let j = 0; j < buc.length; j++) addItem(buc[j], 1);
       const scored = [];
       for (let b = 0; b < binCount; b++) {
-        if (bins[b] > 0) scored.push({ angle: (b + 0.5) * binSize, score: bins[b] });
+        if (bins[b] > 0) scored.push({ angle: (b + 0.5) * binSize + binOffset, score: bins[b] });
       }
       scored.sort((a, b) => b.score - a.score);
       const poolSize = Math.min(scored.length, 2 * this.sprites.length);
@@ -4986,7 +4987,7 @@ var Incremancer;
       const cx = spider.position.x, cy = spider.position.y;
       const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
       const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
-      const radius = 5 + spider.stringDist * 0.06;
+      const radius = 5 + spider.stringDist * 0.6;
       const r2 = radius * radius;
       const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
       const checkItem = (item, isParts) => {
@@ -5086,11 +5087,10 @@ var Incremancer;
       const gcx = this.graveyard.sprite.x, gcy = this.graveyard.sprite.y;
       const speedMod = 1 + (this.gameModel.spiderSpeedMod || 0);
       const moveSpeed = 100 * speedMod;
-      const silkSpeed = Math.max(P.x, P.y) / 8;
+      const silkSpeed = Math.max(P.x, P.y) / 24;
       const fenceR = this.gameModel.fenceRadius || 50;
       switch (spider.state) {
         case Zt.idle:
-          spider.position.set(gcx, gcy);
           if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * this.sprites.length)) {
             this.refreshAnglePool();
           }
@@ -5098,8 +5098,8 @@ var Incremancer;
           const isBest = !this.bestAngleGiven;
           if (isBest) this.bestAngleGiven = true;
           if (!this.pickAngle(spider, isBest)) return;
-          spider.fenceX = gcx + Math.cos(spider.aimAngle) * fenceR;
-          spider.fenceY = gcy + Math.sin(spider.aimAngle) * fenceR;
+          spider.fenceX = gcx + Math.cos(spider.aimAngle) * fenceR * 0.9;
+          spider.fenceY = gcy + Math.sin(spider.aimAngle) * fenceR * 0.9;
           spider.state = Zt.moving;
           spider.stringDist = 0;
           spider.carriedParts = 0;
@@ -5107,21 +5107,26 @@ var Incremancer;
           spider.collectedVisuals = 0;
           this.shotsSinceRefresh++;
           break;
-        case Zt.moving:
+        case Zt.moving: {
           const dx = spider.fenceX - spider.position.x;
           const dy = spider.fenceY - spider.position.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < moveSpeed * dt) {
-            spider.position.set(spider.fenceX, spider.fenceY);
-            spider.zIndex = spider.position.y;
+          const step = Math.min(moveSpeed * dt, dist);
+          if (dist > 0) {
+            spider.position.x += dx / dist * step;
+            spider.position.y += dy / dist * step;
+          }
+          spider.zIndex = spider.position.y;
+          const toGcX = spider.position.x - gcx, toGcY = spider.position.y - gcy;
+          const distFromGc = Math.sqrt(toGcX * toGcX + toGcY * toGcY);
+          const posAngle = Math.atan2(toGcY, toGcX);
+          let angleDiff = Math.abs(posAngle - spider.aimAngle);
+          if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+          if (distFromGc >= fenceR * 0.8 && distFromGc <= fenceR * 1.0 && angleDiff <= 5 * Math.PI / 180) {
             spider.state = Zt.extending;
-          } else {
-            const step = moveSpeed * dt / dist;
-            spider.position.x += dx * step;
-            spider.position.y += dy * step;
-            spider.zIndex = spider.position.y;
           }
           break;
+        }
         case Zt.extending:
           spider.stringDist += silkSpeed * dt;
           this.collectAlongString(spider);
@@ -5136,13 +5141,27 @@ var Incremancer;
           spider.stringDist -= silkSpeed * dt;
           if (spider.stringDist <= 0) {
             spider.stringDist = 0;
-            this.depositResources(spider);
             this.cleanupSilk(spider);
-            spider.state = Zt.idle;
+            spider.state = Zt.returning;
           } else {
             this.updateSilkVisuals(spider);
           }
           break;
+        case Zt.returning: {
+          const slX = gcx + 35, slY = gcy + 5;
+          const rdx = slX - spider.position.x, rdy = slY - spider.position.y;
+          const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+          if (rdist < 30) {
+            this.depositResources(spider);
+            spider.state = Zt.idle;
+          } else {
+            const rstep = Math.min(moveSpeed * dt, rdist);
+            spider.position.x += rdx / rdist * rstep;
+            spider.position.y += rdy / rdist * rstep;
+            spider.zIndex = spider.position.y;
+          }
+          break;
+        }
       }
     }
   }
