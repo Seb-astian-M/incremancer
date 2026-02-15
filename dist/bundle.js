@@ -4860,7 +4860,7 @@ var Incremancer;
   }
   var Zt;
   ! function(e) {
-    e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle", e[e.extending = 3] = "extending", e[e.retracting = 4] = "retracting", e[e.moving = 5] = "moving"
+    e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle", e[e.extending = 3] = "extending", e[e.retracting = 4] = "retracting", e[e.moving = 5] = "moving", e[e.aiming = 6] = "aiming"
   }(Zt || (Zt = {}));
 
   /* ================================================================
@@ -4985,7 +4985,7 @@ var Incremancer;
       const busy = [];
       for (let i = 0; i < this.sprites.length; i++) {
         const s = this.sprites[i];
-        if (s !== spider && (s.state === Zt.extending || s.state === Zt.moving)) {
+        if (s !== spider && (s.state === Zt.extending || s.state === Zt.moving || s.state === Zt.aiming)) {
           busy.push(s.aimAngle);
         }
       }
@@ -5169,6 +5169,7 @@ var Incremancer;
           const curSpeed = maxMoveSpeed * (0.15 + 0.85 * ease);
           const step = Math.min(curSpeed * dt, dist);
           if (dist > 0) {
+            spider.rotation = Math.atan2(dy, dx);
             spider.position.x += dx / dist * step;
             spider.position.y += dy / dist * step;
           }
@@ -5179,7 +5180,20 @@ var Incremancer;
           let angleDiff = Math.abs(posAngle - spider.aimAngle);
           if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
           if (distFromGc >= fenceR * 0.8 && distFromGc <= fenceR * 1.0 && angleDiff <= 5 * Math.PI / 180) {
+            spider.state = Zt.aiming;
+          }
+          break;
+        }
+        case Zt.aiming: {
+          const turnSpeed = 3;
+          let diff = spider.aimAngle - spider.rotation;
+          if (diff > Math.PI) diff -= 2 * Math.PI;
+          if (diff < -Math.PI) diff += 2 * Math.PI;
+          if (Math.abs(diff) < turnSpeed * dt) {
+            spider.rotation = spider.aimAngle;
             spider.state = Zt.extending;
+          } else {
+            spider.rotation += Math.sign(diff) * turnSpeed * dt;
           }
           break;
         }
