@@ -2628,17 +2628,17 @@ var Incremancer;
     }
     updateAutoUpgrades() {
       if (this.gameModel.autoUpgrades) {
-        for (let e = 0; e < this.upgrades.length; e++)(this.gameModel.persistentData.autoAuto || this.upgrades[e].auto) && this.hasRequirement(this.upgrades[e]) && this.purchaseUpgrade(this.upgrades[e], !1);
-        for (let e = 0; e < this.prestigeUpgrades.length; e++)(this.gameModel.persistentData.autoAuto || this.prestigeUpgrades[e].auto) && this.hasRequirement(this.prestigeUpgrades[e]) && this.purchaseUpgrade(this.prestigeUpgrades[e], !1);
+        for (let e = 0; e < this.upgrades.length; e++) this.upgrades[e].auto && this.hasRequirement(this.upgrades[e]) && this.purchaseUpgrade(this.upgrades[e], !1);
+        for (let e = 0; e < this.prestigeUpgrades.length; e++) this.prestigeUpgrades[e].auto && this.hasRequirement(this.prestigeUpgrades[e]) && this.purchaseUpgrade(this.prestigeUpgrades[e], !1);
         if (this.gameModel.constructions.factory)
-          for (let e = 0; e < this.partFactory.generators.length; e++)(this.gameModel.persistentData.autoAuto || this.partFactory.generators[e].auto) && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1);
+          for (let e = 0; e < this.partFactory.generators.length; e++) this.partFactory.generators[e].auto && this.partFactory.purchaseGenerator(this.partFactory.generators[e], !1);
         if (this.gameModel.constructions.monsterFactory) {
           const cf = this.gameModel.creatureFactory;
           for (let e = 0; e < cf.creatures.length; e++) {
-            if (this.gameModel.persistentData.autoAuto || cf.creatures[e].autoLevel)
+            if (cf.creatures[e].autoLevel)
               while (cf.levelPrice(cf.creatures[e]) < this.gameModel.persistentData.parts)
                 cf.levelCreature(cf.creatures[e]);
-            if (this.gameModel.persistentData.autoAuto || cf.creatures[e].autobuild > 0) {
+            if (cf.creatures[e].autobuild > 0) {
               const target = this.gameModel.creatureLimit;
               if (cf.creatures[e].autobuild < target) {
                 cf.creatures[e].autobuild = target;
