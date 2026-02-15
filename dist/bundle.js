@@ -4883,7 +4883,7 @@ var Incremancer;
         sprite.anchor.set(.5, .5), sprite.scale.set(2, 2), sprite.alpha = 0.9;
         sprite.x = startX, sprite.y = startY;
         sprite.destX = t.x, sprite.destY = t.y;
-        sprite.progress = 0, sprite.duration = 1.5 + Math.random() * 0.5;
+        sprite.progress = 0, sprite.duration = 4.5 + Math.random() * 1.5;
         sprite.startX = startX, sprite.startY = startY;
         sprite.arcHeight = 80 + Math.random() * 60;
         b.addChild(sprite);
@@ -4895,6 +4895,14 @@ var Incremancer;
         const p = this.projectiles[i];
         p.progress += dt / p.duration;
         if (p.progress >= 1) {
+          const blasts = new nt;
+          if (blasts.viewableArea) {
+            blasts.newBlast(p.destX, p.destY);
+            for (let j = 0; j < 3; j++) {
+              const ox = (Math.random() - 0.5) * 30, oy = (Math.random() - 0.5) * 20;
+              blasts.newBlast(p.destX + ox, p.destY + oy);
+            }
+          }
           b.removeChild(p), p.destroy(), this.projectiles.splice(i, 1);
           continue;
         }
