@@ -1568,7 +1568,7 @@ var Incremancer;
     }
     prestige() {
       if (this.persistentData.prestigePointsEarned > 0) {
-        this.persistentData.levelUnlocked = 1, this.persistentData.autoUpgrades = [], this.persistentData.blood = 0, this.persistentData.brains = 0, this.persistentData.bones = 0, this.persistentData.parts = 0, this.persistentData.generators = [], this.persistentData.bonesTotal = 0, this.persistentData.upgrades = this.persistentData.upgrades.filter((e => e.costType == this.upgrades.costs.prestigePoints)), this.persistentData.constructions = [], this.persistentData.boneCollectors = 0, this.persistentData.currentConstruction = !1, this.persistentData.harpies = 0, this.persistentData.spiders = 0, this.persistentData.graveyardZombies = 1, this.persistentData.prestigePointsToSpend += this.persistentData.prestigePointsEarned, this.persistentData.prestigePointsEarned = 0, this.persistentData.runes = { life: { blood: 0, brains: 0, bones: 0 }, death: { blood: 0, brains: 0, bones: 0 } }, this.persistentData.vipEscaped = [], this.persistentData.creatureLevels = [], this.persistentData.creatureAutobuild = [], this.persistentData.levelsCompleted = [], this.persistentData.runeshatter = 0, this.zombiesInCages = 0, this.autoconstruction = !1, this.levelResourcesAdded = !1, this.gigazombies = !1, this.runeEffects = {
+        this.persistentData.levelUnlocked = 1, this.persistentData.autoUpgrades = [], this.persistentData.blood = 0, this.persistentData.brains = 0, this.persistentData.bones = 0, this.persistentData.parts = 0, this.persistentData.generators = [], this.persistentData.bonesTotal = 0, this.persistentData.upgrades = this.persistentData.upgrades.filter((e => e.costType == this.upgrades.costs.prestigePoints)), this.persistentData.constructions = [], this.persistentData.boneCollectors = 0, this.persistentData.currentConstruction = !1, this.persistentData.harpies = 0, this.persistentData.spiders = 0, this.persistentData.graveyardZombies = 1, this.persistentData.prestigePointsToSpend += this.persistentData.prestigePointsEarned, this.persistentData.prestigePointsEarned = 0, this.persistentData.runes = { life: { blood: 0, brains: 0, bones: 0 }, death: { blood: 0, brains: 0, bones: 0 } }, this.persistentData.vipEscaped = [], this.persistentData.creatureLevels = [], this.persistentData.creatureAutobuild = [], this.persistentData.levelsCompleted = [], this.persistentData.runeshatter = 0, this.persistentData.activeSpellBuffs = [], this.zombiesInCages = 0, this.autoconstruction = !1, this.levelResourcesAdded = !1, this.gigazombies = !1, this.runeEffects = {
           attackSpeed: 1,
           critChance: 0,
           critDamage: 0,
@@ -4675,7 +4675,7 @@ var Incremancer;
       Graveyard.instance = this
     }
     initialize() {
-      this.boneCollectors = new BoneCollectors, this.zmMap = new LevelMap, this.zombies = new Zombies, this.bones = new Bones, this.partsPiles = new PartsPiles, this.gameModel = GameModel.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.spiders = new SpiderCollector, this.netProjectile = new NetProjectile, this.blood = new _e, this.humans = new Humans, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), void 0 === this.gameModel.persistentData.spiders && (this.gameModel.persistentData.spiders = 0), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.partsPiles.initialize(), SpiderCollector.partsPiles = this.partsPiles, this.boneCollectors.populate(), this.harpies.populate(), this.spiders.populate(), this.netProjectile.setupLauncher(this.sprite)
+      this.boneCollectors = new BoneCollectors, this.zmMap = new LevelMap, this.zombies = new Zombies, this.bones = new Bones, this.partsPiles = new PartsPiles, this.gameModel = GameModel.getInstance(), this.smoke = new ot, this.harpies = new Ke, this.spiders = new SpiderCollector, this.netProjectile = new NetProjectile, this.netProjectile.clearProjectiles(), this.blood = new _e, this.humans = new Humans, void 0 === this.gameModel.persistentData.graveyardZombies && (this.gameModel.persistentData.graveyardZombies = 1), void 0 === this.gameModel.persistentData.spiders && (this.gameModel.persistentData.spiders = 0), this.drawGraveyard(), this.drawFence(), this.drawHealthBar(), this.bones.initialize(), this.partsPiles.initialize(), SpiderCollector.partsPiles = this.partsPiles, this.boneCollectors.populate(), this.harpies.populate(), this.spiders.populate(), this.netProjectile.setupLauncher(this.sprite)
     }
     damageGraveyard(e) {
       this.gameModel.isBossStage(this.gameModel.level) && (this.graveyardHealth -= e, this.graveyardHealth < 0 && (
@@ -5116,6 +5116,13 @@ var Incremancer;
         b.addChild(p);
         this.projectiles.push(p);
       }
+    }
+    clearProjectiles() {
+      for (let i = this.projectiles.length - 1; i >= 0; i--) {
+        const p = this.projectiles[i];
+        b.removeChild(p), p.destroy({children: true});
+      }
+      this.projectiles.length = 0;
     }
     update(dt) {
       for (let i = this.projectiles.length - 1; i >= 0; i--) {
