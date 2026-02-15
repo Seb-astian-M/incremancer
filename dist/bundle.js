@@ -4763,13 +4763,24 @@ var Incremancer;
       switch (!e.target || e.target.graveyard && e.state == Zt.collecting || this.updateSpeed(e, t), e.state) {
         case Zt.collecting:
           if (e.target && e.target.value && e.target.visible || this.findNearestTarget(e), e.target && e.target.value > 0 && this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance) {
-            if (e.target.isParts) {
-              const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
-              e.carriedParts += e.target.value * mult
-            } else {
-              e.carriedBones += e.target.value
+            const areaRadius = 60, mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
+            const collectPile = (p) => {
+              if (p.isParts) e.carriedParts += p.value * mult;
+              else e.carriedBones += p.value;
+              p.value = 0;
+            };
+            collectPile(e.target);
+            if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
+              for (let j = 0; j < SpiderCollector.partsPiles.uncollected.length; j++) {
+                const p = SpiderCollector.partsPiles.uncollected[j];
+                if (p.value > 0 && p !== e.target && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collectPile(p), p.collector = !1;
+              }
             }
-            e.target.value = 0, e.speedFactor = 0
+            for (let j = 0; j < this.bones.uncollected.length; j++) {
+              const p = this.bones.uncollected[j];
+              if (p.value > 0 && p !== e.target && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collectPile(p), p.collector = !1;
+            }
+            e.target.collector = !1, e.boneList = [], e.speedFactor = 0;
           }
           if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= 500 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
