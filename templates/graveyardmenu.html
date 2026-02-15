@@ -6,6 +6,8 @@
   <div class="tabs">
     <button ng-click="zm.graveyardTabSelect('minions')" class="{{zm.graveyardTab == 'minions' ? 'active' : ''}}">Minions</button>
     <button ng-click="zm.graveyardTabSelect('trophies')" class="{{zm.graveyardTab == 'trophies' ? 'active' : ''}}">Trophies</button>
+    <button ng-if="zm.model.magicalTraining" ng-click="zm.graveyardTabSelect('spellbuffs')" class="{{zm.graveyardTab == 'spellbuffs' ? 'active' : ''}}">Spell Buffs</button>
+    <button ng-if="zm.model.tailoring" ng-click="zm.graveyardTabSelect('tailoring')" class="{{zm.graveyardTab == 'tailoring' ? 'active' : ''}}">Tailoring</button>
   </div>
   <div class="upgrades" ng-if="zm.graveyardTab == 'minions'">
     <div class="bone-collectors bones">
@@ -50,6 +52,16 @@
       <button ng-click="zm.setHarpies(zm.maxHarpies());zm.model.persistentData.autoMaxHarpies = false;">{{zm.maxHarpies()}}</button>
       <button ng-click="zm.model.persistentData.autoMaxHarpies = !zm.model.persistentData.autoMaxHarpies" class="{{zm.model.persistentData.autoMaxHarpies ? 'active' : ''}}">Auto Max Harpies</button>
     </div>
+    <div class="bone-collectors bones" ng-if="zm.model.constructions.spiderLair">
+      <h4>Spiders <button ng-click="zm.spinfo = !zm.spinfo" class="{{zm.spinfo ? 'active' : ''}}">Info</button></h4>
+      <p ng-show="zm.spinfo">Summon spiders from the lair to collect bones and parts from the battlefield. Each spider consumes 10 energy per second. Spiders prioritize collecting parts piles when Parts Recollection is active.</p>
+      <h4>Energy rate {{zm.model.getEnergyRate()|decimal}} per second</h4>
+      <button ng-click="zm.setSpiders(0);">0</button>
+      <button ng-click="zm.setSpiders((zm.model.persistentData.spiders || 0) - 1);">-</button>
+      <label>{{zm.model.persistentData.spiders || 0}} spiders</label>
+      <button ng-click="zm.setSpiders((zm.model.persistentData.spiders || 0) + 1);">+</button>
+      <button ng-click="zm.setSpiders(zm.maxSpiders());">{{zm.maxSpiders()}}</button>
+    </div>
     <!-- <div class="bone-collectors bones" ng-if="zm.model.gigazombies">
       <h4>Gigazombies <button ng-click="zm.gzinfo = ! zm.gzinfo" class="{{zm.gzinfo ? 'active' : ''}}">Info</button></h4>
       <p ng-show="zm.gzinfo">Causes any zombie spawned using energy to be a Gigazombie. This will increase their health and damage by 10x, and energy cost by 5x.</p>
@@ -68,6 +80,31 @@
     <div ng-repeat="trophy in zm.trophies" class="upgrade bones {{trophy.owned ? 'owned' : 'uncollected'}}">
       <label ng-if="zm.trophyTab != 'totals'">Level: {{trophy.level}}<span ng-if="trophy.escaped" class="escaped">VIP Escaped</span></label>
       <label>{{zm.upgradeSubtitle(trophy)}}</label>
+    </div>
+  </div>
+  <div class="upgrades" ng-if="zm.graveyardTab == 'spellbuffs'">
+    <p>Select up to {{zm.model.spellBuffSlots}} spell buff(s) to enhance. Click to toggle.</p>
+    <div ng-repeat="buff in zm.spellBuffList" class="upgrade bones" ng-click="zm.toggleSpellBuff(buff.id)" style="cursor:pointer">
+      <label>{{buff.name}} <span ng-if="zm.isBuffActive(buff.id)" style="color:#0f0">[ACTIVE]</span><span ng-if="!zm.isBuffOwned(buff.id)" style="color:#888">[NOT OWNED]</span></label>
+      <label>{{buff.description}}</label>
+    </div>
+  </div>
+  <div class="upgrades" ng-if="zm.graveyardTab == 'tailoring'">
+    <div class="bone-collectors bones">
+      <h4>Patchwork Tailoring</h4>
+      <p>Combine two equipment pieces into powerful patchwork armor. Select items from your inventory below.</p>
+      <div class="clear">
+        <h4>Slot 1</h4>
+        <select ng-model="zm.tailorSlot1" ng-options="i as zm.itemName(i) for i in zm.getEquipmentList()">
+          <option value="">-- Select Item --</option>
+        </select>
+        <h4>Slot 2</h4>
+        <select ng-model="zm.tailorSlot2" ng-options="i as zm.itemName(i) for i in zm.getEquipmentList()">
+          <option value="">-- Select Item --</option>
+        </select>
+        <button ng-click="zm.combinePatchwork()" ng-disabled="!zm.tailorSlot1 || !zm.tailorSlot2 || zm.tailorSlot1 === zm.tailorSlot2">Combine</button>
+        <p ng-if="zm.tailorMessage">{{zm.tailorMessage}}</p>
+      </div>
     </div>
   </div>
 </div>
