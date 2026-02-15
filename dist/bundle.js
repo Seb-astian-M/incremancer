@@ -4759,28 +4759,30 @@ var Incremancer;
       }
       e.boneList.length > 0 ? e.target = e.boneList.shift() : e.target = !1
     }
+    collectNearby(e) {
+      const areaRadius = 100, mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
+      const collect = (p) => {
+        if (p.isParts) e.carriedParts += p.value * mult;
+        else e.carriedBones += p.value;
+        p.value = 0, p.collector = !1;
+      };
+      if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
+        for (let j = 0; j < SpiderCollector.partsPiles.uncollected.length; j++) {
+          const p = SpiderCollector.partsPiles.uncollected[j];
+          if (p.value > 0 && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collect(p);
+        }
+      }
+      for (let j = 0; j < this.bones.uncollected.length; j++) {
+        const p = this.bones.uncollected[j];
+        if (p.value > 0 && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collect(p);
+      }
+    }
     updateSpider(e, t) {
       switch (!e.target || e.target.graveyard && e.state == Zt.collecting || this.updateSpeed(e, t), e.state) {
         case Zt.collecting:
-          if (e.target && e.target.value && e.target.visible || this.findNearestTarget(e), e.target && e.target.value > 0 && this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance) {
-            const areaRadius = 100, mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
-            const collectPile = (p) => {
-              if (p.isParts) e.carriedParts += p.value * mult;
-              else e.carriedBones += p.value;
-              p.value = 0;
-            };
-            collectPile(e.target);
-            if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
-              for (let j = 0; j < SpiderCollector.partsPiles.uncollected.length; j++) {
-                const p = SpiderCollector.partsPiles.uncollected[j];
-                if (p.value > 0 && p !== e.target && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collectPile(p), p.collector = !1;
-              }
-            }
-            for (let j = 0; j < this.bones.uncollected.length; j++) {
-              const p = this.bones.uncollected[j];
-              if (p.value > 0 && p !== e.target && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collectPile(p), p.collector = !1;
-            }
-            e.target.collector = !1, e.boneList = [], e.speedFactor = 0;
+          this.collectNearby(e);
+          if (!e.target || !e.target.value || !e.target.visible) {
+            e.boneList = [], e.speedFactor = 0, this.findNearestTarget(e);
           }
           if (e.carriedBones >= this.gameModel.boneCollectorCapacity || e.carriedParts >= 500 || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
           break;
