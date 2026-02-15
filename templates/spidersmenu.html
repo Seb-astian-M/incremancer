@@ -1,0 +1,55 @@
+<div class="shop" ng-if="zm.sidePanels.spiders">
+  <div class="shop-title">
+    <h2>Spiders</h2>
+    <button ng-click="zm.closeSidePanels();">Close</button>
+  </div>
+  <div class="tabs">
+    <button ng-if="zm.model.tailoring" ng-click="zm.spidersTabSelect('strapping')" class="{{zm.spidersTab == 'strapping' ? 'active' : ''}}">Strapping</button>
+    <button ng-if="zm.model.netLaunchers > 0" ng-click="zm.spidersTabSelect('launchers')" class="{{zm.spidersTab == 'launchers' ? 'active' : ''}}">Launchers</button>
+  </div>
+
+  <div class="upgrades" ng-if="zm.spidersTab == 'strapping'">
+    <div class="bone-collectors bones">
+      <h4>Strap 'em Together</h4>
+      <p>Sacrifice 5 unequipped items of the same slot and rarity to produce 1 item of the next higher rarity. Resource costs scale with rarity.</p>
+    </div>
+    <div ng-if="zm.strappableGroups.length == 0" class="bone-collectors bones">
+      <p>No eligible item groups found. You need at least 5 unequipped items of the same slot and rarity (below Chaos).</p>
+    </div>
+    <div ng-repeat="group in zm.strappableGroups" class="upgrade bones">
+      <h4>{{zm.slotNames[group.slot]}} — {{zm.rarityNames[group.rarity]}}</h4>
+      <label>{{group.count}} available → 1 {{zm.rarityNames[group.rarity + 1]}}</label>
+      <label>Cost: {{group.bloodCost|whole}} blood, {{group.partsCost|whole}} parts{{group.brainsCost > 0 ? ', ' + (group.brainsCost|whole) + ' brains' : ''}}</label>
+      <button ng-click="zm.strapEquipment(group)" ng-disabled="!zm.canStrap(group)">Strap 5 → 1</button>
+    </div>
+    <p ng-if="zm.strapMessage" style="color:#0f0; margin:8px;">{{zm.strapMessage}}</p>
+  </div>
+
+  <div class="upgrades" ng-if="zm.spidersTab == 'launchers'">
+    <div class="bone-collectors bones">
+      <h4>Net Distribution</h4>
+      <p>Total nets per launch: {{zm.model.netLaunchers}}</p>
+      <p>Unassigned nets: {{zm.model.netLaunchers - zm.totalAssignedNets()}}</p>
+    </div>
+    <div class="bone-collectors bones">
+      <h4>Zombie Nets: {{zm.model.zombieNets}}</h4>
+      <button ng-click="zm.adjustNets('zombie', -1)" ng-disabled="zm.model.zombieNets <= 0">-</button>
+      <button ng-click="zm.adjustNets('zombie', 1)" ng-disabled="zm.model.zombieNets >= zm.model.netLaunchers">+</button>
+    </div>
+    <div class="bone-collectors bones">
+      <h4>Prodigy Nets: {{zm.model.prodigyNets}} <span style="opacity:0.6">(capped by Zombie Nets)</span></h4>
+      <button ng-click="zm.adjustNets('prodigy', -1)" ng-disabled="zm.model.prodigyNets <= 0">-</button>
+      <button ng-click="zm.adjustNets('prodigy', 1)" ng-disabled="zm.model.prodigyNets >= zm.model.zombieNets || zm.model.prodigyNets >= zm.model.netLaunchers">+</button>
+    </div>
+    <div class="bone-collectors bones">
+      <h4>Golem Nets: {{zm.model.golemNets}}</h4>
+      <button ng-click="zm.adjustNets('golem', -1)" ng-disabled="zm.model.golemNets <= 0">-</button>
+      <button ng-click="zm.adjustNets('golem', 1)" ng-disabled="zm.model.golemNets >= zm.model.netLaunchers">+</button>
+    </div>
+    <div class="bone-collectors bones">
+      <h4>Skeleton Nets: {{zm.model.skeletonNets}}</h4>
+      <button ng-click="zm.adjustNets('skeleton', -1)" ng-disabled="zm.model.skeletonNets <= 0">-</button>
+      <button ng-click="zm.adjustNets('skeleton', 1)" ng-disabled="zm.model.skeletonNets >= zm.model.netLaunchers">+</button>
+    </div>
+  </div>
+</div>

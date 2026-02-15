@@ -1,4 +1,4 @@
-const FORK_VERSION = "v1.7.0";
+const FORK_VERSION = "v1.9.0";
 const FORK_VERSION_DATE = "2026-02-15";
 console.log("[Incremancer fork] " + FORK_VERSION + " (" + FORK_VERSION_DATE + ")");
 var Incremancer;
@@ -2165,7 +2165,7 @@ var Incremancer;
           new UpgradeDef(96, "Gigazombie Buff", this.types.spellBuff, this.costs.brains, 1e10, 1, 1, 1, "Unlock: Gigazombies spawn by default; during spell, giga-giga (100x) are created.", null, 89),
           new UpgradeDef(97, "Incinerate Buff", this.types.spellBuff, this.costs.blood, 1e8, 1, 1, 1, "Unlock: Each burning human spreads fire to nearby humans.", null, 89),
           new UpgradeDef(98, "Expanded Buff Slots", this.types.expandedBuffSlots, this.costs.parts, 1e10, 10, 1, 2, "Increase the number of spell buff slots. Start with 1, each rank adds 1 more (max 3 total).", null, 89),
-          new UpgradeDef(99, "Tailoring", this.types.tailoring, this.costs.parts, 1e10, 1, 1, 1, "Unlock the Tailoring panel to combine equipment pieces into powerful patchwork armor.", "Tailoring unlocked! Combine equipment in the new panel.", 305)
+          new UpgradeDef(99, "Spider Workshop", this.types.tailoring, this.costs.parts, 1e10, 1, 1, 1, "Unlock the Spiders panel for equipment strapping and net distribution.", "Spider Workshop unlocked! Visit the Spiders panel.", 305)
         ],
         this.prestigeUpgrades = [new UpgradeDef(108, "A Small Investment", this.types.startingPC, this.costs.prestigePoints, 10, 1.25, 1, 0, "Each rank gives you an additional 500 blood, 50 brains, and 200 bones when starting a new level.", null, null),
           new UpgradeDef(109, "Time Warp", this.types.unlockSpell, this.costs.prestigePoints, 50, 1, 1, 1, "Unlock the Time Warp spell in order to speed up the flow of time.", null, null),
@@ -5836,7 +5836,7 @@ var Incremancer;
     }, c.spells = a, c.keysPressed = Y, c.files = [], c.messageTimer = 4, c.message = !1, c.lastUpdate = 0, c.sidePanels = {}, c.upgrades = [], c.currentShopFilter = "blood", c.currentConstructionFilter = "available", c.graveyardTab = "minions", c.trophyTab = "all", c.factoryTab = "parts", c.factoryStats = {}, c.moveTooltip = d, c.confirmMessage = "", c.confirmCancel = function() {
       c.confirmCallback = !1
     }, c.closeSidePanels = function() {
-      c.currentShopFilter = "blood", c.currentConstructionFilter = "available", c.graveyardTab = "minions", c.factoryTab = "parts", c.sidePanels.options = !1, c.sidePanels.graveyard = !1, c.sidePanels.runesmith = !1, c.sidePanels.prestige = !1, c.sidePanels.construction = !1, c.sidePanels.shop = !1, c.sidePanels.open = !1, c.sidePanels.factory = !1, c.levelSelect.shown = !1
+      c.currentShopFilter = "blood", c.currentConstructionFilter = "available", c.graveyardTab = "minions", c.factoryTab = "parts", c.sidePanels.options = !1, c.sidePanels.graveyard = !1, c.sidePanels.runesmith = !1, c.sidePanels.prestige = !1, c.sidePanels.construction = !1, c.sidePanels.shop = !1, c.sidePanels.open = !1, c.sidePanels.factory = !1, c.sidePanels.spiders = !1, c.spidersTab = "strapping", c.levelSelect.shown = !1
     }, c.openSidePanel = function(e) {
       switch (c.closeSidePanels(), e) {
         case "shop":
@@ -5858,7 +5858,10 @@ var Incremancer;
           c.upgrades = h.prestigeUpgrades.filter((e => 0 == e.cap || c.currentRank(e) < e.cap)), c.upgrades.push(...h.prestigeUpgrades.filter((e => 0 !== e.cap && c.currentRank(e) >= e.cap))), c.upgrades = c.upgrades.filter((e => 115 !== e.id)), c.sidePanels.prestige = !0;
           break;
         case "options":
-          c.sidePanels.options = !0, c.model.downloadSaveGame()
+          c.sidePanels.options = !0, c.model.downloadSaveGame();
+          break;
+        case "spiders":
+          c.sidePanels.spiders = !0, c.spidersTab = "strapping", c.refreshStrappableGroups()
       }
       c.sidePanels.open = !0
     }, c.graveyardTabSelect = function(e) {
@@ -5937,58 +5940,120 @@ var Incremancer;
         if (c.model.persistentData.activeSpellBuffs.length >= (c.model.spellBuffSlots || 1)) return;
         c.model.persistentData.activeSpellBuffs.push(id)
       }
-    }, c.tailorSlot1 = null, c.tailorSlot2 = null, c.tailorMessage = "", c.getEquipmentList = function() {
-      if (!c.model.skeleton || !c.model.skeleton.persistent || !c.model.skeleton.persistent.items) return [];
-      return c.model.skeleton.persistent.items.filter(function(i) { return i && !i.equipped })
-    }, c.itemName = function(item) {
-      if (!item) return "";
-      const skel = c.model.skeleton;
-      const name = skel.getLootName ? skel.getLootName(item) : (item.n || "Item");
-      return name + " (Lv" + (item.l || 1) + (item.pw ? " PW" : "") + ")"
-    }, c.combinePatchwork = function() {
-      if (!c.tailorSlot1 || !c.tailorSlot2 || c.tailorSlot1 === c.tailorSlot2) return;
-      const a = c.tailorSlot1,
-        bItem = c.tailorSlot2;
-      const items = c.model.skeleton.persistent.items;
-      const skel = c.model.skeleton;
-      if (a.pw && bItem.pw) {
-        if (a.pw < 2 || bItem.pw < 2) { c.tailorMessage = "Both items must be pw:2 for reshuffling, or neither should be patchwork for first combine"; return }
-        if (a.s !== bItem.s) { c.tailorMessage = "Both items must be the same equipment slot."; return }
-        const idx = items.indexOf(bItem);
-        if (idx >= 0) items.splice(idx, 1);
-        a.l = Math.max(a.l || 1, bItem.l || 1);
-        a.e = a.e || [];
-        if (bItem.e && bItem.e.length > 0) a.e.push(bItem.e[Math.floor(Math.random() * bItem.e.length)]);
-        c.tailorMessage = "Reshuffled! Sacrifice consumed, bonus stat added.";
-      } else if (a.pw || bItem.pw) {
-        c.tailorMessage = "Cannot combine: one item is patchwork, the other is not. Both must be normal or both pw:2.";
-        return;
+    }, c.spidersTab = "strapping", c.strapMessage = "", c.strappableGroups = [],
+    c.rarityNames = {1:"Common", 2:"Rare", 3:"Epic", 4:"Legendary", 5:"Ancient", 6:"Divine", 7:"Chaos"},
+    c.slotNames = {1:"Helmet", 2:"Chest", 3:"Legs", 4:"Gloves", 5:"Boots", 6:"Sword", 7:"Shield", 8:"Ring", 9:"Armband"},
+    c.strapCosts = {
+      1: {blood:1e8, parts:1e8, brains:0},
+      2: {blood:1e10, parts:1e10, brains:1e7},
+      3: {blood:1e12, parts:1e12, brains:1e9},
+      4: {blood:1e14, parts:1e14, brains:1e11},
+      5: {blood:1e16, parts:1e16, brains:1e13},
+      6: {blood:1e18, parts:1e18, brains:1e15}
+    },
+    c.spidersTabSelect = function(tab) {
+      c.spidersTab = tab;
+      if (tab === "strapping") c.refreshStrappableGroups();
+    },
+    c.refreshStrappableGroups = function() {
+      c.strappableGroups = [];
+      if (!i.persistent || !i.persistent.items) return;
+      const items = i.persistent.items.filter(function(item) { return item && !item.q });
+      const groups = {};
+      items.forEach(function(item) {
+        const key = item.s + "_" + item.r;
+        if (!groups[key]) groups[key] = {slot: item.s, rarity: item.r, count: 0, items: []};
+        groups[key].count++;
+        groups[key].items.push(item);
+      });
+      Object.keys(groups).forEach(function(key) {
+        const g = groups[key];
+        if (g.count >= 5 && g.rarity < 7) {
+          const costs = c.strapCosts[g.rarity];
+          if (costs) {
+            g.bloodCost = costs.blood;
+            g.partsCost = costs.parts;
+            g.brainsCost = costs.brains;
+            c.strappableGroups.push(g);
+          }
+        }
+      });
+      c.strappableGroups.sort(function(a, b) {
+        return b.rarity - a.rarity || a.slot - b.slot;
+      });
+    },
+    c.canStrap = function(group) {
+      if (group.count < 5 || group.rarity >= 7) return !1;
+      const pd = c.model.persistentData;
+      return pd.blood >= group.bloodCost && pd.parts >= group.partsCost && pd.brains >= group.brainsCost;
+    },
+    c.generateStrappedItem = function(slot, rarity, level) {
+      const prefixArrays = {1: i.prefixes.commonQuality, 2: i.prefixes.rareQuality, 3: i.prefixes.epicQuality, 4: i.prefixes.legendaryQuality, 5: i.prefixes.ancientQuality, 6: i.prefixes.divineQuality, 7: i.prefixes.chaosQuality};
+      const arr = prefixArrays[rarity] || prefixArrays[1];
+      const p = Math.floor(Math.random() * arr.length);
+      const n = [];
+      if (rarity === 7) {
+        for (let e = 0; e < 5; e++) n.push(Math.ceil(6 * Math.random()));
       } else {
-        if (a.s !== bItem.s) { c.tailorMessage = "Both items must be the same equipment slot."; return }
-        const higher = (a.r || 0) >= (bItem.r || 0) ? a : bItem;
-        const lower = higher === a ? bItem : a;
-        const result = {
-          id: skel.persistent.currItemId++,
-          s: higher.s,
-          l: Math.max(a.l || 1, bItem.l || 1),
-          r: Math.max(a.r || 0, bItem.r || 0),
-          p: higher.p,
-          pw: 2,
-          q: !1,
-          e: [],
-          se: (higher.se && higher.se.length > 0) ? higher.se : (lower.se || [])
-        };
-        if (higher.e) result.e = result.e.concat(higher.e);
-        if (lower.e && lower.e.length > 0) result.e.push(lower.e[Math.floor(Math.random() * lower.e.length)]);
-        const idxA = items.indexOf(a);
-        if (idxA >= 0) items.splice(idxA, 1);
-        const newIdxB = items.indexOf(bItem);
-        if (newIdxB >= 0) items.splice(newIdxB, 1);
-        items.push(result);
-        c.tailorMessage = "Patchwork armor created!";
+        n[0] = Math.random() > .5 ? i.stats.zombieHealth.id : i.stats.zombieDamage.id;
+        for (let e = 0; e < rarity - 1; e++) {
+          let s = Math.ceil(6 * Math.random());
+          for (; n.includes(s);) s = Math.ceil(6 * Math.random());
+          n.push(s);
+        }
       }
-      c.tailorSlot1 = null;
-      c.tailorSlot2 = null;
+      const se = [];
+      if (rarity >= 4) {
+        const spells = i.getSpecialEffectsList();
+        if (spells.length > 0) {
+          const spell = spells[Math.floor(Math.random() * spells.length)];
+          se.push(spell.id);
+        }
+      }
+      return {id: i.persistent.currItemId++, l: level, s: slot, r: rarity, p: p, e: n, se: se, q: !1};
+    },
+    c.strapEquipment = function(group) {
+      if (!c.canStrap(group)) return;
+      const pd = c.model.persistentData;
+      pd.blood -= group.bloodCost;
+      pd.parts -= group.partsCost;
+      pd.brains -= group.brainsCost;
+      const candidates = group.items.filter(function(item) { return !item.q });
+      const toRemove = candidates.slice(0, 5);
+      let maxLevel = 0;
+      toRemove.forEach(function(item) { if ((item.l || 1) > maxLevel) maxLevel = item.l || 1; });
+      const items = i.persistent.items;
+      toRemove.forEach(function(item) {
+        const idx = items.indexOf(item);
+        if (idx >= 0) items.splice(idx, 1);
+      });
+      const targetRarity = group.rarity + 1;
+      const newItem = c.generateStrappedItem(group.slot, targetRarity, maxLevel);
+      items.push(newItem);
+      const name = i.getLootName(newItem);
+      c.strapMessage = "Strapped! Created " + name + " (Lv" + maxLevel + ")";
+      c.refreshStrappableGroups();
+    },
+    c.adjustNets = function(type, delta) {
+      const m = c.model;
+      switch(type) {
+        case "zombie":
+          m.zombieNets = Math.max(0, Math.min(m.netLaunchers, m.zombieNets + delta));
+          if (m.prodigyNets > m.zombieNets) m.prodigyNets = m.zombieNets;
+          break;
+        case "prodigy":
+          m.prodigyNets = Math.max(0, Math.min(Math.min(m.netLaunchers, m.zombieNets), m.prodigyNets + delta));
+          break;
+        case "golem":
+          m.golemNets = Math.max(0, Math.min(m.netLaunchers, m.golemNets + delta));
+          break;
+        case "skeleton":
+          m.skeletonNets = Math.max(0, Math.min(m.netLaunchers, m.skeletonNets + delta));
+          break;
+      }
+    },
+    c.totalAssignedNets = function() {
+      return c.model.zombieNets + c.model.prodigyNets + c.model.golemNets + c.model.skeletonNets;
     }, c.setGraveyardZombies = function(e) {
       e <= c.maxGraveyardZombies() && e >= 0 && (c.model.persistentData.graveyardZombies = e)
     }, c.maxGraveyardZombies = function() {
@@ -6695,6 +6760,10 @@ var Incremancer;
   })).directive("factoryMenu", (function() {
     return {
       templateUrl: "./templates/factorymenu.html"
+    }
+  })).directive("spidersMenu", (function() {
+    return {
+      templateUrl: "./templates/spidersmenu.html"
     }
   })).directive("customOnChange", (function() {
     return {

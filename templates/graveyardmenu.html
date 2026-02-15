@@ -7,7 +7,6 @@
     <button ng-click="zm.graveyardTabSelect('minions')" class="{{zm.graveyardTab == 'minions' ? 'active' : ''}}">Minions</button>
     <button ng-click="zm.graveyardTabSelect('trophies')" class="{{zm.graveyardTab == 'trophies' ? 'active' : ''}}">Trophies</button>
     <button ng-if="zm.model.magicalTraining" ng-click="zm.graveyardTabSelect('spellbuffs')" class="{{zm.graveyardTab == 'spellbuffs' ? 'active' : ''}}">Spell Buffs</button>
-    <button ng-if="zm.model.tailoring" ng-click="zm.graveyardTabSelect('tailoring')" class="{{zm.graveyardTab == 'tailoring' ? 'active' : ''}}">Tailoring</button>
   </div>
   <div class="upgrades" ng-if="zm.graveyardTab == 'minions'">
     <div class="bone-collectors bones">
@@ -87,24 +86,6 @@
     <div ng-repeat="buff in zm.spellBuffList" class="upgrade bones" ng-click="zm.toggleSpellBuff(buff.id)" style="cursor:pointer">
       <label>{{buff.name}} <span ng-if="zm.isBuffActive(buff.id)" style="color:#0f0">[ACTIVE]</span><span ng-if="!zm.isBuffOwned(buff.id)" style="color:#888">[NOT OWNED]</span></label>
       <label>{{buff.description}}</label>
-    </div>
-  </div>
-  <div class="upgrades" ng-if="zm.graveyardTab == 'tailoring'">
-    <div class="bone-collectors bones">
-      <h4>Patchwork Tailoring</h4>
-      <p>Combine two equipment pieces into powerful patchwork armor. Select items from your inventory below.</p>
-      <div class="clear">
-        <h4>Slot 1</h4>
-        <select ng-model="zm.tailorSlot1" ng-options="i as zm.itemName(i) for i in zm.getEquipmentList()">
-          <option value="">-- Select Item --</option>
-        </select>
-        <h4>Slot 2</h4>
-        <select ng-model="zm.tailorSlot2" ng-options="i as zm.itemName(i) for i in zm.getEquipmentList()">
-          <option value="">-- Select Item --</option>
-        </select>
-        <button ng-click="zm.combinePatchwork()" ng-disabled="!zm.tailorSlot1 || !zm.tailorSlot2 || zm.tailorSlot1 === zm.tailorSlot2">Combine</button>
-        <p ng-if="zm.tailorMessage">{{zm.tailorMessage}}</p>
-      </div>
     </div>
   </div>
 </div>
