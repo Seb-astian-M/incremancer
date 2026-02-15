@@ -1441,7 +1441,7 @@ var Incremancer;
         const costPerNet = totalCost / netCount;
         const ah = this.humans.aliveHumans;
         if (NetProjectile.instance && ah.length > 0) {
-          NetProjectile.instance.launch(this.graveyard.sprite.x, this.graveyard.sprite.y - 20, ah, netCount);
+          NetProjectile.instance.launch(this.graveyard.sprite.x, this.graveyard.sprite.y - 20, ah, netCount, this);
         }
         for (let i = 0; i < netCount; i++) {
           if (this.explosiveNets) {
@@ -5074,22 +5074,47 @@ var Incremancer;
       }
       return null;
     }
-    launch(startX, startY, targets, netCount) {
+    getCreatureInfo(i, model) {
+      if (!model) return null;
+      if (i < (model.skeletonNets || 0)) return { texture: "skeleton0.png", tint: 0x9999ff };
+      if (i < (model.golemNets || 0)) return { texture: "golem0.png", tint: 0xffffff };
+      if (i < (model.zombieNets || 0)) {
+        const variants = ["zombie1_1.png", "zombie2_1.png", "zombie3_1.png"];
+        return { texture: variants[Math.floor(Math.random() * variants.length)], tint: 0xffffff };
+      }
+      return null;
+    }
+    launch(startX, startY, targets, netCount, model) {
       const origin = this.getLaunchOrigin();
       const ox = origin ? origin.x : startX, oy = origin ? origin.y : startY;
       const count = Math.min(targets.length, netCount || 1);
       for (let i = 0; i < count; i++) {
         const t = targets[Math.floor(Math.random() * targets.length)];
         if (!t || t.flags.dead) continue;
-        const sprite = new PIXI.Sprite(this.getTexture());
-        sprite.anchor.set(.5, .5), sprite.scale.set(2, 2), sprite.alpha = 0.9;
-        sprite.x = ox, sprite.y = oy;
-        sprite.destX = t.x, sprite.destY = t.y;
-        sprite.progress = 0, sprite.duration = 4.5 + Math.random() * 1.5;
-        sprite.startX = ox, sprite.startY = oy;
-        sprite.arcHeight = 80 + Math.random() * 60;
-        b.addChild(sprite);
-        this.projectiles.push(sprite);
+        const cInfo = this.getCreatureInfo(i, model);
+        let p;
+        if (cInfo) {
+          p = new PIXI.Container();
+          const creatureSprite = new PIXI.Sprite(PIXI.Texture.from(cInfo.texture));
+          creatureSprite.anchor.set(.5, .5);
+          creatureSprite.tint = cInfo.tint;
+          p.addChild(creatureSprite);
+          const netSprite = new PIXI.Sprite(this.getTexture());
+          netSprite.anchor.set(.5, .5);
+          netSprite.scale.set(2, 2);
+          p.addChild(netSprite);
+        } else {
+          p = new PIXI.Sprite(this.getTexture());
+          p.anchor.set(.5, .5), p.scale.set(2, 2);
+        }
+        p.alpha = 0.9;
+        p.x = ox, p.y = oy;
+        p.destX = t.x, p.destY = t.y;
+        p.progress = 0, p.duration = 4.5 + Math.random() * 1.5;
+        p.startX = ox, p.startY = oy;
+        p.arcHeight = 80 + Math.random() * 60;
+        b.addChild(p);
+        this.projectiles.push(p);
       }
     }
     update(dt) {
@@ -5105,7 +5130,7 @@ var Incremancer;
               blasts.newBlast(p.destX + ox, p.destY + oy);
             }
           }
-          b.removeChild(p), p.destroy(), this.projectiles.splice(i, 1);
+          b.removeChild(p), p.destroy({children: true}), this.projectiles.splice(i, 1);
           continue;
         }
         const t = p.progress;
@@ -5142,7 +5167,11 @@ var Incremancer;
         this.textures = [];
         for (let e = 0; e < 2; e++) this.textures.push(PIXI.Texture.from("harpy" + (e + 1) + ".png"));
         this.bombTexture = PIXI.Texture.from("harpybomb.png"),
-          this.skeletonBombTexture = PIXI.Texture.from("skeleton0.png")
+          this.zombieBombTextures = [
+            PIXI.Texture.from("zombie1_1.png"),
+            PIXI.Texture.from("zombie2_1.png"),
+            PIXI.Texture.from("zombie3_1.png")
+          ]
       }
       void 0 === this.model.persistentData.harpies && (this.model.persistentData.harpies = 0);
       for (let e = 0; e < this.bombSprites.length; e++) this.bombSprites[e].visible && (this.bombSprites[e].visible = !1, this.discardedBombSprites.push(this.bombSprites[e]));
@@ -5163,18 +5192,11 @@ var Incremancer;
       for (let t = 0; t < this.bombSprites.length; t++) this.bombSprites[t].visible && this.updateBomb(this.bombSprites[t], e)
     }
     updateBomb(e, t) {
-      e.dropped ? (e.rotation += t * e.rotSpeed, e.ySpeed += 50 * t, e.scale.x = e.scale.y -= .2 * t, e.y += e.ySpeed * t, e.y >= e.floor - 2 && (e.visible = !1, this.discardedBombSprites.push(e), this.model.zombieHarpies ? (
-        this.model.skeleton.persistent.skeletons > 0 && this.model.skeleton.aliveSkeletons.length < this.model.skeleton.persistent.skeletons ? (
-          this.model.skeleton.spawnCreature(),
-          this.model.skeleton.skeletons[this.model.skeleton.skeletons.length - 1].position.set(e.x, e.y)
-        ) : this.model.creatureCount < this.model.creatureLimit && this.harpyDeliverGolem(e.x, e.y) ? void 0 : this.zombies.createZombie(e.x, e.y, !1)
-      ) : (e.fire && this.humans.burnHuman(e.target, .1 * this.model.zombieHealth), this.zombies.causePlagueExplosion(e, .2 * this.model.zombieHealth, !1, !1)))) : (e.x = e.harpy.x, e.y = e.harpy.y)
+      e.dropped ? (e.rotation += t * e.rotSpeed, e.ySpeed += 50 * t, e.scale.x = e.scale.y -= .2 * t, e.y += e.ySpeed * t, e.y >= e.floor - 2 && (e.visible = !1, this.discardedBombSprites.push(e), this.model.zombieHarpies ? this.zombies.createZombie(e.x, e.y, !1) : (e.fire && this.humans.burnHuman(e.target, .1 * this.model.zombieHealth), this.zombies.causePlagueExplosion(e, .2 * this.model.zombieHealth, !1, !1)))) : (e.x = e.harpy.x, e.y = e.harpy.y)
     }
     updateHarpy(e, t) {
       if (this.model.zombieHarpies) {
-        const needed = this.model.skeleton.persistent ? Math.max(0, this.model.skeleton.persistent.skeletons - this.model.skeleton.aliveSkeletons.length) : 0;
-        const idx = this.sprites.indexOf(e);
-        e.tint = idx < needed ? 0xff4444 : 0x44ff44;
+        e.tint = 0xff8800;
       } else e.tint = 0xffffff;
       switch (e.state) {
         case qe.bombing:
@@ -5193,11 +5215,13 @@ var Incremancer;
     getBomb(e) {
       let t;
       this.discardedBombSprites.length > 0 ? t = this.discardedBombSprites.pop() : (t = new $e(this.bombTexture), this.bombSprites.push(t), b.addChild(t)), t.scale.x = t.scale.y = 2, t.rotation = 0, t.rotSpeed = Math.random() > .5 ? 4 : -4, t.ySpeed = 0, t.visible = !0, t.dropped = !1, (() => {
-        const needed = this.model.zombieHarpies && this.model.skeleton.persistent ? Math.max(0, this.model.skeleton.persistent.skeletons - this.model.skeleton.aliveSkeletons.length) : 0;
-        const idx = this.sprites.indexOf(e);
-        const isSkelBomb = this.model.zombieHarpies && idx < needed;
-        t.texture = isSkelBomb ? this.skeletonBombTexture : this.bombTexture;
-        t.tint = isSkelBomb ? 0xff4444 : (this.model.zombieHarpies ? 0x44ff44 : 0xffffff);
+        if (this.model.zombieHarpies) {
+          t.texture = this.zombieBombTextures[Math.floor(Math.random() * this.zombieBombTextures.length)];
+          t.tint = 0xff8800;
+        } else {
+          t.texture = this.bombTexture;
+          t.tint = 0xffffff;
+        }
       })(), t.harpy = e, e.bomb = t
     }
     updateHarpySpeed(e, t) {
@@ -5209,20 +5233,6 @@ var Incremancer;
       if (0 == Math.max(a, r)) return;
       let n = 1 / Math.max(a, r);
       n *= 1.29289 - (a + r) * n * .29289, e.xSpeed = s * n * this.model.harpySpeed * e.speedFactor, e.ySpeed = i * n * this.model.harpySpeed * e.speedFactor, e.position.x += e.xSpeed * t, e.position.y += e.ySpeed * t, e.scale.x = e.xSpeed > 0 ? this.scaling : -1 * this.scaling
-    }
-    harpyDeliverGolem(x, y) {
-      const cf = this.model.creatureFactory;
-      const cm = this.model.creatures;
-      for (let i = 0; i < cf.creatures.length; i++) {
-        const c = cf.creatures[i];
-        if (c.autobuild > 0 && cm.creatureCount[c.type] !== undefined && cm.creatureCount[c.type] < c.autobuild) {
-          cf.spawnCreature(c);
-          const last = cm.creatures[cm.creatures.length - 1];
-          if (last) last.position.set(x, y), last.zIndex = y;
-          return !0;
-        }
-      }
-      return !1;
     }
   }
 
