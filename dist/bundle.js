@@ -1510,7 +1510,7 @@ var Incremancer;
       this.level++, this.currentState = this.states.playingLevel, this.setupLevel(), this.updatePlayingLevel(), this.persistentData.autoRelease && this.releaseCagedZombies()
     }
     setupLevel() {
-      this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), this.addStartLevelResources(), this.populateStats(), SpiderCollector.instance && (SpiderCollector.instance.spiderTotalBones = 0, SpiderCollector.instance.spiderTotalParts = 0)
+      this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), function(){const spells = new SpellSystem; spells.spells.forEach(s => { if (s.active) { s.active = !1; s.end(); spells.applySpellBuffEnd(s, this); } })}.call(this), this.addStartLevelResources(), this.populateStats(), SpiderCollector.instance && (SpiderCollector.instance.spiderTotalBones = 0, SpiderCollector.instance.spiderTotalParts = 0)
     }
     populateStats() {
       this.stats = {
@@ -3095,6 +3095,7 @@ var Incremancer;
       }), this.vipText.anchor.set(.5, 1), this.vipText.scale.x = .25, this.vipText.scale.y = .25, b.addChild(this.vipText)), this.vipText.visible = !0, this.vipText.human = e, this.vipText.yOffset = -20, this.vipText.x = e.x, this.vipText.y = e.y + this.vipText.yOffset
     }
     populate() {
+      this.pandemic = !1, this.frozen = !1, this.speedDebuff = 1;
       if (this.map = new LevelMap, this.zombies = new Zombies, this.gameModel = GameModel.getInstance(), this.blood = new _e, this.smoke = new ot, this.bones = new Bones, this.skeleton = new SkeletonChampion, this.blasts = new nt, this.fragments = new lt, this.trophies = new TrophyDef, this.exclamations = new it, this.bullets = new rt, this.police = new PoliceManager, this.army = new Te, this.tanks = new De, this.map.populatePois(), 0 == this.textures.length)
         for (let e = 0; e < 6; e++) {
           const t = [];
@@ -3671,6 +3672,7 @@ var Incremancer;
       Zombies.instance = this
     }
     populate() {
+      this.detonate = !1, this.super = !1, this.superMult = 10, this.speedBuff = 1;
       if (this.map = new LevelMap, this.model = GameModel.getInstance(), this.humans = new Humans, this.graveyard = new Graveyard, this.creatureFactory = new ae, this.smoke = new ot, this.blood = new _e, this.bones = new Bones, this.exclamations = new it, this.blasts = new nt, this.bullets = new rt, this.model.zombieCount = 0, 0 == this.textures.length) {
         for (let e = 0; e < 3; e++) {
           const t = [];
