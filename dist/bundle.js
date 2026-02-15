@@ -4913,6 +4913,7 @@ var Incremancer;
         if (s.silkLine) { s.silkLine.clear(); }
         if (s.ballContainer) { this.silkContainer.removeChild(s.ballContainer); s.ballContainer.destroy({ children: true }); s.ballContainer = null; }
         s.collectedVisuals = 0;
+        s.staggerDelay = e === 0 ? 0 : Math.random() * 3;
       }
       this.anglePool = [];
       this.shotsSinceRefresh = 0;
@@ -5138,6 +5139,7 @@ var Incremancer;
       const fenceR = this.gameModel.fenceRadius || 50;
       switch (spider.state) {
         case Zt.idle:
+          if (spider.staggerDelay > 0) { spider.staggerDelay -= dt; return; }
           if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * this.sprites.length)) {
             this.refreshAnglePool();
           }
