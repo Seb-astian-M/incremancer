@@ -4763,7 +4763,7 @@ var Incremancer;
       switch (!e.target || e.target.graveyard && e.state == Zt.collecting || this.updateSpeed(e, t), e.state) {
         case Zt.collecting:
           if (e.target && e.target.value && e.target.visible || this.findNearestTarget(e), e.target && e.target.value > 0 && this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance) {
-            const areaRadius = 60, mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
+            const areaRadius = 100, mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
             const collectPile = (p) => {
               if (p.isParts) e.carriedParts += p.value * mult;
               else e.carriedBones += p.value;
