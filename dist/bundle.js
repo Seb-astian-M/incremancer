@@ -1446,7 +1446,9 @@ var Incremancer;
         }
         if (this.skeletonNets) {
           this.addBones(1e9);
-          this.sendMessage("Skeleton Net: +1B bones!", "chat-construction")
+          const costScale = Math.max(1, partsUsed / 1e6);
+          this.skeleton.spawnNetSkeleton(costScale);
+          this.sendMessage("Skeleton Net: +1B bones, +1 skeleton!", "chat-construction")
         }
         this.sendMessage("Net launched! " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
       }
@@ -2111,7 +2113,7 @@ var Incremancer;
           new UpgradeDef(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.(In testing)", null, 304),
           new UpgradeDef(75, "Hybrid Talent Infusion", this.types.golemTalents, this.costs.parts, 1e13, 1, 1, 1, "Infuse golems with the Skeleton Champion's combat knowledge. Skeleton talents (Bone Shield, Dark Orb, Thrifty, Opportunist, Blood Pact) also apply to all golems. Additional cost: 100M bones + 100M brains.", "Golems now benefit from Skeleton Champion talents!", 302),
           new UpgradeDef(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e14, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222),
-          new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e15, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
+          new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e14, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
           new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e6, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
           new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 100, 1, 0, "Fuse spider silk with zombie flesh for massive power. Each rank: zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
@@ -4018,20 +4020,28 @@ var Incremancer;
         this.textures.dead.push(PIXI.Texture.from("skeleton9.png")), this.textures.set = !0
       }
       const e = [];
-      for (let t = 0; t < this.skeletons.length; t++) this.skeletons[t].flags.dead ? (this.discardedSprites.push(this.skeletons[t]), g.removeChild(this.skeletons[t])) : (e.push(this.skeletons[t]), this.skeletons[t].x = this.graveyard.sprite.x, this.skeletons[t].zIndex = this.skeletons[t].y = this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0), this.skeletons[t].target = null, this.skeletons[t].state = be.lookingForTarget, this.skeletons[t].timer.scan = 0);
+      for (let t = 0; t < this.skeletons.length; t++) this.skeletons[t].flags.dead || this.skeletons[t].netSkeleton ? (this.discardedSprites.push(this.skeletons[t]), g.removeChild(this.skeletons[t])) : (e.push(this.skeletons[t]), this.skeletons[t].x = this.graveyard.sprite.x, this.skeletons[t].zIndex = this.skeletons[t].y = this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0), this.skeletons[t].target = null, this.skeletons[t].state = be.lookingForTarget, this.skeletons[t].timer.scan = 0);
       this.skeletons = e, this.aliveSkeletons = [], this.lootChance = .00125, this.persistent.level > 10 * this.model.level && (this.lootChance *= 1.85), this.persistent.level > 5 * this.model.level && (this.lootChance *= 1.65), this.persistent.level > 2 * this.model.level && (this.lootChance *= 1.33), this.persistent.level < this.model.level / 2 && (this.lootChance *= .2), this.persistent.level < this.model.level && (this.lootChance *= .33)
     }
     spawnCreature() {
       let e;
-      this.discardedSprites.length > 0 ? (e = this.discardedSprites.pop(), e.textures = this.textures.down) : (e = new Le(this.textures.down), e.addChild(e.boneshieldContainer), e.boneshieldContainer.position.set(0, -16)), e.tint = 15658734, e.immuneToBurns = !1, e.bulletReflect = 0, e.zombie = !0, e.textureSet = this.textures, e.deadTexture = this.textures.dead, e.currentDirection = this.directions.down, e.flags = new K, e.burnDamage = 0, e.lastKnownBuilding = !1, e.alpha = 1, e.animationSpeed = .15, e.anchor.set(8.5 / 16, 1), e.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), e.target = null, e.zIndex = e.position.y, e.visible = !0, e.maxHealth = e.health = 10 * this.model.zombieHealth, e.attackDamage = 10 * this.model.zombieDamage, e.regenTimer = 5, e.state = be.lookingForTarget, e.scaling = this.scaling, e.scale.set(e.scaling, e.scaling), e.timer.ability = 4 * Math.random(), e.timer.attack = 0, e.timer.scan = 0, e.timer.burnTick = this.burnTickTimer, e.timer.smoke = this.smokeTimer, e.xSpeed = 0, e.ySpeed = 0, e.speedMultiplier = 1, e.maxSpeed = this.moveSpeed, e.play(), e.zombieId = this.currId++, this.skeletons.push(e), g.addChild(e), this.smoke.newZombieSpawnCloud(e.x, e.y - 2)
+      this.discardedSprites.length > 0 ? (e = this.discardedSprites.pop(), e.textures = this.textures.down) : (e = new Le(this.textures.down), e.addChild(e.boneshieldContainer), e.boneshieldContainer.position.set(0, -16)), e.tint = 15658734, e.netSkeleton = !1, e.immuneToBurns = !1, e.bulletReflect = 0, e.zombie = !0, e.textureSet = this.textures, e.deadTexture = this.textures.dead, e.currentDirection = this.directions.down, e.flags = new K, e.burnDamage = 0, e.lastKnownBuilding = !1, e.alpha = 1, e.animationSpeed = .15, e.anchor.set(8.5 / 16, 1), e.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), e.target = null, e.zIndex = e.position.y, e.visible = !0, e.maxHealth = e.health = 10 * this.model.zombieHealth, e.attackDamage = 10 * this.model.zombieDamage, e.regenTimer = 5, e.state = be.lookingForTarget, e.scaling = this.scaling, e.scale.set(e.scaling, e.scaling), e.timer.ability = 4 * Math.random(), e.timer.attack = 0, e.timer.scan = 0, e.timer.burnTick = this.burnTickTimer, e.timer.smoke = this.smokeTimer, e.xSpeed = 0, e.ySpeed = 0, e.speedMultiplier = 1, e.maxSpeed = this.moveSpeed, e.play(), e.zombieId = this.currId++, this.skeletons.push(e), g.addChild(e), this.smoke.newZombieSpawnCloud(e.x, e.y - 2);
+      return e
+    }
+    spawnNetSkeleton(costScale) {
+      const e = this.spawnCreature();
+      e.netSkeleton = !0, e.tint = 0x9999ff;
+      e.maxHealth = e.health = e.maxHealth * costScale;
+      e.attackDamage = e.attackDamage * costScale;
     }
     skeletonTimer() {
-      return this.aliveSkeletons.length < this.persistent.skeletons ? this.spawnTimer : 0
+      return this.aliveSkeletons.filter(s => !s.netSkeleton).length < this.persistent.skeletons ? this.spawnTimer : 0
     }
     update(e) {
       this.aliveHumans = this.humans.aliveHumans, this.graveyardAttackers = this.humans.graveyardAttackers, this.aliveZombies = this.zombies.aliveZombies, this.aliveSkeletons = [], this.spellTimer -= e;
       for (let t = 0; t < this.skeletons.length; t++) this.skeletons[t].visible && (this.updateCreature(this.skeletons[t], e), this.skeletons[t].flags.dead || (this.aliveZombies.push(this.skeletons[t]), this.aliveSkeletons.push(this.skeletons[t])));
-      this.aliveSkeletons.length < this.persistent.skeletons && (this.spawnTimer -= e, this.spawnTimer < 0 && (this.spawnCreature(), this.spawnTimer = this.respawnTime)), this.lastKillingBlow -= e;
+      const permSkeletons = this.aliveSkeletons.filter(s => !s.netSkeleton).length;
+      permSkeletons < this.persistent.skeletons && (this.spawnTimer -= e, this.spawnTimer < 0 && (this.spawnCreature(), this.spawnTimer = this.respawnTime)), this.lastKillingBlow -= e;
       if (this.model.persistentData.autoSellGear == !0 && this.aliveSkeletons.length > 0) { this.destroyAllItems() };
       if (this.model.persistentData.autoSellGearLegendary == !0 && this.aliveSkeletons.length > 0) { this.destroyAllItemsLegendary() };
     }
