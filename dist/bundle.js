@@ -2002,9 +2002,9 @@ var Incremancer;
             energy: 22
           }, 44, 1, 10, 5, 202, "Enlarge the fence so a greater area is protected.", null),
           new Construction(204, "Plague Workshop", this.constructionTypes.plagueWorkshop, {
-            blood: 10200,
+            blood: 6e3,
             brains: 600
-          }, 60, 1, 1, 1, 205, "Build a laboratory to study the effects of plague. This will unlock new upgrades in the shop.", "Plague upgrades now available!"),
+          }, 60, 1, 1, 1, 201, "Build a laboratory to study the effects of plague. This will unlock new upgrades in the shop.", "Plague upgrades now available!"),
           new Construction(208, "Plague Spikes", this.constructionTypes.plagueSpikes, {
             brains: 3e3,
             bones: 1e3
@@ -2050,7 +2050,7 @@ var Incremancer;
           new Construction(219, "Part Factory", this.constructionTypes.partFactory, {
             brains: 35e3,
             blood: 15e6
-          }, 50, 1, 1, 1, 218, "Build a factory to create parts that can be used to construct more powerful beings for your army.", "Factory menu now available!"),
+          }, 50, 1, 1, 1, 211, "Build a factory to create parts that can be used to construct more powerful beings for your army.", "Factory menu now available!"),
           new Construction(220, "Creature Factory", this.constructionTypes.monsterFactory, {
             brains: 45e3,
             blood: 4e7
@@ -2060,10 +2060,10 @@ var Incremancer;
             parts: 5e6
           }, 50, 1, 1, 10, 219, "A bottomless pit with walls made from creature parts. Drastically increases your capacity to store blood and brains.", null),
           new Construction(222, "Harpy Outfitter", this.constructionTypes.harpy, {
-            bones: 75e3,
-            brains: 75e3,
-            blood: 8e7
-          }, 50, 1, 1, 1, 220, "Build an outfitter to upgrade the abilities of your harpies.", "Harpy upgrades now available in the shop!"),
+            bones: 1e5,
+            brains: 1e5,
+            blood: 2e8
+          }, 50, 1, 1, 1, 211, "Build an outfitter to upgrade the abilities of your harpies.", "Harpy upgrades now available in the shop!"),
           new Construction(301, "Hybrid Laboratory", this.constructionTypes.HybridLab, {
             bones: 75e6,
             parts: 9e12
@@ -2073,15 +2073,15 @@ var Incremancer;
             parts: 7e13
           }, 240, 1, 1, 1, 301, "Build an advanced laboratory to further unlock the secrets of Zombie-Golem Hybridization. Even deeper storage tanks for Blood and Brains are needed for research. Doubles storage", "New upgrades are available in the shop!"),
           new Construction(303, "Miniturized Assembly Lines", this.constructionTypes.MiniAssembLine, {
-            bones: 75e10,
-            parts: 4e16
-          }, 240, 1, 1, 1, 302, "Build a new way to create everything faster!  How deep can these storage tanks go? Doubles storage.", "New upgrades are available in the shop!"),
+            bones: 50e9,
+            parts: 5e14
+          }, 240, 1, 1, 1, 301, "Build a new way to create everything faster!  How deep can these storage tanks go? Doubles storage.", "New upgrades are available in the shop!"),
           new Construction(304, "Technical Think Tank", this.constructionTypes.TechThinkTank, {
             bones: 75e12,
             parts: 1e18
-          }, 240, 1, 1, 1, 303, "Using all these stored brains allows us to harness their raw computational power for even more innovations!  Storage tanks resting on bedrock is as far as we can go, doubling storage", "New upgrades are available in the shop!"),
+          }, 240, 1, 1, 1, [302, 303], "Using all these stored brains allows us to harness their raw computational power for even more innovations!  Storage tanks resting on bedrock is as far as we can go, doubling storage", "New upgrades are available in the shop!"),
           new Construction(305, "Spider Lair", this.constructionTypes.spiderLair, {
-            parts: 1e6,
+            parts: 50e3,
             brains: 1e4
           }, 30, 1, 1, 1, 211, "Construct a dark lair beneath the graveyard where spiders can be bred and trained. These arachnid servants will serve as utility collectors, draining energy to sustain themselves.", "Spider Lair constructed! Spiders are now available in the graveyard menu.")
         ],
@@ -2148,10 +2148,10 @@ var Incremancer;
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
           new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 3, 1, 10, "Each rank adds one more net per launch. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
           new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "All nets deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
-          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 10, "Each rank assigns one more net to spawn zombies on impact. Capped by Net Launchers rank.", "Nets now spawn zombies on impact!", 85),
+          new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 10, "Each rank assigns one more net to spawn zombies on impact. Capped by Net Launchers rank.", "Nets now spawn zombies on impact!", 84),
           new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e4, 2, 1, 10, "Each rank upgrades one more zombie net to spawn prodigies. Capped by Zombie Nets rank.", "Net zombies are now prodigies!", 86),
-          new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 1e7, 10, 1, 10, "Each rank assigns one more net to spawn a golem on impact. Capped by Prodigy Nets rank.", "Nets now spawn golems on impact!", 87),
-          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e5, 100, 1, 10, "Each rank assigns one more net to spawn a skeleton and generate 1B bones. Capped by Golem Nets rank.", "Nets now also spawn skeletons!", 100),
+          new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 5e8, 10, 1, 10, "Each rank assigns one more net to spawn a golem on impact. Capped by Net Launchers rank.", "Nets now spawn golems on impact!", 84),
+          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 5e6, 100, 1, 10, "Each rank assigns one more net to spawn a skeleton and generate 1B bones. Capped by Net Launchers rank.", "Nets now also spawn skeletons!", 84),
           new UpgradeDef(101, "Rapid Deployment", this.types.netCooldown, this.costs.parts, 1e8, 10, 1, 2, "Reduce net launcher cooldown. Rank 1: 5 seconds. Rank 2: 3 seconds.", null, 84),
           new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e8, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
           new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e7, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
@@ -2184,9 +2184,8 @@ var Incremancer;
     }
     hasRequirement(e) {
       if (!e.requires) return !0;
-      if (this.gameModel.persistentData.constructions.some((t => t.id == e.requires))) return !0;
-      if (this.gameModel.persistentData.upgrades.some((t => t.id == e.requires))) return !0;
-      return !1;
+      const reqs = Array.isArray(e.requires) ? e.requires : [e.requires];
+      return reqs.every(r => this.gameModel.persistentData.constructions.some(t => t.id == r) || this.gameModel.persistentData.upgrades.some(t => t.id == r));
     }
     getUpgrades(e) {
       switch (e) {
@@ -2613,9 +2612,9 @@ var Incremancer;
         case this.types.prodigyNets:
           return Math.min(e.cap, this.gameModel.zombieNets || 0);
         case this.types.golemNets:
-          return Math.min(e.cap, this.gameModel.prodigyNets || 0);
+          return Math.min(e.cap, this.gameModel.netLaunchers || 0);
         case this.types.skeletonNets:
-          return Math.min(e.cap, this.gameModel.golemNets || 0);
+          return Math.min(e.cap, this.gameModel.netLaunchers || 0);
         default:
           return e.cap;
       }
@@ -2823,7 +2822,13 @@ var Incremancer;
       this.gameModel.persistentData.currentConstruction = !1
     }
     constructionAvailable(e) {
-      return !(this.gameModel.persistentData.currentConstruction && this.gameModel.persistentData.currentConstruction.id == e.id || this.currentRankConstruction(e) >= e.cap || e.requires && 0 == this.gameModel.persistentData.constructions.filter((t => t.id == e.requires)).length)
+      if (this.gameModel.persistentData.currentConstruction && this.gameModel.persistentData.currentConstruction.id == e.id) return !1;
+      if (this.currentRankConstruction(e) >= e.cap) return !1;
+      if (e.requires) {
+        const reqs = Array.isArray(e.requires) ? e.requires : [e.requires];
+        return reqs.every(r => this.gameModel.persistentData.constructions.some(t => t.id == r));
+      }
+      return !0
     }
     constructionComplete(e) {
       return this.currentRankConstruction(e) >= e.cap
