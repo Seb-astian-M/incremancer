@@ -208,7 +208,7 @@ var Incremancer;
               e.preventDefault()
             }
           }(e), e.loader.add("sprites/ground.json").add("sprites/megagraveyard.png").add("sprites/graveyard.json").add("sprites/buildings.json").add("sprites/humans.json").add("sprites/cop.json").add("sprites/dogs.json").add("sprites/army.json").add("sprites/doctor.json").add("sprites/zombie.json").add("sprites/golem.json").add("sprites/bonecollector.json").add("sprites/harpy.json").add("sprites/objects2.json").add("sprites/fenceposts.json").add("sprites/trees2.json").add("sprites/fortress.json").add("sprites/tank.json").add("sprites/skeleton.json").load((function() {
-            v.app = e, N(), x = new PIXI.TilingSprite(PIXI.Texture.from("grass.png")), x.texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.OFF, x.width = P.x, x.height = P.y, u.addChild(x), v.setupLevel(), setTimeout((function() {
+            v.app = e, N(), x = new PIXI.TilingSprite(PIXI.Texture.from("grass.png")), x.texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.OFF, x.width = P.x, x.height = P.y, GameModel.getInstance().grassSprite = x, x.tint = GameModel.getInstance().persistentData.backgroundTint || 16777215, u.addChild(x), v.setupLevel(), setTimeout((function() {
               Z(!0)
             })), e.ticker.add((t => {
               U(e.ticker.deltaMS / 1e3, e), v.frameRate = e.ticker.FPS
@@ -1195,6 +1195,7 @@ var Incremancer;
           resolution: 1,
           zoomButtons: !1,
           particles: !0,
+          backgroundTint: 16777215,
           generators: [],
           currentConstruction: null,
           creatureLevels: [],
@@ -2144,6 +2145,7 @@ var Incremancer;
           new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e14, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
           new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e6, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
           new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 1, 1, 1, "Fuse spider silk with zombie flesh for massive power. Zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", "Strapped! Zombies are now fused with spider silk.", 305),
+          new UpgradeDef(120, "Strap 'em Tighter!", this.types.strapem, this.costs.blood, 1e30, 1, 1, 1, "Further fuse spider silk with zombie flesh. Zombie damage x225, health x225, energy cost x100, harpy energy drain x100.", "Double-strapped! Spider silk reinforcement complete.", 81),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
           new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 3, 1, 10, "Each rank adds one more net per launch. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
@@ -2358,7 +2360,7 @@ var Incremancer;
         case this.types.recollectionEfficiency:
           return void(this.gameModel.spiderEfficiency = t);
         case this.types.strapem:
-          return void(this.gameModel.strapemRank = t);
+          return void(this.gameModel.strapemRank += t);
         case this.types.spiderSpeed:
           return void(this.gameModel.spiderSpeedMod = t * e.effect);
         case this.types.netLaunchers:
@@ -2568,7 +2570,8 @@ var Incremancer;
         case this.types.partsRecollection:
           return "Parts piles drop from enemies: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
         case this.types.strapem:
-          return "Zombie damage x15, health x15, energy cost x10: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+          const sr = this.gameModel.strapemRank;
+          return `Zombie damage x${Math.pow(15,sr)}, health x${Math.pow(15,sr)}, energy cost x${Math.pow(10,sr)}: ` + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
         case this.types.spiderSpeed:
           return "Spider speed bonus: +" + Math.round(100 * this.gameModel.spiderSpeedMod) + "%";
         case this.types.recollectionEfficiency:
@@ -3713,14 +3716,11 @@ var Incremancer;
       this.discardedZombies.length > 0 ? (a = this.discardedZombies.pop(), a.textures = s ? this.dogTexture : this.textures[i].animated) : a = new Ee(s ? this.dogTexture : this.textures[i].animated), a.zombie = !0, a.mod = 1, a.scaleMod = 1, this.super && (a.mod = 10, a.scaleMod = 1.5), a.flags = new Fe, a.flags.dog = s, a.flags.super = this.super, a.deadTexture = a.flags.dog ? this.deadDogTexture : this.textures[i].dead, a.textureId = i, a.burnDamage = 0, a.lastKnownBuilding = !1, a.alpha = 1, a.animationSpeed = .15, a.anchor.set(35 / 80, 1), a.bloodbornTimer = this.bloodborn, a.position.set(e, t), a.target = null, a.zIndex = a.position.y, a.visible = !0, a.maxHealth = a.health = this.model.zombieHealth * a.mod, a.regenTimer = 5, a.state = be.lookingForTarget;
       (forceProdigy || this.model.zombieTalents && Math.random() < .01) && (
         a.flags.talented = !0, a.tint = 0xffaa00,
-        a.darkorbTimer = Math.random() * 10,
-        a.boneshield = 0, a.boneshieldTimer = 3,
-        a.boneshieldContainer = new Ge,
-        a.addChild(a.boneshieldContainer)
+        a.darkorbTimer = Math.random() * 10
       );
       const r = s ? .7 : 1;
       a.scaling = a.scaleMod * this.scaling * r, a.scale.set(Math.random() > .5 ? a.scaling : -1 * a.scaling, a.scaling);
-      a.boneshieldContainer && (a.boneshieldContainer.scale.set(1 / a.scaling, 1 / a.scaling), a.boneshieldContainer.position.set(0, -16 / a.scaling), a.boneshieldContainer.radius = 12), a.timer.attack = 0, a.xSpeed = 0, a.ySpeed = 0, a.speedMultiplier = 1, a.timer.scan = 0, a.timer.burnTick = this.burnTickTimer, a.timer.smoke = this.smokeTimer, a.play(), a.zombieId = this.currId++, this.zombies.push(a), g.addChild(a), this.smoke.newZombieSpawnCloud(e, t - 2)
+      a.timer.attack = 0, a.xSpeed = 0, a.ySpeed = 0, a.speedMultiplier = 1, a.timer.scan = 0, a.timer.burnTick = this.burnTickTimer, a.timer.smoke = this.smokeTimer, a.play(), a.zombieId = this.currId++, this.zombies.push(a), g.addChild(a), this.smoke.newZombieSpawnCloud(e, t - 2)
     }
     spawnZombie(e, t) {
       this.model.energy < this.model.zombieCost || (this.model.energy -= this.model.zombieCost, this.createZombie(e, t, !1))
@@ -3808,15 +3808,6 @@ var Incremancer;
             e.darkorbTimer = this.model.skeleton.darkorb,
             this.bullets.newBullet(e, e.target, this.calculateDamage(e), !1, !1, !1, !0)
           )
-        ),
-        this.model.skeleton.boneshield > 0 && e.boneshield !== void 0 && (
-          e.boneshield < this.model.skeleton.boneshield && (
-            e.boneshieldTimer -= t,
-            e.boneshieldTimer < 0 && (e.boneshieldTimer = 10 / this.model.skeleton.boneshield, e.boneshield++)
-          ),
-          e.boneshieldContainer && (this.model.skeleton.boneshield ?
-            (e.boneshieldContainer.visible = !0, e.boneshieldContainer.update(e.boneshield), e.boneshieldContainer.rotation += t) :
-            e.boneshieldContainer.visible = !1)
         )
       )
     }
@@ -4543,7 +4534,7 @@ var Incremancer;
         case this.creatureTypes.waterGolem:
           n.tint = 5080808, n.immuneToBurns = !0
       }
-      n.flags = new K, n.flags.golem = !0, n.netGolem = !1, n.burnDamage = 0, n.level = a, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = i, n.price = r, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), n.target = null, n.zIndex = n.position.y, n.visible = !0, n.maxHealth = n.health = e, n.attackDamage = t, n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = s, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2), this.model.creatureCount++, this.model.golemTalents && (n.boneshield = 0, n.boneshieldTimer = 3, n.boneshieldContainer || (n.boneshieldContainer = new Ge, n.addChild(n.boneshieldContainer)), n.boneshieldContainer.scale.set(1 / n.scaling, 1 / n.scaling), n.boneshieldContainer.position.set(0, -16 / n.scaling), n.boneshieldContainer.radius = 14, n.darkorbTimer = Math.random() * 10)
+      n.flags = new K, n.flags.golem = !0, n.netGolem = !1, n.burnDamage = 0, n.level = a, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = i, n.price = r, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), n.target = null, n.zIndex = n.position.y, n.visible = !0, n.maxHealth = n.health = e, n.attackDamage = t, n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = s, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2), this.model.creatureCount++, this.model.golemTalents && (n.darkorbTimer = Math.random() * 10)
     }
     spawnNetGolem(costScale, x, y) {
       let n;
@@ -4562,7 +4553,7 @@ var Incremancer;
       n.maxHealth = n.health = baseHealth * costScale;
       n.attackDamage = baseDamage * costScale;
       n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = 35, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2);
-      this.model.golemTalents && (n.boneshield = 0, n.boneshieldTimer = 3, n.boneshieldContainer || (n.boneshieldContainer = new Ge, n.addChild(n.boneshieldContainer)), n.boneshieldContainer.scale.set(1 / n.scaling, 1 / n.scaling), n.boneshieldContainer.position.set(0, -16 / n.scaling), n.boneshieldContainer.radius = 14, n.darkorbTimer = Math.random() * 10);
+      this.model.golemTalents && (n.darkorbTimer = Math.random() * 10);
     }
     update(e) {
       let t = 0;
@@ -4582,10 +4573,6 @@ var Incremancer;
         return e.alpha -= this.fadeSpeed * t, void(e.alpha < 0 && (e.visible = !1, g.removeChild(e)))
       }
       if (this.model.golemTalents) {
-        if (this.model.skeleton.boneshield > 0 && e.boneshield !== undefined) {
-          e.boneshield < this.model.skeleton.boneshield && (e.boneshieldTimer -= t, e.boneshieldTimer < 0 && (e.boneshieldTimer = 10 / this.model.skeleton.boneshield, e.boneshield++));
-          e.boneshieldContainer && (this.model.skeleton.boneshield ? (e.boneshieldContainer.visible = !0, e.boneshieldContainer.update(e.boneshield), e.boneshieldContainer.rotation += t) : e.boneshieldContainer.visible = !1)
-        }
         this.model.skeleton.darkorb > 0 && e.darkorbTimer !== undefined && (e.darkorbTimer -= t, e.darkorbTimer < 0 && e.target && !e.target.flags.dead && (e.darkorbTimer = this.model.skeleton.darkorb, this.bullets.newBullet(e, e.target, this.calculateDamage(e), !1, !1, !1, !0)))
       }
       if (e.timer.attack -= t, e.timer.scan -= t, e.timer.ability -= t, this.model.runeEffects.healthRegen > 0 && this.updateZombieRegen(e, t), e.flags.burning && !e.immuneToBurns && this.updateBurns(e, t), e.timer.ability < 0) switch (e.timer.ability = 4, e.creatureType) {
@@ -6262,6 +6249,10 @@ var Incremancer;
       c.model.persistentData.showfps = !c.model.persistentData.showfps
     }, c.toggleParticles = function() {
       c.model.persistentData.particles = !c.model.persistentData.particles
+    }, c.setBackgroundTint = function(tint) {
+      c.model.persistentData.backgroundTint = tint;
+      c.model.grassSprite && (c.model.grassSprite.tint = tint);
+      c.model.saveData();
     }, c.isShowPrestige = function() {
       return void 0 !== c.model.persistentData.prestigePointsEarned && c.model.persistentData.allTimeHighestLevel > 5
     }, c.doPrestige = function() {

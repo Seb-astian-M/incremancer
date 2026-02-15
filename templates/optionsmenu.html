@@ -55,6 +55,14 @@
           <p>Disable particles like blood and smoke to improve performance</p>
           <button ng-click="zm.toggleParticles();">{{zm.model.persistentData.particles ? "On" : "Off"}}</button>
       </div>
+      <div class="upgrade">
+          <h4>Background Color</h4>
+          <p>Change the grass background color for better contrast.</p>
+          <button ng-click="zm.setBackgroundTint(16777215);" class="{{zm.model.persistentData.backgroundTint == 16777215 || !zm.model.persistentData.backgroundTint ? 'active' : ''}}">Grass</button>
+          <button ng-click="zm.setBackgroundTint(5592405);" class="{{zm.model.persistentData.backgroundTint == 5592405 ? 'active' : ''}}">Dark</button>
+          <button ng-click="zm.setBackgroundTint(2763306);" class="{{zm.model.persistentData.backgroundTint == 2763306 ? 'active' : ''}}">Darker</button>
+          <button ng-click="zm.setBackgroundTint(1118481);" class="{{zm.model.persistentData.backgroundTint == 1118481 ? 'active' : ''}}">Midnight</button>
+      </div>
       <div class="upgrade" ng-if="zm.model.deferredPrompt">
           <h4>Add to Home Screen</h4>
           <p>You can add this game to your smartphones home screen without having to install anything.</p>
@@ -99,6 +107,13 @@
       </div>
       <div class="upgrade">
           <h4>Changelog (Fork)</h4>
+
+          <p><strong>v1.8.0</strong> <em>2026-02-15</em></p>
+          <ul>
+              <li>Strap 'em Tighter!: second strap upgrade at 1e30 blood (x225 dmg/hp, x100 cost)</li>
+              <li>Removed bone shields from prodigies and golems (less visual clutter)</li>
+              <li>Background color setting: Grass / Dark / Darker / Midnight options</li>
+          </ul>
 
           <p><strong>v1.7.0</strong> <em>2026-02-15</em></p>
           <ul>
