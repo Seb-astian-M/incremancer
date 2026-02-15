@@ -1121,6 +1121,7 @@ var Incremancer;
         this.explosiveNets = !1,
         this.zombieNets = !1,
         this.prodigyNets = !1,
+        this.golemNets = !1,
         this.skeletonNets = !1,
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
@@ -1305,6 +1306,7 @@ var Incremancer;
         this.explosiveNets = !1,
         this.zombieNets = !1,
         this.prodigyNets = !1,
+        this.golemNets = !1,
         this.skeletonNets = !1,
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
@@ -1438,16 +1440,31 @@ var Incremancer;
         }
         if (this.zombieNets) {
           const spawnCount = Math.min(Math.floor(partsUsed / 1e6), 10);
+          const ah = this.humans.aliveHumans;
           for (let i = 0; i < spawnCount; i++) {
-            const zx = this.graveyard.sprite.x + (Math.random() - 0.5) * 200;
-            const zy = this.graveyard.sprite.y + (Math.random() - 0.5) * 100;
+            const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+            const zx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
+            const zy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
             this.zombies.createZombie(zx, zy);
           }
         }
+        if (this.golemNets) {
+          const ah = this.humans.aliveHumans;
+          const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+          const gx = t ? t.x : this.graveyard.sprite.x;
+          const gy = t ? t.y : this.graveyard.sprite.y;
+          const costScale = Math.max(1, partsUsed / 1e6);
+          this.creatures.spawnNetGolem(costScale, gx, gy);
+          this.sendMessage("Golem Net: +1 golem!", "chat-construction")
+        }
         if (this.skeletonNets) {
           this.addBones(1e9);
+          const ah = this.humans.aliveHumans;
+          const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
+          const sx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
+          const sy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
           const costScale = Math.max(1, partsUsed / 1e6);
-          this.humans.skeleton.spawnNetSkeleton(costScale);
+          this.humans.skeleton.spawnNetSkeleton(costScale, sx, sy);
           this.sendMessage("Skeleton Net: +1B bones, +1 skeleton!", "chat-construction")
         }
         this.sendMessage("Net launched! " + n(Math.floor(partsUsed)) + " parts expended.", "chat-construction")
@@ -1859,6 +1876,7 @@ var Incremancer;
           explosiveNets: "explosiveNets",
           zombieNets: "zombieNets",
           prodigyNets: "prodigyNets",
+          golemNets: "golemNets",
           skeletonNets: "skeletonNets",
           magicalTraining: "magicalTraining",
           expandedBuffSlots: "expandedBuffSlots",
@@ -2122,7 +2140,8 @@ var Incremancer;
           new UpgradeDef(85, "Explosive Nets", this.types.explosiveNets, this.costs.blood, 1e7, 1, 1, 1, "Net projectiles now deal AoE damage on impact based on resources expended.", "Nets now explode on impact!", 84),
           new UpgradeDef(86, "Zombie Nets", this.types.zombieNets, this.costs.parts, 1e9, 1, 1, 1, "Explosion power reduced to 0.7x but spawns gigazombies proportional to parts used.", "Nets now spawn zombies on impact!", 85),
           new UpgradeDef(87, "Prodigy Nets", this.types.prodigyNets, this.costs.brains, 1e4, 1, 1, 1, "Zombies spawned by nets are prodigies with skeleton talents.", "Net zombies are now prodigies!", 86),
-          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e5, 1, 1, 1, "Each launch generates 1e9 bonus bones and spawns a temporary skeleton with stats scaling from launch cost.", "Nets now also spawn skeletons!", 87),
+          new UpgradeDef(100, "Golem Nets", this.types.golemNets, this.costs.parts, 1e7, 1, 1, 1, "Each net launch spawns a temporary golem at the impact site. Golem stats scale with parts used. Does not count toward creature limit.", "Nets now spawn golems on impact!", 87),
+          new UpgradeDef(88, "Skeleton Nets", this.types.skeletonNets, this.costs.bones, 1e5, 1, 1, 1, "Each launch generates 1e9 bonus bones and spawns a temporary skeleton at impact. Stats scale from launch cost.", "Nets now also spawn skeletons!", 100),
           new UpgradeDef(89, "Magical Training", this.types.magicalTraining, this.costs.blood, 1e8, 1, 1, 1, "Unlock the spell buff system. Select spells to permanently enhance with powerful modifications.", "Magical Training complete! Spell buffs are now available.", 305),
           new UpgradeDef(90, "Slowing Nets Buff", this.types.spellBuff, this.costs.blood, 1e7, 1, 1, 1, "Unlock: Idle spiders shoot freezing nets at enemies. Priority: tanks > VIPs > random.", null, 89),
           new UpgradeDef(91, "Pandemic Buff", this.types.spellBuff, this.costs.brains, 1e8, 1, 1, 1, "Unlock: Pandemic spell has 1/100 chance to zombify healthy humans.", null, 89),
@@ -2340,6 +2359,8 @@ var Incremancer;
           return void(this.gameModel.zombieNets = !0);
         case this.types.prodigyNets:
           return void(this.gameModel.prodigyNets = !0);
+        case this.types.golemNets:
+          return void(this.gameModel.golemNets = !0);
         case this.types.skeletonNets:
           return void(this.gameModel.skeletonNets = !0);
         case this.types.magicalTraining:
@@ -4028,11 +4049,12 @@ var Incremancer;
       this.discardedSprites.length > 0 ? (e = this.discardedSprites.pop(), e.textures = this.textures.down) : (e = new Le(this.textures.down), e.addChild(e.boneshieldContainer), e.boneshieldContainer.position.set(0, -16)), e.tint = 15658734, e.netSkeleton = !1, e.immuneToBurns = !1, e.bulletReflect = 0, e.zombie = !0, e.textureSet = this.textures, e.deadTexture = this.textures.dead, e.currentDirection = this.directions.down, e.flags = new K, e.burnDamage = 0, e.lastKnownBuilding = !1, e.alpha = 1, e.animationSpeed = .15, e.anchor.set(8.5 / 16, 1), e.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), e.target = null, e.zIndex = e.position.y, e.visible = !0, e.maxHealth = e.health = 10 * this.model.zombieHealth, e.attackDamage = 10 * this.model.zombieDamage, e.regenTimer = 5, e.state = be.lookingForTarget, e.scaling = this.scaling, e.scale.set(e.scaling, e.scaling), e.timer.ability = 4 * Math.random(), e.timer.attack = 0, e.timer.scan = 0, e.timer.burnTick = this.burnTickTimer, e.timer.smoke = this.smokeTimer, e.xSpeed = 0, e.ySpeed = 0, e.speedMultiplier = 1, e.maxSpeed = this.moveSpeed, e.play(), e.zombieId = this.currId++, this.skeletons.push(e), g.addChild(e), this.smoke.newZombieSpawnCloud(e.x, e.y - 2);
       return e
     }
-    spawnNetSkeleton(costScale) {
+    spawnNetSkeleton(costScale, x, y) {
       const e = this.spawnCreature();
       e.netSkeleton = !0, e.tint = 0x9999ff;
       e.maxHealth = e.health = e.maxHealth * costScale;
       e.attackDamage = e.attackDamage * costScale;
+      if (x !== undefined) e.position.set(x, y), e.zIndex = y;
     }
     skeletonTimer() {
       return this.aliveSkeletons.filter(s => !s.netSkeleton).length < this.persistent.skeletons ? this.spawnTimer : 0
@@ -4431,7 +4453,7 @@ var Incremancer;
         this.golemTextures.dead.push(PIXI.Texture.from("golem9.png")), this.golemTextures.set = !0
       }
       const e = [];
-      for (let t = 0; t < this.creatures.length; t++) this.model.constructions.monsterFactory ? this.creatures[t].flags.dead ? (this.discardedSprites.push(this.creatures[t]), g.removeChild(this.creatures[t])) : (e.push(this.creatures[t]), this.creatures[t].x = this.graveyard.sprite.x, this.creatures[t].zIndex = this.creatures[t].y = this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0), this.creatures[t].target = null, this.creatures[t].state = be.lookingForTarget) : (this.discardedSprites.push(this.creatures[t]), g.removeChild(this.creatures[t]));
+      for (let t = 0; t < this.creatures.length; t++) this.model.constructions.monsterFactory ? this.creatures[t].flags.dead || this.creatures[t].netGolem ? (this.discardedSprites.push(this.creatures[t]), g.removeChild(this.creatures[t])) : (e.push(this.creatures[t]), this.creatures[t].x = this.graveyard.sprite.x, this.creatures[t].zIndex = this.creatures[t].y = this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0), this.creatures[t].target = null, this.creatures[t].state = be.lookingForTarget) : (this.discardedSprites.push(this.creatures[t]), g.removeChild(this.creatures[t]));
       this.creatures = e, this.aliveCreatures = [], this.creatureFactory.spawnSavedCreatures()
     }
     spawnCreature(e, t, s, i, a, r) {
@@ -4450,7 +4472,26 @@ var Incremancer;
         case this.creatureTypes.waterGolem:
           n.tint = 5080808, n.immuneToBurns = !0
       }
-      n.flags = new K, n.flags.golem = !0, n.burnDamage = 0, n.level = a, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = i, n.price = r, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), n.target = null, n.zIndex = n.position.y, n.visible = !0, n.maxHealth = n.health = e, n.attackDamage = t, n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = s, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2), this.model.creatureCount++, this.model.golemTalents && (n.boneshield = 0, n.boneshieldTimer = 3, n.boneshieldContainer || (n.boneshieldContainer = new Ge, n.addChild(n.boneshieldContainer)), n.boneshieldContainer.scale.set(1 / n.scaling, 1 / n.scaling), n.boneshieldContainer.position.set(0, -16 / n.scaling), n.darkorbTimer = Math.random() * 10)
+      n.flags = new K, n.flags.golem = !0, n.netGolem = !1, n.burnDamage = 0, n.level = a, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = i, n.price = r, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y + (this.graveyard.level > 2 ? 8 : 0)), n.target = null, n.zIndex = n.position.y, n.visible = !0, n.maxHealth = n.health = e, n.attackDamage = t, n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = s, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2), this.model.creatureCount++, this.model.golemTalents && (n.boneshield = 0, n.boneshieldTimer = 3, n.boneshieldContainer || (n.boneshieldContainer = new Ge, n.addChild(n.boneshieldContainer)), n.boneshieldContainer.scale.set(1 / n.scaling, 1 / n.scaling), n.boneshieldContainer.position.set(0, -16 / n.scaling), n.darkorbTimer = Math.random() * 10)
+    }
+    spawnNetGolem(costScale, x, y) {
+      let n;
+      this.discardedSprites.length > 0 ? (n = this.discardedSprites.pop(), n.textures = this.golemTextures.down) : n = new Pe(this.golemTextures.down);
+      const types = [this.creatureTypes.earthGolem, this.creatureTypes.airGolem, this.creatureTypes.fireGolem, this.creatureTypes.waterGolem];
+      const golemType = types[Math.floor(Math.random() * types.length)];
+      switch (golemType) {
+        case this.creatureTypes.earthGolem: n.tint = 11042610, n.immuneToBurns = !1, n.bulletReflect = this.model.bulletproofChance; break;
+        case this.creatureTypes.airGolem: n.tint = 10266040, n.immuneToBurns = !1, n.bulletReflect = 0; break;
+        case this.creatureTypes.fireGolem: n.tint = 14370586, n.immuneToBurns = !0, n.bulletReflect = 0; break;
+        case this.creatureTypes.waterGolem: n.tint = 5080808, n.immuneToBurns = !0, n.bulletReflect = 0; break;
+      }
+      n.flags = new K, n.flags.golem = !0, n.netGolem = !0, n.burnDamage = 0, n.level = 1, n.textureSet = this.golemTextures, n.deadTexture = this.golemTextures.dead, n.currentDirection = this.directions.down, n.creatureType = golemType, n.price = 0, n.lastKnownBuilding = !1, n.alpha = 1, n.animationSpeed = .15, n.anchor.set(8.5 / 16, 1), n.position.set(x, y), n.target = null, n.zIndex = y, n.visible = !0;
+      const baseHealth = 10 * this.model.zombieHealth * this.model.golemHealthPCMod;
+      const baseDamage = 10 * this.model.zombieDamage * this.model.golemDamagePCMod;
+      n.maxHealth = n.health = baseHealth * costScale;
+      n.attackDamage = baseDamage * costScale;
+      n.regenTimer = 5, n.state = be.lookingForTarget, n.scaling = this.scaling, n.scale.set(n.scaling, n.scaling), n.xSpeed = 0, n.ySpeed = 0, n.speedMultiplier = 1, n.maxSpeed = 35, n.timer.ability = 4 * Math.random(), n.timer.attack = 0, n.timer.scan = 0, n.timer.burnTick = this.burnTickTimer, n.timer.smoke = this.smokeTimer, n.play(), n.zombieId = this.currId++, this.creatures.push(n), g.addChild(n), this.smoke.newZombieSpawnCloud(n.x, n.y - 2);
+      this.model.golemTalents && (n.boneshield = 0, n.boneshieldTimer = 3, n.boneshieldContainer || (n.boneshieldContainer = new Ge, n.addChild(n.boneshieldContainer)), n.boneshieldContainer.scale.set(1 / n.scaling, 1 / n.scaling), n.boneshieldContainer.position.set(0, -16 / n.scaling), n.darkorbTimer = Math.random() * 10);
     }
     update(e) {
       let t = 0;
@@ -4458,10 +4499,10 @@ var Incremancer;
       for (let e = 0; e < this.creatureFactory.creatures.length; e++) this.creatureCount[this.creatureFactory.creatures[e].type] = 0;
       this.model.persistentData.savedCreatures = [];
       for (let t = 0; t < this.creatures.length; t++) this.creatures[t].visible && this.updateCreature(this.creatures[t], e);
-      for (let e = 0; e < this.creatures.length; e++) this.creatures[e].visible && (this.creatures[e].flags.dead || (this.aliveZombies.push(this.creatures[e]), t++, this.creatureCount[this.creatures[e].creatureType]++, this.model.persistentData.savedCreatures.push({
+      for (let e = 0; e < this.creatures.length; e++) this.creatures[e].visible && (this.creatures[e].flags.dead || (this.aliveZombies.push(this.creatures[e]), this.creatures[e].netGolem || (t++, this.creatureCount[this.creatures[e].creatureType]++, this.model.persistentData.savedCreatures.push({
         t: this.creatures[e].creatureType,
         l: this.creatures[e].level
-      })));
+      }))));
       this.model.creatureCount = t
     }
     updateCreature(e, t) {
