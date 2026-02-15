@@ -5846,7 +5846,6 @@ var Incremancer;
         c.model.autoconstruction = !0;
         c.model.persistentData.autoMaxHarpies = !0;
         c.model.persistentData.autoRelease = !0;
-        c.model.persistentData.autoStart = !0;
         c.model.persistentData.autoPrestige = !0;
         c.model.autoShatter = !0;
       }
