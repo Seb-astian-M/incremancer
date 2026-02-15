@@ -1,4 +1,6 @@
-console.log("[Incremancer fork] bundle version: 20260215e");
+const FORK_VERSION = "v1.6.0";
+const FORK_VERSION_DATE = "2026-02-15";
+console.log("[Incremancer fork] " + FORK_VERSION + " (" + FORK_VERSION_DATE + ")");
 var Incremancer;
 (() => {
   "use strict";
@@ -1042,7 +1044,9 @@ var Incremancer;
    * ================================================================ */
   class GameModel {
     constructor() {
-      this.storageName = "ZombieData",
+      this.forkVersion = FORK_VERSION,
+        this.forkVersionDate = FORK_VERSION_DATE,
+        this.storageName = "ZombieData",
         this.kongregate = null,
         this.playFabId = null,
         this.titleId = "772D8",
@@ -2142,7 +2146,7 @@ var Incremancer;
           new UpgradeDef(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e14, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222),
           new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e14, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
           new UpgradeDef(80, "Parts Recollection", this.types.partsRecollection, this.costs.blood, 1e6, 1, 1, 1, "Enemies now drop visible parts piles on death. Spiders will collect these piles and bring them back to the graveyard.", "Parts Recollection active! Enemies now drop collectible parts.", 305),
-          new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 1, 1, 1, "Fuse spider silk with zombie flesh for massive power. Zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", null, 305),
+          new UpgradeDef(81, "Strap 'em Together!", this.types.strapem, this.costs.brains, 1e3, 1, 1, 1, "Fuse spider silk with zombie flesh for massive power. Zombie damage x15, zombie health x15, zombie energy cost x10, harpy energy drain x10.", "Strapped! Zombies are now fused with spider silk.", 305),
           new UpgradeDef(82, "Advanced Spider Speed", this.types.spiderSpeed, this.costs.blood, 1e4, 1.25, .1, 30, "Enhance your spiders with longer legs and stronger muscles. Each rank increases spider movement speed.", null, 305),
           new UpgradeDef(83, "Recollection Efficiency", this.types.recollectionEfficiency, this.costs.blood, 1e5, 1.15, 1, 0, "Each rank increases the amount of parts your spiders collect by 10%.", null, 305),
           new UpgradeDef(84, "Net Launchers", this.types.netLaunchers, this.costs.parts, 1e8, 1, 1, 1, "Spiders weave collected parts into projectile nets, launched every 10 seconds. Costs 100 energy + 10% blood per launch.", "Net Launchers online! Projectiles will be launched periodically.", 305),
@@ -2558,7 +2562,43 @@ var Incremancer;
         case this.types.tankBuster:
           return this.currentRank(e) > 0 ? "You have unlocked tank buster" : "You have yet to unlock tank buster";
         case this.types.spikeDelay:
-          return "Current spike delay: " + (5 - this.currentRank(e)) + " seconds"
+          return "Current spike delay: " + (5 - this.currentRank(e)) + " seconds";
+        case this.types.golemTalents:
+          return "Skeleton talents apply to golems: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.zombieHarpies:
+          return "Harpies drop zombies instead of bombs: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.zombieTalents:
+          return "1 in 100 zombies spawn as prodigies: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.partsRecollection:
+          return "Parts piles drop from enemies: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.strapem:
+          return "Zombie damage x15, health x15, energy cost x10: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.spiderSpeed:
+          return "Spider speed bonus: +" + Math.round(100 * this.gameModel.spiderSpeedMod) + "%";
+        case this.types.recollectionEfficiency:
+          return "Spider collection bonus: +" + (this.currentRank(e) * 10) + "%";
+        case this.types.netLaunchers:
+          return "Net launcher cooldown: " + this.gameModel.netCooldown + "s";
+        case this.types.explosiveNets:
+          return "Nets deal AoE damage on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.zombieNets:
+          return "Nets spawn zombies on impact: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.prodigyNets:
+          return "Net zombies are prodigies: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.golemNets:
+          return "Nets spawn temporary golems: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.skeletonNets:
+          return "Nets spawn temporary skeletons: " + (this.currentRank(e) > 0 ? "Active" : "Not yet unlocked");
+        case this.types.netCooldown:
+          return "Net cooldown: " + this.gameModel.netCooldown + " seconds";
+        case this.types.magicalTraining:
+          return "Spell buff system: " + (this.currentRank(e) > 0 ? "Unlocked" : "Locked");
+        case this.types.spellBuff:
+          return "Spell buff: " + (this.currentRank(e) > 0 ? "Unlocked" : "Locked");
+        case this.types.expandedBuffSlots:
+          return "Spell buff slots: " + this.gameModel.spellBuffSlots;
+        case this.types.tailoring:
+          return "Patchwork tailoring: " + (this.currentRank(e) > 0 ? "Unlocked" : "Locked")
       }
     }
     currentRank(e) {
