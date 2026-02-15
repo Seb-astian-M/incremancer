@@ -1402,8 +1402,14 @@ var Incremancer;
             endParts += s.carriedParts, endBones += s.carriedBones, s.carriedParts = 0, s.carriedBones = 0;
           }
         }
-        this.persistentData.parts += endParts, this.addBones(endBones);
-        if (endParts > 0 || endBones > 0) this.sendMessage("Spiders collected remaining: " + (endBones > 0 ? n(endBones) + " bones" : "") + (endBones > 0 && endParts > 0 ? ", " : "") + (endParts > 0 ? n(endParts) + " parts" : ""), "chat-construction");
+        this.addBones(endBones);
+        if (this.netLaunchers && endParts > 0) {
+          this.netLauncherParts += endParts;
+          if (endParts > 0 || endBones > 0) this.sendMessage("Spiders loaded " + n(endParts) + " parts into net" + (endBones > 0 ? ", collected " + n(endBones) + " bones" : ""), "chat-construction");
+        } else {
+          this.persistentData.parts += endParts;
+          if (endParts > 0 || endBones > 0) this.sendMessage("Spiders collected remaining: " + (endBones > 0 ? n(endBones) + " bones" : "") + (endBones > 0 && endParts > 0 ? ", " : "") + (endParts > 0 ? n(endParts) + " parts" : ""), "chat-construction");
+        }
       }
     }
     calculateEndLevelZombieCages() {
