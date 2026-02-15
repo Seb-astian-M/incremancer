@@ -625,6 +625,8 @@ div.spells > div.chatlog {
   text-shadow: 1px 1px #000;
   animation: chatfadein 0.3s ease;
   word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 250px;
 }
 
 .chat-count {
