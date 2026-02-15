@@ -1410,6 +1410,7 @@ var Incremancer;
           for (let i = 0; i < sc.sprites.length; i++) {
             const s = sc.sprites[i];
             endParts += s.carriedParts, endBones += s.carriedBones, s.carriedParts = 0, s.carriedBones = 0;
+            if (s.silkLine || s.ballContainer) sc.cleanupSilk(s);
           }
         }
         this.addBones(endBones);
@@ -4851,15 +4852,15 @@ var Incremancer;
   }
   var Zt;
   ! function(e) {
-    e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle"
+    e[e.collecting = 0] = "collecting", e[e.returning = 1] = "returning", e[e.idle = 2] = "idle", e[e.extending = 3] = "extending", e[e.retracting = 4] = "retracting"
   }(Zt || (Zt = {}));
 
   /* ================================================================
-   *  SPIDER SYSTEM
+   *  SPIDER SYSTEM — Silk String Collector
    * ================================================================ */
   class SpiderCollector {
     constructor() {
-      if (this.sprites = [], this.maxSpeed = 100, this.scaling = 1.0, this.collectDistance = 10, this.fastDistance = i, SpiderCollector.instance) return SpiderCollector.instance;
+      if (this.sprites = [], this.scaling = 1.0, this.silkContainer = null, this.anglePool = [], this.shotsSinceRefresh = 0, this.bestAngleGiven = false, SpiderCollector.instance) return SpiderCollector.instance;
       SpiderCollector.instance = this
     }
     getTexture() {
@@ -4887,105 +4888,242 @@ var Incremancer;
     }
     populate() {
       this.graveyard = new Graveyard, this.gameModel = GameModel.getInstance(), this.bones = new Bones;
-      for (let e = 0; e < this.sprites.length; e++) this.sprites[e].target = !1, this.sprites[e].position.set(this.graveyard.sprite.x, this.graveyard.sprite.y), this.sprites[e].state = Zt.collecting
+      if (!this.silkContainer) {
+        this.silkContainer = new PIXI.Container;
+        this.silkContainer.zIndex = 9999;
+        g.addChild(this.silkContainer);
+      }
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      for (let e = 0; e < this.sprites.length; e++) {
+        const s = this.sprites[e];
+        s.position.set(cx, cy);
+        s.state = Zt.idle;
+        s.stringDist = 0;
+        s.aimAngle = 0;
+        s.carriedParts = 0;
+        s.carriedBones = 0;
+        if (s.silkLine) { s.silkLine.clear(); }
+        if (s.ballContainer) { this.silkContainer.removeChild(s.ballContainer); s.ballContainer.destroy({ children: true }); s.ballContainer = null; }
+        s.collectedVisuals = 0;
+      }
+      this.anglePool = [];
+      this.shotsSinceRefresh = 0;
     }
     addAndRemoveSpiders() {
       const count = this.gameModel.persistentData.spiders || 0;
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
       if (this.sprites.length > count) {
         const e = this.sprites.pop();
-        this.gameModel.addBones(e.carriedBones || 0), g.removeChild(e)
+        this.depositResources(e);
+        this.cleanupSilk(e);
+        g.removeChild(e);
       }
       if (this.sprites.length < count) {
         const tex = this.getTexture();
         const e = new PIXI.Sprite(tex);
-        e.anchor.set(.5, 1), e.position.set(this.graveyard.sprite.x, this.graveyard.sprite.y), e.zIndex = e.position.y, e.visible = !0, e.scale.set(Math.random() > .5 ? this.scaling : -1 * this.scaling, this.scaling), e.xSpeed = 0, e.ySpeed = 0, e.carriedBones = 0, e.carriedParts = 0, e.speedFactor = 0, e.state = Zt.collecting, e.target = !1, e.boneList = [], this.sprites.push(e), g.addChild(e)
+        e.anchor.set(.5, .5);
+        e.position.set(cx, cy);
+        e.zIndex = cy;
+        e.visible = true;
+        e.scale.set(this.scaling, this.scaling);
+        e.carriedBones = 0;
+        e.carriedParts = 0;
+        e.state = Zt.idle;
+        e.stringDist = 0;
+        e.aimAngle = 0;
+        e.silkLine = null;
+        e.ballContainer = null;
+        e.collectedVisuals = 0;
+        this.sprites.push(e);
+        g.addChild(e);
       }
     }
     update(e) {
-      for (let t = 0; t < this.sprites.length; t++) this.updateSpider(this.sprites[t], e)
+      this.bestAngleGiven = false;
+      for (let t = 0; t < this.sprites.length; t++) this.updateSpider(this.sprites[t], e);
     }
-    findNearestTarget(e) {
-      if (e.boneList || (e.boneList = []), 0 == e.boneList.length) {
-        let t = e.x,
-          s = e.y;
-        if (this.gameModel.partsRecollection && SpiderCollector.partsPiles && SpiderCollector.partsPiles.uncollected.length > 0) {
-          for (let i = 0; i < 3; i++) {
-            let i = null,
-              a = 2e3;
-            for (let e = 0; e < SpiderCollector.partsPiles.uncollected.length; e++)
-              if (SpiderCollector.partsPiles.uncollected[e].value > 0 && !SpiderCollector.partsPiles.uncollected[e].collector) {
-                const r = this.fastDistance(t, s, SpiderCollector.partsPiles.uncollected[e].x, SpiderCollector.partsPiles.uncollected[e].y);
-                r < a && (a = r, i = SpiderCollector.partsPiles.uncollected[e])
-              }
-            if (!i) break;
-            e.boneList.push(i), i.collector = !0, t = i.x, s = i.y
-          }
-        }
-        if (0 == e.boneList.length) {
-          for (let i = 0; i < 3; i++) {
-            let i = null,
-              a = 2e3;
-            for (let e = 0; e < this.bones.uncollected.length; e++)
-              if (this.bones.uncollected[e].value > 0 && !this.bones.uncollected[e].collector) {
-                const r = this.fastDistance(t, s, this.bones.uncollected[e].x, this.bones.uncollected[e].y);
-                r < a && (a = r, i = this.bones.uncollected[e])
-              }
-            if (!i) break;
-            e.boneList.push(i), i.collector = !0, t = i.x, s = i.y
-          }
-        }
-      }
-      e.boneList.length > 0 ? e.target = e.boneList.shift() : e.target = !1
-    }
-    collectNearby(e) {
-      const areaRadius = 100, mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
-      const collect = (p) => {
-        if (p.isParts) e.carriedParts += p.value * mult;
-        else e.carriedBones += p.value;
-        p.value = 0, p.collector = !1;
+    refreshAnglePool() {
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
+      const binCount = 36;
+      const binSize = 2 * Math.PI / binCount;
+      const bins = new Float64Array(binCount);
+      const addItem = (item, valMult) => {
+        if (item.value <= 0) return;
+        const ang = Math.atan2(item.y - cy, item.x - cx);
+        const idx = ((ang % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) / binSize) | 0;
+        bins[Math.min(idx, binCount - 1)] += item.value * valMult;
       };
       if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
-        for (let j = 0; j < SpiderCollector.partsPiles.uncollected.length; j++) {
-          const p = SpiderCollector.partsPiles.uncollected[j];
-          if (p.value > 0 && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collect(p);
+        const uc = SpiderCollector.partsPiles.uncollected;
+        for (let j = 0; j < uc.length; j++) addItem(uc[j], mult);
+      }
+      const buc = this.bones.uncollected;
+      for (let j = 0; j < buc.length; j++) addItem(buc[j], 1);
+      const scored = [];
+      for (let b = 0; b < binCount; b++) {
+        if (bins[b] > 0) scored.push({ angle: (b + 0.5) * binSize, score: bins[b] });
+      }
+      scored.sort((a, b) => b.score - a.score);
+      const poolSize = Math.min(scored.length, 2 * this.sprites.length);
+      this.anglePool = scored.slice(0, poolSize);
+      this.shotsSinceRefresh = 0;
+    }
+    pickAngle(spider, isBest) {
+      if (this.anglePool.length === 0) return false;
+      let idx;
+      if (isBest) {
+        idx = 0;
+      } else {
+        idx = (Math.random() * this.anglePool.length) | 0;
+      }
+      const picked = this.anglePool.splice(idx, 1)[0];
+      spider.aimAngle = picked.angle;
+      spider.rotation = picked.angle;
+      return true;
+    }
+    collectAlongString(spider) {
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
+      const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
+      const radius = 5 + spider.stringDist * 0.02;
+      const r2 = radius * radius;
+      const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
+      const checkItem = (item, isParts) => {
+        if (item.value <= 0) return;
+        const dx = item.x - tipX, dy = item.y - tipY;
+        if (dx * dx + dy * dy < r2) {
+          if (isParts) spider.carriedParts += item.value * mult;
+          else spider.carriedBones += item.value;
+          item.value = 0;
+          if (item.sprite) item.sprite.visible = false;
+          else item.visible = false;
+          this.addVisualToBall(spider, item, isParts);
         }
+      };
+      if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
+        const uc = SpiderCollector.partsPiles.uncollected;
+        for (let j = 0; j < uc.length; j++) checkItem(uc[j], true);
       }
-      for (let j = 0; j < this.bones.uncollected.length; j++) {
-        const p = this.bones.uncollected[j];
-        if (p.value > 0 && this.fastDistance(e.position.x, e.position.y, p.x, p.y) < areaRadius) collect(p);
+      const buc = this.bones.uncollected;
+      for (let j = 0; j < buc.length; j++) checkItem(buc[j], false);
+    }
+    addVisualToBall(spider, item, isParts) {
+      if (spider.collectedVisuals >= 20) return;
+      if (!spider.ballContainer) {
+        spider.ballContainer = new PIXI.Container;
+        this.silkContainer.addChild(spider.ballContainer);
+      }
+      const g2 = new PIXI.Graphics;
+      if (isParts) {
+        g2.beginFill(0x66aa77);
+        g2.drawRect(-2.5, -1, 5, 2);
+        g2.endFill();
+        g2.scale.set(1.5);
+      } else {
+        g2.beginFill(0xdddddd);
+        g2.drawRect(-2, -0.5, 4, 1);
+        g2.endFill();
+      }
+      g2.rotation = Math.random() * Math.PI * 2;
+      g2.x = (Math.random() - 0.5) * 6;
+      g2.y = (Math.random() - 0.5) * 6;
+      spider.ballContainer.addChild(g2);
+      spider.collectedVisuals++;
+    }
+    updateSilkVisuals(spider) {
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
+      const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
+      if (!spider.silkLine) {
+        spider.silkLine = new PIXI.Graphics;
+        this.silkContainer.addChild(spider.silkLine);
+      }
+      spider.silkLine.clear();
+      spider.silkLine.lineStyle(1, 0xcccccc, 0.7);
+      spider.silkLine.moveTo(cx, cy);
+      spider.silkLine.lineTo(tipX, tipY);
+      if (spider.ballContainer) {
+        spider.ballContainer.x = tipX;
+        spider.ballContainer.y = tipY;
       }
     }
-    updateSpider(e, t) {
-      switch (!e.target || e.target.graveyard && e.state == Zt.collecting || this.updateSpeed(e, t), e.state) {
-        case Zt.collecting:
-          this.collectNearby(e);
-          if (!e.target || !e.target.value || !e.target.visible) {
-            e.boneList = [], e.speedFactor = 0, this.findNearestTarget(e);
-          }
-          const spiderCap = this.gameModel.boneCollectorCapacity * 20;
-          if (e.carriedBones >= spiderCap || e.carriedParts >= spiderCap || (e.carriedBones > 0 || e.carriedParts > 0) && !e.target || !e.target) return e.state = Zt.returning, void(e.target = this.graveyard.sprite);
-          break;
-        case Zt.returning:
-          e.target || (e.target = this.graveyard.sprite), this.fastDistance(e.position.x, e.position.y, e.target.x, e.target.y) < this.collectDistance && (e.target = !1, (() => {
-            const boneAmt = e.carriedBones * this.gameModel.bonesPCMod;
-            const partsAmt = e.carriedParts * this.gameModel.partsPCMod;
-            this.gameModel.addBones(e.carriedBones), this.gameModel.persistentData.parts += e.carriedParts * this.gameModel.partsPCMod, this.gameModel.netLaunchers && (this.gameModel.netLauncherParts += e.carriedParts * this.gameModel.partsPCMod * 0.5);
-            this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
-            this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
-            e.carriedBones = 0, e.carriedParts = 0, e.state = Zt.collecting, e.speedFactor = 0;
-          })())
-      }
+    depositResources(spider) {
+      const boneAmt = spider.carriedBones * this.gameModel.bonesPCMod;
+      const partsAmt = spider.carriedParts * this.gameModel.partsPCMod;
+      this.gameModel.addBones(spider.carriedBones);
+      this.gameModel.persistentData.parts += spider.carriedParts * this.gameModel.partsPCMod;
+      if (this.gameModel.netLaunchers) this.gameModel.netLauncherParts += spider.carriedParts * this.gameModel.partsPCMod * 0.5;
+      this.spiderTotalBones = (this.spiderTotalBones || 0) + boneAmt;
+      this.spiderTotalParts = (this.spiderTotalParts || 0) + partsAmt;
+      spider.carriedBones = 0;
+      spider.carriedParts = 0;
     }
-    updateSpeed(e, t) {
+    cleanupSilk(spider) {
+      if (spider.silkLine) {
+        spider.silkLine.clear();
+        this.silkContainer.removeChild(spider.silkLine);
+        spider.silkLine.destroy();
+        spider.silkLine = null;
+      }
+      if (spider.ballContainer) {
+        this.silkContainer.removeChild(spider.ballContainer);
+        spider.ballContainer.destroy({ children: true });
+        spider.ballContainer = null;
+      }
+      spider.collectedVisuals = 0;
+    }
+    _maxDistToEdge(cx, cy, angle) {
+      const cosA = Math.cos(angle), sinA = Math.sin(angle);
+      let maxDist = 1e6;
+      if (cosA > 1e-6) maxDist = Math.min(maxDist, (P.x - cx) / cosA);
+      else if (cosA < -1e-6) maxDist = Math.min(maxDist, -cx / cosA);
+      if (sinA > 1e-6) maxDist = Math.min(maxDist, (P.y - cy) / sinA);
+      else if (sinA < -1e-6) maxDist = Math.min(maxDist, -cy / sinA);
+      return Math.max(maxDist, 0);
+    }
+    updateSpider(spider, dt) {
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
       const speedMod = 1 + (this.gameModel.spiderSpeedMod || 0);
-      e.speedFactor = Math.min(1, e.speedFactor += 3 * t);
-      const s = e.target.x - e.x,
-        i = e.target.y - e.y,
-        a = Math.abs(s),
-        r = Math.abs(i);
-      if (0 == Math.max(a, r)) return;
-      let n = 1 / Math.max(a, r);
-      n *= 1.29289 - (a + r) * n * .29289, e.xSpeed = s * n * this.maxSpeed * speedMod * e.speedFactor, e.ySpeed = i * n * this.maxSpeed * speedMod * e.speedFactor, e.position.x += e.xSpeed * t, e.position.y += e.ySpeed * t, e.zIndex = e.position.y
+      const speed = Math.max(P.x, P.y) / 5 * speedMod;
+      switch (spider.state) {
+        case Zt.idle:
+          if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * this.sprites.length)) {
+            this.refreshAnglePool();
+          }
+          if (this.anglePool.length === 0) return;
+          const isBest = !this.bestAngleGiven;
+          if (isBest) this.bestAngleGiven = true;
+          if (!this.pickAngle(spider, isBest)) return;
+          spider.state = Zt.extending;
+          spider.stringDist = 0;
+          spider.carriedParts = 0;
+          spider.carriedBones = 0;
+          spider.collectedVisuals = 0;
+          this.shotsSinceRefresh++;
+          break;
+        case Zt.extending:
+          spider.stringDist += speed * dt;
+          this.collectAlongString(spider);
+          const maxDist = this._maxDistToEdge(cx, cy, spider.aimAngle);
+          if (spider.stringDist >= maxDist) {
+            spider.stringDist = maxDist;
+            spider.state = Zt.retracting;
+          }
+          this.updateSilkVisuals(spider);
+          break;
+        case Zt.retracting:
+          spider.stringDist -= speed * dt;
+          if (spider.stringDist <= 0) {
+            spider.stringDist = 0;
+            this.depositResources(spider);
+            this.cleanupSilk(spider);
+            spider.state = Zt.idle;
+          } else {
+            this.updateSilkVisuals(spider);
+          }
+          break;
+      }
     }
   }
   SpiderCollector.partsPiles = null;
