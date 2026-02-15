@@ -1456,23 +1456,22 @@ var Incremancer;
               if (!ah[j].flags.dead) this.humans.damageHuman(ah[j], dmg)
             }
           }
-          if (i < this.zombieNets) {
+          const zOff = 0, gOff = this.zombieNets, sOff = gOff + this.golemNets;
+          if (i >= zOff && i < zOff + this.zombieNets) {
             const spawnCount = Math.min(Math.floor(partsUsed / netCount / 1e6), 10);
             for (let j = 0; j < spawnCount; j++) {
               const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
               const zx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
               const zy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
-              this.zombies.createZombie(zx, zy, !1, i < this.prodigyNets);
+              this.zombies.createZombie(zx, zy, !1, (i - zOff) < this.prodigyNets);
             }
-          }
-          if (i < this.golemNets) {
+          } else if (i >= gOff && i < gOff + this.golemNets) {
             const costScale = Math.max(1, partsUsed / netCount / 1e6);
             const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
             const gx = t ? t.x + (Math.random() - 0.5) * 30 : this.graveyard.sprite.x;
             const gy = t ? t.y + (Math.random() - 0.5) * 20 : this.graveyard.sprite.y;
             this.creatures.spawnNetGolem(costScale, gx, gy);
-          }
-          if (i < this.skeletonNets) {
+          } else if (i >= sOff && i < sOff + this.skeletonNets) {
             this.addBones(1e9);
             const costScale = Math.max(1, partsUsed / netCount / 1e6);
             const t = ah.length > 0 ? ah[Math.floor(Math.random() * ah.length)] : null;
@@ -2220,17 +2219,17 @@ var Incremancer;
         this.gameModel.zombieHealth *= this.gameModel.zombieHealthPCMod,
         this.gameModel.persistentData.runeshatter && (this.gameModel.zombieDamage *= this.shatterEffect(), this.gameModel.zombieHealth *= this.shatterEffect(), this.gameModel.zombieCost += this.gameModel.persistentData.runeshatter),
         this.gameModel.strapemRank > 0 && (this.gameModel.zombieDamage *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieHealth *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieCost *= Math.pow(10, this.gameModel.strapemRank));
-      const nd = this.gameModel.persistentData.netDistribution;
+      const nd = this.gameModel.persistentData.netDistribution, nl = this.gameModel.netLaunchers;
       if (nd) {
-        this.gameModel.zombieNets = Math.min(nd.zombie || 0, this.gameModel.maxZombieNets);
+        this.gameModel.zombieNets = Math.min(nd.zombie || 0, this.gameModel.maxZombieNets, nl);
+        this.gameModel.golemNets = Math.min(nd.golem || 0, this.gameModel.maxGolemNets, nl - this.gameModel.zombieNets);
+        this.gameModel.skeletonNets = Math.min(nd.skeleton || 0, this.gameModel.maxSkeletonNets, nl - this.gameModel.zombieNets - this.gameModel.golemNets);
         this.gameModel.prodigyNets = Math.min(nd.prodigy || 0, this.gameModel.maxProdigyNets, this.gameModel.zombieNets);
-        this.gameModel.golemNets = Math.min(nd.golem || 0, this.gameModel.maxGolemNets);
-        this.gameModel.skeletonNets = Math.min(nd.skeleton || 0, this.gameModel.maxSkeletonNets);
       } else {
-        this.gameModel.zombieNets = this.gameModel.maxZombieNets;
+        this.gameModel.zombieNets = Math.min(this.gameModel.maxZombieNets, nl);
+        this.gameModel.golemNets = Math.min(this.gameModel.maxGolemNets, nl - this.gameModel.zombieNets);
+        this.gameModel.skeletonNets = Math.min(this.gameModel.maxSkeletonNets, nl - this.gameModel.zombieNets - this.gameModel.golemNets);
         this.gameModel.prodigyNets = Math.min(this.gameModel.maxProdigyNets, this.gameModel.zombieNets);
-        this.gameModel.golemNets = this.gameModel.maxGolemNets;
-        this.gameModel.skeletonNets = this.gameModel.maxSkeletonNets;
       }
     }
     applyUpgrade(e, t) {
@@ -5087,12 +5086,13 @@ var Incremancer;
     }
     getCreatureInfo(i, model) {
       if (!model) return null;
-      if (i < (model.skeletonNets || 0)) return { texture: "skeleton0.png", tint: 0x9999ff };
-      if (i < (model.golemNets || 0)) return { texture: "golem0.png", tint: 0xffffff };
-      if (i < (model.zombieNets || 0)) {
+      const zOff = 0, gOff = (model.zombieNets || 0), sOff = gOff + (model.golemNets || 0);
+      if (i >= zOff && i < zOff + (model.zombieNets || 0)) {
         const variants = ["zombie1_1.png", "zombie2_1.png", "zombie3_1.png"];
         return { texture: variants[Math.floor(Math.random() * variants.length)], tint: 0xffffff };
       }
+      if (i >= gOff && i < gOff + (model.golemNets || 0)) return { texture: "golem0.png", tint: 0xffffff };
+      if (i >= sOff && i < sOff + (model.skeletonNets || 0)) return { texture: "skeleton0.png", tint: 0x9999ff };
       return null;
     }
     launch(startX, startY, targets, netCount, model) {
@@ -6052,27 +6052,49 @@ var Incremancer;
     },
     c.adjustNets = function(type, delta) {
       const m = c.model;
+      const used = m.zombieNets + m.golemNets + m.skeletonNets;
+      const room = m.netLaunchers - used;
       switch(type) {
         case "zombie":
-          m.zombieNets = Math.max(0, Math.min(m.maxZombieNets, m.zombieNets + delta));
+          if (delta > 0) {
+            m.zombieNets = Math.min(m.maxZombieNets, m.zombieNets + Math.min(delta, room));
+          } else {
+            m.zombieNets = Math.max(0, m.zombieNets + delta);
+          }
           if (m.prodigyNets > m.zombieNets) m.prodigyNets = m.zombieNets;
           break;
         case "prodigy":
           var newProd = Math.max(0, Math.min(m.maxProdigyNets, m.prodigyNets + delta));
-          if (newProd > m.zombieNets) m.zombieNets = Math.min(m.maxZombieNets, newProd);
+          if (delta > 0 && newProd > m.zombieNets) {
+            var zombieNeeded = Math.min(m.maxZombieNets, newProd);
+            var extraZombie = zombieNeeded - m.zombieNets;
+            if (extraZombie > room) zombieNeeded = m.zombieNets + room;
+            m.zombieNets = zombieNeeded;
+          }
           m.prodigyNets = Math.min(newProd, m.zombieNets);
           break;
         case "golem":
-          m.golemNets = Math.max(0, Math.min(m.maxGolemNets, m.golemNets + delta));
+          if (delta > 0) {
+            m.golemNets = Math.min(m.maxGolemNets, m.golemNets + Math.min(delta, room));
+          } else {
+            m.golemNets = Math.max(0, m.golemNets + delta);
+          }
           break;
         case "skeleton":
-          m.skeletonNets = Math.max(0, Math.min(m.maxSkeletonNets, m.skeletonNets + delta));
+          if (delta > 0) {
+            m.skeletonNets = Math.min(m.maxSkeletonNets, m.skeletonNets + Math.min(delta, room));
+          } else {
+            m.skeletonNets = Math.max(0, m.skeletonNets + delta);
+          }
           break;
       }
       m.persistentData.netDistribution = {zombie: m.zombieNets, prodigy: m.prodigyNets, golem: m.golemNets, skeleton: m.skeletonNets};
     },
     c.totalAssignedNets = function() {
-      return c.model.zombieNets + c.model.prodigyNets + c.model.golemNets + c.model.skeletonNets;
+      return c.model.zombieNets + c.model.golemNets + c.model.skeletonNets;
+    },
+    c.unassignedNets = function() {
+      return c.model.netLaunchers - c.totalAssignedNets();
     }, c.setGraveyardZombies = function(e) {
       e <= c.maxGraveyardZombies() && e >= 0 && (c.model.persistentData.graveyardZombies = e)
     }, c.maxGraveyardZombies = function() {
