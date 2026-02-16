@@ -1133,6 +1133,7 @@ var Incremancer;
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
         this.tailoring = !1,
+        this.littleSpiders = !1,
         this.netLauncherTimer = 0,
         this.netLauncherParts = 0,
         this.netCooldown = 10,
@@ -1321,6 +1322,7 @@ var Incremancer;
         this.magicalTraining = !1,
         this.spellBuffSlots = 1,
         this.tailoring = !1,
+        this.littleSpiders = !1,
         this.netLauncherTimer = 0,
         this.netLauncherParts = 0,
         this.netCooldown = 10
@@ -1914,7 +1916,8 @@ var Incremancer;
           expandedBuffSlots: "expandedBuffSlots",
           spellBuff: "spellBuff",
           tailoring: "tailoring",
-          silkSpeed: "silkSpeed"
+          silkSpeed: "silkSpeed",
+          littleSpiders: "littleSpiders"
         }, this.costs = {
           energy: "energy",
           blood: "blood",
@@ -2188,7 +2191,8 @@ var Incremancer;
           new UpgradeDef(96, "Gigazombie Buff", this.types.spellBuff, this.costs.brains, 1e10, 1, 1, 1, "Unlock: Gigazombies spawn by default; during spell, giga-giga (100x) are created.", null, 89),
           new UpgradeDef(97, "Incinerate Buff", this.types.spellBuff, this.costs.blood, 1e8, 1, 1, 1, "Unlock: Each burning human spreads fire to nearby humans.", null, 89),
           new UpgradeDef(98, "Expanded Buff Slots", this.types.expandedBuffSlots, this.costs.parts, 1e10, 10, 1, 2, "Increase the number of spell buff slots. Start with 1, each rank adds 1 more (max 3 total).", null, 89),
-          new UpgradeDef(99, "Spider Workshop", this.types.tailoring, this.costs.parts, 1e10, 1, 1, 1, "Unlock the Spiders panel for equipment strapping and net distribution.", "Spider Workshop unlocked! Visit the Spiders panel.", 305)
+          new UpgradeDef(99, "Spider Workshop", this.types.tailoring, this.costs.parts, 1e10, 1, 1, 1, "Unlock the Spiders panel for equipment strapping and net distribution.", "Spider Workshop unlocked! Visit the Spiders panel.", 305),
+          new UpgradeDef(123, "Spiderlings", this.types.littleSpiders, this.costs.parts, 5e9, 1, 1, 1, "Hatch tiny spiders that patrol near the graveyard. They shoot 3 silk strings in a 10\u00B0 arc, collecting everything in a short radius.", "Spiderlings hatched! Tiny spiders now patrol the graveyard perimeter.", 305)
         ],
         this.prestigeUpgrades = [new UpgradeDef(108, "A Small Investment", this.types.startingPC, this.costs.prestigePoints, 10, 1.25, 1, 0, "Each rank gives you an additional 500 blood, 50 brains, and 200 bones when starting a new level.", null, null),
           new UpgradeDef(109, "Time Warp", this.types.unlockSpell, this.costs.prestigePoints, 50, 1, 1, 1, "Unlock the Time Warp spell in order to speed up the flow of time.", null, null),
@@ -2421,7 +2425,9 @@ var Incremancer;
         case this.types.spellBuff:
           return;
         case this.types.tailoring:
-          return void(this.gameModel.tailoring = !0)
+          return void(this.gameModel.tailoring = !0);
+        case this.types.littleSpiders:
+          return void(this.gameModel.littleSpiders = !0)
       }
     }
     calculateWithPrestigeRankBonus(e, t) {
@@ -2636,7 +2642,9 @@ var Incremancer;
         case this.types.expandedBuffSlots:
           return "Spell buff slots: " + this.gameModel.spellBuffSlots;
         case this.types.tailoring:
-          return "Patchwork tailoring: " + (this.currentRank(e) > 0 ? "Unlocked" : "Locked")
+          return "Patchwork tailoring: " + (this.currentRank(e) > 0 ? "Unlocked" : "Locked");
+        case this.types.littleSpiders:
+          return "Spiderlings: " + (this.currentRank(e) > 0 ? "Active" : "Locked")
       }
     }
     currentRank(e) {
@@ -4762,7 +4770,7 @@ var Incremancer;
       this.fence.x = r.x, this.fence.y = r.y
     }
     update(e) {
-      if (this.boneCollectors.addAndRemoveBoneCollectors(), this.harpies.addAndRemoveHarpies(), this.spiders.addAndRemoveSpiders(), this.gameModel.isBossStage(this.gameModel.level) && this.updateHealthBar(), !this.gameModel.constructions.graveyard || this.gameModel.currentState != this.gameModel.states.playingLevel) return this.sprite.visible = !1, void(this.fence.visible = !1);
+      if (this.boneCollectors.addAndRemoveBoneCollectors(), this.harpies.addAndRemoveHarpies(), this.spiders.addAndRemoveSpiders(), this.spiders.addAndRemoveLittleSpiders(), this.gameModel.isBossStage(this.gameModel.level) && this.updateHealthBar(), !this.gameModel.constructions.graveyard || this.gameModel.currentState != this.gameModel.states.playingLevel) return this.sprite.visible = !1, void(this.fence.visible = !1);
       if ((this.level < 2 && this.gameModel.constructions.crypt || this.level < 3 && this.gameModel.constructions.fort || this.level < 4 && this.gameModel.constructions.fortress || this.level < 5 && this.gameModel.constructions.citadel) && this.drawGraveyard(), this.sprite.visible = !0, this.fortSprite && (this.fortSprite.visible = !0), 5 == this.level && Math.random() > .9 && (Math.random() > .5 ? this.smoke.newFireSmoke(this.sprite.x - 20, this.sprite.y - 113) : this.smoke.newFireSmoke(this.sprite.x + 20, this.sprite.y - 113)), this.gameModel.energy >= this.gameModel.energyMax && !this.gameModel.hidden)
         for (let e = 0; e < this.gameModel.persistentData.graveyardZombies; e++) this.zombies.spawnZombie(this.sprite.x, this.sprite.y + (this.level > 2 ? 8 : 0));
       this.bones.update(e), this.partsPiles.update(e), this.boneCollectors.update(e), this.harpies.update(e), this.spiders.update(e), this.netProjectile.update(e), this.netProjectile.updateLauncher(this.gameModel), this.gameModel.constructions.fence && this.gameModel.currentState == this.gameModel.states.playingLevel ? (this.fenceRadius !== this.gameModel.fenceRadius && this.drawFence(), this.fence.visible = !0) : this.fence.visible = !1, this.updatePlagueSpikes(e), this.updateSpikeSprites(e)
@@ -4876,7 +4884,7 @@ var Incremancer;
    * ================================================================ */
   class SpiderCollector {
     constructor() {
-      if (this.sprites = [], this.scaling = 1.0, this.silkContainer = null, this.anglePool = [], this.shotsSinceRefresh = 0, this.bestAngleGiven = false, SpiderCollector.instance) return SpiderCollector.instance;
+      if (this.sprites = [], this.littleSprites = [], this.scaling = 1.0, this.silkContainer = null, this.anglePool = [], this.shotsSinceRefresh = 0, this.bestAngleGiven = false, SpiderCollector.instance) return SpiderCollector.instance;
       SpiderCollector.instance = this
     }
     getTexture() {
@@ -4902,6 +4910,25 @@ var Incremancer;
       t.beginPath(), t.arc(15, 6, 1.5, 0, 2 * Math.PI), t.fill();
       return this._texture = PIXI.Texture.from(e), this._texture
     }
+    getLittleTexture() {
+      if (this._littleTexture) return this._littleTexture;
+      const e = document.createElement("canvas");
+      e.width = 24, e.height = 18;
+      const t = e.getContext("2d");
+      t.fillStyle = "#5a3a5a", t.beginPath(), t.ellipse(12, 9, 7.5, 6, 0, 0, 2 * Math.PI), t.fill();
+      t.strokeStyle = "#4a2a4a", t.lineWidth = 1.5;
+      const legs = [
+        [-6, -3, -10.5, -7.5], [6, -3, 10.5, -7.5],
+        [-4.5, 0, -10.5, 3], [4.5, 0, 10.5, 3],
+        [-4.5, 3, -9, 7.5], [4.5, 3, 9, 7.5],
+        [-3, 4.5, -7.5, 9], [3, 4.5, 7.5, 9]
+      ];
+      for (const l of legs) t.beginPath(), t.moveTo(12 + l[0], 9 + l[1]), t.lineTo(12 + l[2], 9 + l[3]), t.stroke();
+      t.fillStyle = "#ff8888";
+      t.beginPath(), t.arc(9, 6, 1.5, 0, 2 * Math.PI), t.fill();
+      t.beginPath(), t.arc(15, 6, 1.5, 0, 2 * Math.PI), t.fill();
+      return this._littleTexture = PIXI.Texture.from(e), this._littleTexture
+    }
     populate() {
       this.graveyard = new Graveyard, this.gameModel = GameModel.getInstance(), this.bones = new Bones;
       if (!this.silkContainer) {
@@ -4912,6 +4939,19 @@ var Incremancer;
       const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
       for (let e = 0; e < this.sprites.length; e++) {
         const s = this.sprites[e];
+        s.position.set(cx, cy);
+        s.state = Zt.idle;
+        s.stringDist = 0;
+        s.aimAngle = 0;
+        s.carriedParts = 0;
+        s.carriedBones = 0;
+        if (s.silkLine) { s.silkLine.clear(); }
+        if (s.ballContainer) { this.silkContainer.removeChild(s.ballContainer); s.ballContainer.destroy({ children: true }); s.ballContainer = null; }
+        s.collectedVisuals = 0;
+        s.staggerDelay = e === 0 ? 0 : Math.random() * 3;
+      }
+      for (let e = 0; e < this.littleSprites.length; e++) {
+        const s = this.littleSprites[e];
         s.position.set(cx, cy);
         s.state = Zt.idle;
         s.stringDist = 0;
@@ -4959,9 +4999,40 @@ var Incremancer;
         g.addChild(e);
       }
     }
+    addAndRemoveLittleSpiders() {
+      const count = this.gameModel.littleSpiders ? (this.gameModel.persistentData.spiders || 0) : 0;
+      const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
+      if (this.littleSprites.length > count) {
+        const e = this.littleSprites.pop();
+        this.depositResources(e);
+        this.cleanupSilk(e);
+        g.removeChild(e);
+      }
+      if (this.littleSprites.length < count) {
+        const tex = this.getLittleTexture();
+        const e = new PIXI.Sprite(tex);
+        e.anchor.set(.5, .5);
+        e.position.set(cx, cy);
+        e.zIndex = cy;
+        e.visible = true;
+        e.scale.set(0.5, 0.5);
+        e.carriedBones = 0;
+        e.carriedParts = 0;
+        e.state = Zt.idle;
+        e.stringDist = 0;
+        e.aimAngle = 0;
+        e.silkLine = null;
+        e.ballContainer = null;
+        e.collectedVisuals = 0;
+        e.isLittle = true;
+        this.littleSprites.push(e);
+        g.addChild(e);
+      }
+    }
     update(e) {
       this.bestAngleGiven = false;
       for (let t = 0; t < this.sprites.length; t++) this.updateSpider(this.sprites[t], e);
+      for (let t = 0; t < this.littleSprites.length; t++) this.updateLittleSpider(this.littleSprites[t], e);
     }
     refreshAnglePool() {
       const cx = this.graveyard.sprite.x, cy = this.graveyard.sprite.y;
@@ -4987,7 +5058,7 @@ var Incremancer;
         if (bins[b] > 0) scored.push({ angle: (b + 0.5) * binSize + binOffset, score: bins[b] });
       }
       scored.sort((a, b) => b.score - a.score);
-      const poolSize = Math.min(scored.length, 2 * this.sprites.length);
+      const poolSize = Math.min(scored.length, 2 * (this.sprites.length + this.littleSprites.length));
       this.anglePool = scored.slice(0, poolSize);
       this.shotsSinceRefresh = 0;
     }
@@ -4995,8 +5066,9 @@ var Incremancer;
       if (this.anglePool.length === 0) return false;
       const minSep = 5 * Math.PI / 180;
       const busy = [];
-      for (let i = 0; i < this.sprites.length; i++) {
-        const s = this.sprites[i];
+      const allSpiders = this.sprites.concat(this.littleSprites);
+      for (let i = 0; i < allSpiders.length; i++) {
+        const s = allSpiders[i];
         if (s !== spider && (s.state === Zt.extending || s.state === Zt.moving || s.state === Zt.aiming)) {
           busy.push(s.aimAngle);
         }
@@ -5142,6 +5214,169 @@ var Incremancer;
       else if (sinA < -1e-6) maxDist = Math.min(maxDist, -cy / sinA);
       return Math.max(maxDist, 0);
     }
+    collectAlongArc(spider) {
+      const cx = spider.position.x, cy = spider.position.y;
+      const halfArc = 5 * Math.PI / 180;
+      const maxR = spider.stringDist;
+      const maxR2 = maxR * maxR;
+      const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
+      const checkItem = (item, isParts) => {
+        if (item.value <= 0) return;
+        const dx = item.x - cx, dy = item.y - cy;
+        const dist2 = dx * dx + dy * dy;
+        if (dist2 > maxR2 || dist2 < 1) return;
+        let itemAngle = Math.atan2(dy, dx);
+        let diff = itemAngle - spider.aimAngle;
+        if (diff > Math.PI) diff -= 2 * Math.PI;
+        if (diff < -Math.PI) diff += 2 * Math.PI;
+        if (Math.abs(diff) <= halfArc) {
+          if (isParts) spider.carriedParts += item.value * mult;
+          else spider.carriedBones += item.value;
+          item.value = 0;
+          if (item.sprite) item.sprite.visible = false;
+          else item.visible = false;
+          this.addVisualToBall(spider, item, isParts);
+        }
+      };
+      if (this.gameModel.partsRecollection && SpiderCollector.partsPiles) {
+        const uc = SpiderCollector.partsPiles.uncollected;
+        for (let j = 0; j < uc.length; j++) checkItem(uc[j], true);
+      }
+      const buc = this.bones.uncollected;
+      for (let j = 0; j < buc.length; j++) checkItem(buc[j], false);
+    }
+    updateLittleSilkVisuals(spider) {
+      const sx = spider.position.x, sy = spider.position.y;
+      const offsets = [-5 * Math.PI / 180, 0, 5 * Math.PI / 180];
+      if (!spider.silkLine) {
+        spider.silkLine = new PIXI.Graphics;
+        this.silkContainer.addChild(spider.silkLine);
+      }
+      spider.silkLine.clear();
+      spider.silkLine.lineStyle(1, 0xcccccc, 0.7);
+      for (let i = 0; i < offsets.length; i++) {
+        const ang = spider.aimAngle + offsets[i];
+        const tipX = sx + Math.cos(ang) * spider.stringDist;
+        const tipY = sy + Math.sin(ang) * spider.stringDist;
+        spider.silkLine.moveTo(sx, sy);
+        spider.silkLine.lineTo(tipX, tipY);
+      }
+      if (spider.ballContainer) {
+        spider.ballContainer.x = sx + Math.cos(spider.aimAngle) * spider.stringDist;
+        spider.ballContainer.y = sy + Math.sin(spider.aimAngle) * spider.stringDist;
+      }
+    }
+    updateLittleSpider(spider, dt) {
+      const gcx = this.graveyard.sprite.x, gcy = this.graveyard.sprite.y;
+      const maxMoveSpeed = 90;
+      const silkSpeedMult = Math.pow(1.3, this.gameModel.silkSpeedRank || 0);
+      const silkSpeed = Math.max(P.x, P.y) / 12 * silkSpeedMult;
+      const fenceR = this.gameModel.fenceRadius || 50;
+      const maxRange = 0.25 * Math.max(P.x, P.y);
+      switch (spider.state) {
+        case Zt.idle:
+          if (spider.staggerDelay > 0) { spider.staggerDelay -= dt; return; }
+          if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * (this.sprites.length + this.littleSprites.length))) {
+            this.refreshAnglePool();
+          }
+          if (this.anglePool.length === 0) return;
+          const isBest = !this.bestAngleGiven;
+          if (isBest) this.bestAngleGiven = true;
+          if (!this.pickAngle(spider, isBest)) return;
+          spider.fenceX = gcx + Math.cos(spider.aimAngle) * fenceR * 0.9;
+          spider.fenceY = gcy + Math.sin(spider.aimAngle) * fenceR * 0.9;
+          spider.state = Zt.moving;
+          spider.moveTotalDist = 0;
+          spider.stringDist = 0;
+          spider.carriedParts = 0;
+          spider.carriedBones = 0;
+          spider.collectedVisuals = 0;
+          this.shotsSinceRefresh++;
+          break;
+        case Zt.moving: {
+          const dx = spider.fenceX - spider.position.x;
+          const dy = spider.fenceY - spider.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (!spider.moveTotalDist) spider.moveTotalDist = dist;
+          const totalD = spider.moveTotalDist;
+          const traveled = totalD - dist;
+          const t01 = totalD > 0 ? Math.min(traveled / totalD, 1) : 1;
+          const ease = t01 < 0.5 ? 2 * t01 : 2 * (1 - t01);
+          const curSpeed = maxMoveSpeed * (0.15 + 0.85 * ease);
+          const step = Math.min(curSpeed * dt, dist);
+          if (dist > 0) {
+            spider.rotation = Math.atan2(dy, dx) + Math.PI / 2;
+            spider.position.x += dx / dist * step;
+            spider.position.y += dy / dist * step;
+          }
+          spider.zIndex = spider.position.y;
+          const toGcX = spider.position.x - gcx, toGcY = spider.position.y - gcy;
+          const distFromGc = Math.sqrt(toGcX * toGcX + toGcY * toGcY);
+          const posAngle = Math.atan2(toGcY, toGcX);
+          let angleDiff = Math.abs(posAngle - spider.aimAngle);
+          if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+          if (distFromGc >= fenceR * 0.8 && distFromGc <= fenceR * 1.0 && angleDiff <= 5 * Math.PI / 180) {
+            spider.state = Zt.aiming;
+          }
+          break;
+        }
+        case Zt.aiming: {
+          const turnSpeed = 3;
+          const targetRot = spider.aimAngle + Math.PI / 2;
+          let diff = targetRot - spider.rotation;
+          if (diff > Math.PI) diff -= 2 * Math.PI;
+          if (diff < -Math.PI) diff += 2 * Math.PI;
+          if (Math.abs(diff) < turnSpeed * dt) {
+            spider.rotation = targetRot;
+            spider.state = Zt.extending;
+          } else {
+            spider.rotation += Math.sign(diff) * turnSpeed * dt;
+          }
+          break;
+        }
+        case Zt.extending:
+          spider.stringDist += silkSpeed * dt;
+          this.collectAlongArc(spider);
+          if (spider.stringDist >= maxRange) {
+            spider.stringDist = maxRange;
+            spider.state = Zt.retracting;
+          }
+          this.updateLittleSilkVisuals(spider);
+          break;
+        case Zt.retracting:
+          spider.stringDist -= silkSpeed * dt;
+          if (spider.stringDist <= 0) {
+            spider.stringDist = 0;
+            this.cleanupSilk(spider);
+            spider.returnTotalDist = 0;
+            spider.state = Zt.returning;
+          } else {
+            this.updateLittleSilkVisuals(spider);
+          }
+          break;
+        case Zt.returning: {
+          const slX = this.slingshotX || gcx, slY = this.slingshotY || gcy;
+          const rdx = slX - spider.position.x, rdy = slY - spider.position.y;
+          const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+          if (rdist < 30) {
+            this.depositResources(spider);
+            spider.state = Zt.idle;
+          } else {
+            if (!spider.returnTotalDist) spider.returnTotalDist = rdist;
+            const rtotalD = spider.returnTotalDist;
+            const rtraveled = rtotalD - rdist;
+            const rt01 = rtotalD > 0 ? Math.min(rtraveled / rtotalD, 1) : 1;
+            const rease = rt01 < 0.5 ? 2 * rt01 : 2 * (1 - rt01);
+            const rcurSpeed = maxMoveSpeed * (0.15 + 0.85 * rease);
+            const rstep = Math.min(rcurSpeed * dt, rdist);
+            spider.position.x += rdx / rdist * rstep;
+            spider.position.y += rdy / rdist * rstep;
+            spider.zIndex = spider.position.y;
+          }
+          break;
+        }
+      }
+    }
     updateSpider(spider, dt) {
       const gcx = this.graveyard.sprite.x, gcy = this.graveyard.sprite.y;
       const speedMod = 1 + (this.gameModel.spiderSpeedMod || 0);
@@ -5152,7 +5387,7 @@ var Incremancer;
       switch (spider.state) {
         case Zt.idle:
           if (spider.staggerDelay > 0) { spider.staggerDelay -= dt; return; }
-          if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * this.sprites.length)) {
+          if (this.anglePool.length === 0 || this.shotsSinceRefresh >= Math.floor(0.5 * (this.sprites.length + this.littleSprites.length))) {
             this.refreshAnglePool();
           }
           if (this.anglePool.length === 0) return;
