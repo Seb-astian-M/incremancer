@@ -157,7 +157,7 @@
       <h4 ng-if="zm.model.prestigePointsEarned > 0">You have earned {{zm.model.prestigePointsEarned}} prestige points</h4>
       <h4 ng-if="zm.model.endLevelBones" style="margin:1em">Your bone collectors have gathered the remaining {{zm.model.endLevelBones}} bones from the town</h4>
       <button ng-click="zm.nextLevel();">Start Level {{zm.model.level + 1}}</button>
-      <button ng-click="zm.startBossRush();" ng-if="zm.model.level == 50 && !zm.model.bossRushOffered">Boss Rush (100, 150, 200...)</button>
+      <button ng-click="zm.startBossRush();" ng-if="zm.model.level == 5 && !zm.model.bossRushOffered">Boss Rush (100, 150, 200...)</button>
     </div>
 
     <div class="start-game" ng-if="zm.model.currentState == zm.model.states.prestiged">
