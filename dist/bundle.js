@@ -1393,9 +1393,10 @@ var Incremancer;
         this._trophyOfferTimerSet = false;
       }
       this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e), this.updateNetLauncher(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e);
-      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && !this.bossRushMode && this.startLevel(this.level);
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && !this.bossRushMode && !this.trophyHuntMode && this.startLevel(this.level);
       this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.bossRushMode && this.startLevel(Math.ceil((this.level + 1) / 50) * 50),
-      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.trophyHuntMode && this.startLevel(this.level + 5 - this.level % 5),
+      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.trophyHuntMode && (this.trophyHuntMode = !1, this.sendMessage("Trophy Hunt ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
     }
     calculateEndLevelBones() {
       this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones));
@@ -6625,6 +6626,11 @@ var Incremancer;
       c.model.sendMessage("Boss Rush started! Jumping to boss levels.", "chat-upgrade");
       c.model.startLevel(Math.ceil((c.model.level + 1) / 50) * 50);
     }, c.startTrophyHunt = function() {
+      if (c.model.trophyHuntMode) {
+        c.model.trophyHuntMode = !1;
+        c.model.sendMessage("Trophy Hunt ended.", "chat-warning");
+        return;
+      }
       c.model.trophyHuntMode = !0;
       c.model.sendMessage("Trophy Hunt started! Rushing through trophy levels.", "chat-upgrade");
       c.model.startLevel(c.model.level + 5 - c.model.level % 5);
