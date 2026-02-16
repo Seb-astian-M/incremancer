@@ -1385,12 +1385,12 @@ var Incremancer;
       if (this.persistentData.autoStartWait == !1 && this.currentState != this.states.levelCompleted && this.currentState != this.states.failed) {
         this.startTimer = 0
       }
-      if (this.level === 5 && this.currentState === this.states.levelCompleted && !this._level5TimerSet) {
+      if (this.level === 5 && !this.trophyHuntMode && this.currentState === this.states.levelCompleted && !this._trophyOfferTimerSet) {
         this.startTimer = 10;
-        this._level5TimerSet = true;
+        this._trophyOfferTimerSet = true;
       }
       if (this.level !== 5 || this.currentState !== this.states.levelCompleted) {
-        this._level5TimerSet = false;
+        this._trophyOfferTimerSet = false;
       }
       this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e), this.updateNetLauncher(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e);
       this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && !this.bossRushMode && this.startLevel(this.level);
@@ -6624,6 +6624,10 @@ var Incremancer;
       c.model.bossRushMode = !0;
       c.model.sendMessage("Boss Rush started! Jumping to boss levels.", "chat-upgrade");
       c.model.startLevel(Math.ceil((c.model.level + 1) / 50) * 50);
+    }, c.startTrophyHunt = function() {
+      c.model.trophyHuntMode = !0;
+      c.model.sendMessage("Trophy Hunt started! Rushing through trophy levels.", "chat-upgrade");
+      c.model.startLevel(c.model.level + 5 - c.model.level % 5);
     }, c.nextLevel = function() {
       c.model.nextLevel()
     }, c.toggleAutoStart = function() {
