@@ -5046,7 +5046,7 @@ var Incremancer;
       const cx = spider.position.x, cy = spider.position.y;
       const tipX = cx + Math.cos(spider.aimAngle) * spider.stringDist;
       const tipY = cy + Math.sin(spider.aimAngle) * spider.stringDist;
-      const radius = 5 + spider.stringDist * 0.3;
+      const radius = 25 + spider.stringDist * 0.3;
       const r2 = radius * radius;
       const mult = 1 + (this.gameModel.spiderEfficiency || 0) * 0.1;
       const checkItem = (item, isParts) => {
