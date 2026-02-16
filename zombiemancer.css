@@ -657,36 +657,39 @@ div.spells > div.chatlog {
 .chat-loot-divine { color: #22d3ee; }
 .chat-loot-chaos { color: #c084fc; }
 
-div.spells > div.spider-collections {
-  position: relative;
-  margin-top: 4px;
-  background-color: rgba(0,0,0,0.5);
-  pointer-events: none;
-}
-div.spider-collections h4 {
-  margin: 10px 10px 0 10px;
-  font-size: 0.85em;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-div.spider-collections label {
-  position: relative;
+div.spells > .breakdown-toggle {
   display: block;
-  font-size: 1.2em;
-  margin: 10px;
-  text-shadow: 2px 2px #000;
-}
-div.spider-collections label > span.value {
-  float: right;
-  margin-left: 0.5em;
-}
-div.spider-collections label.net-pool {
-  color: #8cf;
-  cursor: help;
+  font-size: 0.8em;
+  opacity: 0.7;
+  cursor: pointer;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #ccc;
+  padding: 2px 8px;
+  margin: 4px 0 0 0;
   pointer-events: auto;
 }
-div.spider-collections .net-timer {
+div.spells > .breakdown-toggle:hover { opacity: 1; }
+div.spells > .resource-breakdown {
+  position: relative;
+  margin-top: 2px;
+  background-color: rgba(0,0,0,0.5);
+  pointer-events: none;
+  padding: 4px 10px 6px;
+}
+.resource-breakdown h4 {
+  margin: 3px 0;
+  font-size: 0.85em;
+  color: #ccc;
+  text-shadow: 2px 2px #000;
+}
+.resource-breakdown .bd-detail {
+  opacity: 0.65;
+  font-size: 0.8em;
+  margin-left: 0.5em;
+}
+.resource-breakdown .bd-detail span { white-space: nowrap; }
+.resource-breakdown .net-timer {
   margin-left: 0.4em;
   color: #aaa;
   font-size: 0.8em;
@@ -1391,4 +1394,60 @@ div.level-select > label {
 
 .mt-5 {
   margin-top:5px;
+}
+
+/* Spell Buffs Panel */
+.spell-buffs .buff-slots {
+  text-align: center;
+  font-size: 0.85em;
+  color: #aaa;
+  margin: 5px 0 10px;
+  font-style: normal;
+}
+.buff-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  background: rgba(20,30,20,0.8);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.buff-item:hover { background: rgba(40,60,40,0.9); }
+.buff-item.buff-active {
+  background: rgba(30,60,30,0.9);
+  border-left: 3px solid #0f0;
+}
+.buff-item.buff-locked {
+  opacity: 0.45;
+  cursor: default;
+}
+.buff-indicator {
+  font-size: 1.1em;
+  width: 1.5em;
+  text-align: center;
+  flex-shrink: 0;
+  color: #666;
+}
+.buff-active .buff-indicator { color: #0f0; }
+.buff-text {
+  flex: 1;
+  min-width: 0;
+}
+.buff-name {
+  display: block;
+  font-weight: bold;
+  font-size: 0.95em;
+}
+.buff-desc {
+  display: block;
+  font-size: 0.8em;
+  color: #999;
+  margin-top: 2px;
+}
+.buff-active .buff-name { color: #cfc; }
+.buff-lock {
+  flex-shrink: 0;
+  margin-left: 8px;
+  font-size: 0.8em;
 }

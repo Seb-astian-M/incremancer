@@ -88,11 +88,18 @@
       <label>{{zm.upgradeSubtitle(trophy)}}</label>
     </div>
   </div>
-  <div class="upgrades" ng-if="zm.graveyardTab == 'spellbuffs'">
-    <p>Select up to {{zm.model.spellBuffSlots}} spell buff(s) to enhance. Click to toggle.</p>
-    <div ng-repeat="buff in zm.spellBuffList" class="upgrade bones" ng-click="zm.toggleSpellBuff(buff.id)" style="cursor:pointer">
-      <label>{{buff.name}} <span ng-if="zm.isBuffActive(buff.id)" style="color:#0f0">[ACTIVE]</span><span ng-if="!zm.isBuffOwned(buff.id)" style="color:#888">[NOT OWNED]</span></label>
-      <label>{{buff.description}}</label>
+  <div class="upgrades spell-buffs" ng-if="zm.graveyardTab == 'spellbuffs'">
+    <p class="buff-slots">{{zm.activeBuffCount()}} / {{zm.model.spellBuffSlots}} buff slots used</p>
+    <div ng-repeat="buff in zm.spellBuffList"
+         class="buff-item"
+         ng-class="{'buff-active': zm.isBuffActive(buff.id), 'buff-locked': !zm.isBuffOwned(buff.id)}"
+         ng-click="zm.toggleSpellBuff(buff.id)">
+      <span class="buff-indicator">{{zm.isBuffActive(buff.id) ? '◆' : '◇'}}</span>
+      <div class="buff-text">
+        <span class="buff-name">{{buff.name}}</span>
+        <span class="buff-desc">{{buff.description}}</span>
+      </div>
+      <span class="buff-lock" ng-if="!zm.isBuffOwned(buff.id)">🔒</span>
     </div>
   </div>
 </div>

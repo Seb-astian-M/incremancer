@@ -76,11 +76,23 @@
                 <span ng-if="msg.count > 1" class="chat-count">{{msg.count}}x</span> {{msg.text}}
             </div>
         </div>
-        <div class="spider-collections" ng-if="zm.spiderTotalBones() > 0 || zm.spiderTotalParts() > 0">
-            <h4>Spider Collections</h4>
-            <label class="bones" ng-if="zm.spiderTotalBones() > 0">Bones:<span class="value">+{{zm.spiderTotalBones()|whole}}</span></label>
-            <label class="parts" ng-if="zm.spiderTotalParts() > 0">Parts:<span class="value">+{{zm.spiderTotalParts()|whole}}</span></label>
-            <label class="net-pool" ng-if="zm.model.netLaunchers" title="Parts pooled for next net launch (fires every 10s, costs 100 energy + 10% blood)">Sling:<span class="value">{{zm.model.netLauncherParts|whole}}</span><span class="net-timer">{{zm.model.netLauncherTimer|decimal}}s</span></label>
+        <button class="breakdown-toggle" ng-if="zm.model.currentState == zm.model.states.playingLevel" ng-click="zm.showBreakdown = !zm.showBreakdown">{{zm.showBreakdown ? '▼' : '▶'}} Rates</button>
+        <div class="resource-breakdown" ng-if="zm.showBreakdown && zm.bd">
+          <h4>Energy: {{zm.bd.energy.net|decimal}}/s</h4>
+          <div class="bd-detail">
+            <span>Base {{zm.bd.energy.base|decimal}}/s</span>
+            <span ng-if="zm.bd.energy.spellMult > 1"> ×{{zm.bd.energy.spellMult}} spell</span>
+            <span ng-if="zm.bd.energy.collectors < 0"> | Collectors {{zm.bd.energy.collectors}}</span>
+            <span ng-if="zm.bd.energy.harpies < 0"> | Harpies {{zm.bd.energy.harpies}}</span>
+            <span ng-if="zm.bd.energy.spiders < 0"> | Spiders {{zm.bd.energy.spiders}}</span>
+          </div>
+          <h4 ng-if="zm.bd.brains.rate > 0">Brains: {{zm.bd.brains.rate|decimal}}/s <span ng-if="zm.bd.brains.mod > 1">(×{{zm.bd.brains.mod|decimal}})</span></h4>
+          <h4 ng-if="zm.bd.bones.rate > 0">Bones: {{zm.bd.bones.rate|decimal}}/s <span ng-if="zm.bd.bones.mod > 1">(×{{zm.bd.bones.mod|decimal}})</span></h4>
+          <h4 ng-if="zm.bd.bones.spiderBones > 0">Spider Bones: +{{zm.bd.bones.spiderBones|whole}}</h4>
+          <h4 ng-if="zm.bd.parts.perSec > 0">Parts: {{zm.bd.parts.perSec|decimal}}/s <span ng-if="zm.bd.parts.mod > 1">(×{{zm.bd.parts.mod|decimal}})</span></h4>
+          <h4 ng-if="zm.bd.parts.spiderParts > 0">Spider Parts: +{{zm.bd.parts.spiderParts|whole}}</h4>
+          <h4 ng-if="zm.bd.parts.slingParts >= 0 && zm.model.netLaunchers">Sling: {{zm.bd.parts.slingParts|whole}} <span class="net-timer">{{zm.bd.parts.slingTimer|decimal}}s</span></h4>
+          <h4 ng-if="zm.bd.blood.mod > 1">Blood: ×{{zm.bd.blood.mod|decimal}} modifier</h4>
         </div>
       </div>
     </div>
@@ -129,8 +141,10 @@
     <level-stats></level-stats>
 
     <div class="end-level confirm" ng-if="zm.confirmCallback">
-      <div><label>{{zm.confirmMessage}}</label></div>
-      <button ng-click="zm.confirmCallback();">Yes</button><button ng-click="zm.confirmCancel();">No</button>
+      <div><label style="white-space: pre-line">{{zm.confirmMessage}}</label></div>
+      <button ng-click="zm.confirmCallback();">{{zm.confirmLabel || 'Yes'}}</button>
+      <button ng-if="zm.confirmCallback2" ng-click="zm.confirmCallback2();">{{zm.confirmLabel2}}</button>
+      <button ng-if="!zm.confirmCallback2" ng-click="zm.confirmCancel();">No</button>
     </div>
 
     <div class="start-game" ng-if="zm.model.currentState == zm.model.states.startGame">

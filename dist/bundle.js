@@ -156,7 +156,7 @@ var Incremancer;
       let s = !1;
       const i = c;
       t.w && (i.y += t.scrollSpeed * e, s = !0), t.a && (i.x += t.scrollSpeed * e, s = !0), t.s && (i.y -= t.scrollSpeed * e, s = !0), t.d && (i.x -= t.scrollSpeed * e, s = !0), s && F(i)
-    }(e), G.update(), e *= v.gameSpeed, M.update(e), C.update(e), T.update(e), k.update(e), w.update(e), S.update(e),
+    }(e), G.update(), e *= v.gameSpeed * Math.pow(2, v.persistentData.ascensionLevel || 0), M.update(e), C.update(e), T.update(e), k.update(e), w.update(e), S.update(e),
       function(e, t) {
         if (C.vipEscaping && void 0 !== C.vip ? y.alpha += e : (y.alpha -= e, y.alpha < 0 && (y.alpha = 0)), y.alpha > 0) {
           y.alpha > 1 && (y.alpha = 1), y.visible = !0, y.x = 5, y.y = D.y - 305;
@@ -879,7 +879,7 @@ var Incremancer;
       return 0
     }
     purchasePrice(e) {
-      return Math.round(e.basePrice * Math.pow(e.multi, this.currentRank(e)))
+      return Math.round(e.basePrice * Math.pow(e.multi, this.currentRank(e)) * Math.pow(0.5, this.gameModel.persistentData.ascensionLevel || 0))
     }
     upgradeMaxAffordable(e) {
       const t = this.currentRank(e);
@@ -969,10 +969,10 @@ var Incremancer;
       this.gameModel.persistentData.parts += e.price * t
     }
     purchasePrice(e) {
-      return e.baseCost * Math.pow(this.creatureCostScaling, e.level - 1) * this.creatureCostReduction
+      return e.baseCost * Math.pow(this.creatureCostScaling, e.level - 1) * this.creatureCostReduction * Math.pow(0.5, this.gameModel.persistentData.ascensionLevel || 0)
     }
     levelPrice(e) {
-      return e.baseCost * Math.pow(this.creatureCostScaling, e.level) * 5 * this.creatureCostReduction
+      return e.baseCost * Math.pow(this.creatureCostScaling, e.level) * 5 * this.creatureCostReduction * Math.pow(0.5, this.gameModel.persistentData.ascensionLevel || 0)
     }
     levelCreature(e) {
       this.levelPrice(e) < this.gameModel.persistentData.parts && (this.gameModel.persistentData.parts -= this.levelPrice(e), e.level++, this.gameModel.persistentData.creatureLevels[e.id] = e.level)
@@ -1233,7 +1233,8 @@ var Incremancer;
           skeleton: null,
           skeletonTalents: [],
           saveVersion: "2.0.0",
-          forkOrigin: "unified"
+          forkOrigin: "unified",
+          ascensionLevel: 0
         }
     }
     static getInstance() {
@@ -1395,10 +1396,10 @@ var Incremancer;
         this._trophyOfferTimerSet = false;
       }
       this.spells.updateSpells(e), e *= this.gameSpeed, this.hidden && U(e, this.app), this.partFactory.update(e), this.autoRemoveCollectorsHarpies(), this.addEnergy(this.getEnergyRate() * e), this.currentState == this.states.playingLevel && (this.addBones(this.bonesRate * e), this.addBrains(this.brainsRate * e), this.upgrades.updateRunicSyphon(this.runicSyphon), this.lastSave + 3e4 < t && (this.saveData(), this.lastSave = t), this.lastPlayFabSave + 12e5 < t && this.saveToPlayFab(), this.getHumanCount() <= 0 && (this.endLevelTimer < 0 ? (this.isBossStage(this.level) && this.trophies.doesLevelHaveTrophy(this.level) && this.trophies.trophyAquired(this.level), this.prestigePointsEarned = this.prestigePointsForLevel(this.level), this.currentState = this.states.levelCompleted, this.levelResourcesAdded = !1, this.calculateEndLevelBones(), this.calculateEndLevelZombieCages(), this.persistentData.levelsCompleted.includes(this.level) || (this.addPrestigePoints(this.prestigePointsForLevel(this.level)), this.persistentData.levelsCompleted.push(this.level)), this.persistentData.levelUnlocked = this.level + 1, (!this.persistentData.allTimeHighestLevel || this.level > this.persistentData.allTimeHighestLevel) && (this.persistentData.allTimeHighestLevel = this.level, window.kongregate && window.kongregate.stats.submit("level", this.persistentData.allTimeHighestLevel))) : this.endLevelTimer -= e), this.upgrades.updateConstruction(e), this.upgrades.updateAutoUpgrades(), this.creatureFactory.update(e), this.updateNetLauncher(e)), this.currentState == this.states.levelCompleted && (this.startTimer -= e);
-      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.persistentData.autoStart && !this.bossRushMode && !this.trophyHuntMode && this.startLevel(this.level);
-      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.bossRushMode && this.startLevel(Math.ceil((this.level + 1) / 50) * 50),
-      this.currentState == this.states.levelCompleted && this.startTimer < 0 && this.trophyHuntMode && this.startLevel(this.level + 5 - this.level % 5),
-      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && this.nextLevel()), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.trophyHuntMode && (this.trophyHuntMode = !1, this.sendMessage("Trophy Hunt ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && !(this.isMilestoneStage(this.level) && !this._milestoneHandled) && this.persistentData.autoStart && !this.bossRushMode && !this.trophyHuntMode && this.startLevel(this.level);
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && !(this.isMilestoneStage(this.level) && !this._milestoneHandled) && this.bossRushMode && this.startLevel(Math.ceil((this.level + 1) / 50) * 50),
+      this.currentState == this.states.levelCompleted && this.startTimer < 0 && !(this.isMilestoneStage(this.level) && !this._milestoneHandled) && this.trophyHuntMode && this.startLevel(this.level + 5 - this.level % 5),
+      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && (this.isMilestoneStage(this.level) && !this._milestoneHandled ? (this._milestonePending = true) : this.nextLevel())), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.trophyHuntMode && (this.trophyHuntMode = !1, this.sendMessage("Trophy Hunt ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
     }
     calculateEndLevelBones() {
       this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones));
@@ -1523,7 +1524,7 @@ var Incremancer;
       this.currentState = this.states.playingLevel, this.setupLevel(), this.updatePlayingLevel(), this.persistentData.autoRelease && this.releaseCagedZombies()
     }
     nextLevel() {
-      this.level++, this.currentState = this.states.playingLevel, this.setupLevel(), this.updatePlayingLevel(), this.persistentData.autoRelease && this.releaseCagedZombies()
+      this._milestoneHandled = false, this.level++, this.currentState = this.states.playingLevel, this.setupLevel(), this.updatePlayingLevel(), this.persistentData.autoRelease && this.releaseCagedZombies()
     }
     setupLevel() {
       this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), function(){const spells = new SpellSystem; spells.spells.forEach(s => { if (s.active) { s.active = !1; s.end(); spells.applySpellBuffEnd(s, this); } })}.call(this), this.addStartLevelResources(), this.populateStats(), SpiderCollector.instance && (SpiderCollector.instance.spiderTotalBones = 0, SpiderCollector.instance.spiderTotalParts = 0)
@@ -1594,14 +1595,18 @@ var Incremancer;
           healthRegen: 0,
           damageReflection: 0
         }, this.bossFailCount = 0, this.bossRushMode = !1, this.bossRushOffered = !1, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.level = 1, this.currentState = this.states.prestiged, this.skeleton.persistent.talentReset = !0, this.setupLevel(), this.saveData();
-        if (this.persistentData.rememberMinions && this.persistentData.rememberedMinions) {
-          var rm = this.persistentData.rememberedMinions;
-          this.persistentData.boneCollectors = rm.boneCollectors || 0;
-          this.persistentData.graveyardZombies = rm.graveyardZombies || 1;
-          this.persistentData.harpies = rm.harpies || 0;
-          this.persistentData.spiders = rm.spiders || 0;
-        }
       }
+    }
+    ascend() {
+      this.persistentData.ascensionLevel = (this.persistentData.ascensionLevel || 0) + 1;
+      this.persistentData.levelUnlocked = 1, this.persistentData.autoUpgrades = [], this.persistentData.blood = 0, this.persistentData.brains = 0, this.persistentData.bones = 0, this.persistentData.parts = 0, this.persistentData.generators = [], this.persistentData.bonesTotal = 0, this.persistentData.upgrades = [], this.persistentData.constructions = [], this.persistentData.boneCollectors = 0, this.persistentData.currentConstruction = !1, this.persistentData.harpies = 0, this.persistentData.spiders = 0, this.persistentData.graveyardZombies = 1, this.persistentData.prestigePointsToSpend = 0, this.persistentData.prestigePointsEarned = 0, this.persistentData.runes = { life: { blood: 0, brains: 0, bones: 0 }, death: { blood: 0, brains: 0, bones: 0 } }, this.persistentData.vipEscaped = [], this.persistentData.creatureLevels = [], this.persistentData.creatureAutobuild = [], this.persistentData.levelsCompleted = [], this.persistentData.runeshatter = 0, this.persistentData.activeSpellBuffs = [], this.persistentData.trophies = [], this.zombiesInCages = 0, this.autoconstruction = !1, this.levelResourcesAdded = !1, this.gigazombies = !1, this.runeEffects = {
+        attackSpeed: 1,
+        critChance: 0,
+        critDamage: 0,
+        damageReduction: 1,
+        healthRegen: 0,
+        damageReflection: 0
+      }, this.bossFailCount = 0, this.bossRushMode = !1, this.bossRushOffered = !1, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.skeleton.persistent.talentReset = !0, this.skeleton.persistent.talentPoints = 0, this.skeleton.persistent.level = 1, this.skeleton.talents = [], this.persistentData.skeletonTalents = [], this.level = 1, this.currentState = this.states.prestiged, this.setupLevel(), this.saveData();
     }
     //o
     saveData() {
@@ -1750,6 +1755,9 @@ var Incremancer;
     }
     isBossStage(e) {
       return e > 0 && e % 50 == 0
+    }
+    isMilestoneStage(e) {
+      return e >= 2500 && e % 500 === 0
     }
     levelInfo(e) {
       return {
@@ -2243,6 +2251,8 @@ var Incremancer;
         this.gameModel.zombieHealth *= this.gameModel.zombieHealthPCMod,
         this.gameModel.persistentData.runeshatter && (this.gameModel.zombieDamage *= this.shatterEffect(), this.gameModel.zombieHealth *= this.shatterEffect(), this.gameModel.zombieCost += this.gameModel.persistentData.runeshatter),
         this.gameModel.strapemRank > 0 && (this.gameModel.zombieDamage *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieHealth *= Math.pow(15, this.gameModel.strapemRank), this.gameModel.zombieCost *= Math.pow(10, this.gameModel.strapemRank));
+      const ascMult = Math.pow(2, this.gameModel.persistentData.ascensionLevel || 0);
+      if (ascMult > 1) { this.gameModel.zombieDamage *= ascMult; this.gameModel.zombieHealth *= ascMult; }
       const nd = this.gameModel.persistentData.netDistribution, nl = this.gameModel.netLaunchers;
       if (nd) {
         this.gameModel.zombieNets = Math.min(nd.zombie || 0, this.gameModel.maxZombieNets, nl);
@@ -2678,7 +2688,7 @@ var Incremancer;
       return 0
     }
     upgradePrice(e) {
-      return Math.round(e.basePrice * Math.pow(e.multiplier, this.currentRank(e)))
+      return Math.round(e.basePrice * Math.pow(e.multiplier, this.currentRank(e)) * Math.pow(0.5, this.gameModel.persistentData.ascensionLevel || 0))
     }
     upgradeMaxAffordable(e) {
       const t = this.currentRank(e);
@@ -2805,7 +2815,19 @@ var Incremancer;
         rank: 1,
         type: e.type,
         effect: e.effect
-      }), this.gameModel.persistentData.currentConstruction = !1, this.gameModel.saveData(), this.applyUpgrades(), this.angularModel.updateConstructionUpgrades(), this.gameModel.sendMessage("Construction of " + e.name + " complete!", "chat-construction"), e.completeMessage && this.gameModel.sendMessage(e.completeMessage, "chat-construction")
+      }), this.gameModel.persistentData.currentConstruction = !1, this.gameModel.saveData(), this.applyUpgrades(), this.angularModel.updateConstructionUpgrades(), this.gameModel.sendMessage("Construction of " + e.name + " complete!", "chat-construction"), e.completeMessage && this.gameModel.sendMessage(e.completeMessage, "chat-construction");
+      if (this.gameModel.persistentData.rememberMinions && this.gameModel.persistentData.rememberedMinions) {
+        const rm = this.gameModel.persistentData.rememberedMinions;
+        const pd = this.gameModel.persistentData;
+        if (e.id === 201) {
+          pd.graveyardZombies = Math.max(pd.graveyardZombies, rm.graveyardZombies || 1);
+          pd.boneCollectors = Math.max(pd.boneCollectors, rm.boneCollectors || 0);
+          pd.harpies = Math.max(pd.harpies, rm.harpies || 0);
+        }
+        if (e.id === 305) {
+          pd.spiders = Math.max(pd.spiders, rm.spiders || 0);
+        }
+      }
     }
     updateAutoUpgrades() {
       if (this.gameModel.autoUpgrades) {
@@ -6399,13 +6421,41 @@ var Incremancer;
       const e = (new Date).getTime();
       ! function(e, t) {
         c.model.update(e, t), c.updateMessages(e), c.sidePanels.factory && (c.factoryStats = r.factoryStats())
-      }(Math.min(1e3, Math.max(e - c.lastUpdate, 0)) / 1e3, e), c.lastUpdate = e
+      }(Math.min(1e3, Math.max(e - c.lastUpdate, 0)) / 1e3, e), c.lastUpdate = e;
+      if (c.showBreakdown) c.bd = c.resourceBreakdown();
     }
     c.model = GameModel.getInstance(), c.skeleton = function() {
       return i.persistent
     }, c.spells = a, c.keysPressed = Y, c.files = [], c.messageTimer = 4, c.message = !1, c.lastUpdate = 0, c.sidePanels = {}, c.upgrades = [], c.currentShopFilter = "blood", c.currentConstructionFilter = "available", c.graveyardTab = "minions", c.trophyTab = "all", c.factoryTab = "parts", c.factoryStats = {}, c.moveTooltip = d, c.confirmMessage = "", c.confirmCancel = function() {
       c.confirmCallback = !1
-    }, c.closeSidePanels = function() {
+    }, e.$watch(function() { return c.model._milestonePending }, function(v) {
+      if (v && !c.confirmCallback) {
+        c.model._milestonePending = false;
+        var asc = c.model.persistentData.ascensionLevel || 0;
+        var nextAsc = asc + 1;
+        c.confirmMessage = "MILESTONE \u2014 Level " + c.model.level +
+          "\n\nChoose your path:\n\u2022 Resume: Continue playing\n\u2022 Ascend: Full reset with " +
+          Math.pow(2, nextAsc) + "x tick speed, " + Math.pow(2, nextAsc) + "x stats, " +
+          (Math.pow(0.5, nextAsc) * 100) + "% costs";
+        c.confirmCallback = function() {
+          c.model._milestoneHandled = true;
+          c.model.nextLevel();
+          c.confirmCallback = false;
+          c.confirmCallback2 = false;
+          c.confirmLabel = false;
+          c.confirmLabel2 = false;
+        };
+        c.confirmCallback2 = function() {
+          c.model.ascend();
+          c.confirmCallback = false;
+          c.confirmCallback2 = false;
+          c.confirmLabel = false;
+          c.confirmLabel2 = false;
+        };
+        c.confirmLabel = "Resume";
+        c.confirmLabel2 = "Ascend";
+      }
+    }), c.closeSidePanels = function() {
       c.currentShopFilter = "blood", c.currentConstructionFilter = "available", c.graveyardTab = "minions", c.factoryTab = "parts", c.sidePanels.options = !1, c.sidePanels.graveyard = !1, c.sidePanels.runesmith = !1, c.sidePanels.prestige = !1, c.sidePanels.construction = !1, c.sidePanels.shop = !1, c.sidePanels.open = !1, c.sidePanels.factory = !1, c.sidePanels.spiders = !1, c.spidersTab = "strapping", c.levelSelect.shown = !1
     }, c.openSidePanel = function(e) {
       switch (c.closeSidePanels(), e) {
@@ -6487,8 +6537,40 @@ var Incremancer;
     }, c.spiderTotalParts = function() {
       const sc = SpiderCollector.instance;
       return sc ? (sc.spiderTotalParts || 0) : 0;
+    }, c.showBreakdown = false, c.bd = null, c.resourceBreakdown = function() {
+      var m = c.model, pd = m.persistentData;
+      var bd = {};
+      var baseEnergy = m.energySpellMultiplier * m.energyRate;
+      var collectorCost = pd.boneCollectors || 0;
+      var spiderCost = (pd.spiders || 0) * 10;
+      var harpyCost = pd.harpies || 0;
+      if (m.zombieHarpies && m.skeleton.persistent && m.skeleton.persistent.skeletons > 0) {
+        var needed = Math.max(0, m.skeleton.persistent.skeletons - m.skeleton.aliveSkeletons.length);
+        harpyCost += Math.min(needed, pd.harpies) * 4;
+      }
+      if (m.strapemRank > 0) harpyCost *= Math.pow(10, m.strapemRank);
+      bd.energy = {
+        base: m.energyRate,
+        spellMult: m.energySpellMultiplier,
+        gross: baseEnergy,
+        collectors: -collectorCost,
+        harpies: -harpyCost,
+        spiders: -spiderCost,
+        net: m.getEnergyRate()
+      };
+      bd.blood = { mod: m.bloodPCMod, max: m.bloodMax };
+      bd.brains = { rate: m.brainsRate, mod: m.brainsPCMod, max: m.brainsMax };
+      bd.bones = { rate: m.bonesRate, mod: m.bonesPCMod };
+      var sc = SpiderCollector.instance;
+      bd.bones.spiderBones = sc ? (sc.spiderTotalBones || 0) : 0;
+      bd.parts = { mod: m.partsPCMod, perSec: m.effectivePartsPerSec || 0 };
+      bd.parts.spiderParts = sc ? (sc.spiderTotalParts || 0) : 0;
+      if (m.netLaunchers) {
+        bd.parts.slingParts = m.netLauncherParts || 0;
+        bd.parts.slingTimer = m.netLauncherTimer || 0;
+      }
+      return bd;
     }, c.spellBuffList = [
-      { id: 90, name: "Slowing Nets", description: "Idle spiders shoot freezing nets at enemies" },
       { id: 91, name: "Pandemic+", description: "1/100 chance to zombify healthy humans" },
       { id: 92, name: "Detonate+", description: "Exploding zombies 50% survive, chain-explode" },
       { id: 93, name: "Energy Charge+", description: "Triple energy multiplier (5x -> 15x)" },
@@ -6510,6 +6592,8 @@ var Incremancer;
         if (c.model.persistentData.activeSpellBuffs.length >= (c.model.spellBuffSlots || 1)) return;
         c.model.persistentData.activeSpellBuffs.push(id)
       }
+    }, c.activeBuffCount = function() {
+      return (c.model.persistentData.activeSpellBuffs || []).length;
     }, c.spidersTab = "strapping", c.strapMessage = "", c.strappableGroups = [],
     c.rarityNames = {1:"Common", 2:"Rare", 3:"Epic", 4:"Legendary", 5:"Ancient", 6:"Divine", 7:"Chaos"},
     c.slotNames = {1:"Helmet", 2:"Chest", 3:"Legs", 4:"Gloves", 5:"Boots", 6:"Sword", 7:"Shield", 8:"Ring", 9:"Armband"},
