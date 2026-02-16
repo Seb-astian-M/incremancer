@@ -1,11 +1,10 @@
-const FORK_VERSION = "v1.10.0";
-const FORK_VERSION_DATE = "2026-02-15";
+const FORK_VERSION = "v1.1.0";
+const FORK_VERSION_DATE = "2026-02-16";
 console.log("[Incremancer fork] " + FORK_VERSION + " (" + FORK_VERSION_DATE + ")");
 var Incremancer;
 (() => {
   "use strict";
   var e = {};
-  //hahahah
 
   /* ================================================================
    *  UTILITY FUNCTIONS
@@ -1227,7 +1226,6 @@ var Incremancer;
           vipEscaped: [],
           autoRelease: !1,
           autoMaxHarpies: !1,
-          autoPrestige: !1,
           autoAuto: !1,
           activeSpellBuffs: [],
           skeleton: null,
@@ -1399,7 +1397,7 @@ var Incremancer;
       this.currentState == this.states.levelCompleted && this.startTimer < 0 && !(this.isMilestoneStage(this.level) && !this._milestoneHandled) && this.persistentData.autoStart && !this.bossRushMode && !this.trophyHuntMode && this.startLevel(this.level);
       this.currentState == this.states.levelCompleted && this.startTimer < 0 && !(this.isMilestoneStage(this.level) && !this._milestoneHandled) && this.bossRushMode && this.startLevel(Math.ceil((this.level + 1) / 50) * 50),
       this.currentState == this.states.levelCompleted && this.startTimer < 0 && !(this.isMilestoneStage(this.level) && !this._milestoneHandled) && this.trophyHuntMode && this.startLevel(this.level + 5 - this.level % 5),
-      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && (this.isMilestoneStage(this.level) && !this._milestoneHandled ? (this._milestonePending = true) : this.nextLevel())), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.trophyHuntMode && (this.trophyHuntMode = !1, this.sendMessage("Trophy Hunt ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && (this.persistentData.autoPrestige && this.bossFailCount >= 3 ? this.prestige() : this.persistentData.autoStart && this.startLevel(this.level - 49))), this.currentState == this.states.prestiged && this.persistentData.autoPrestige && (this.startTimer -= e, this.startTimer < 0 && this.startLevel(1)), this.updateStats()
+      this.currentState == this.states.levelCompleted && (this.startTimer < 0 && (this.isMilestoneStage(this.level) && !this._milestoneHandled ? (this._milestonePending = true) : this.nextLevel())), this.currentState == this.states.failed && (this.bossRushMode && (this.bossRushMode = !1, this.sendMessage("Boss Rush ended.", "chat-warning")), this.trophyHuntMode && (this.trophyHuntMode = !1, this.sendMessage("Trophy Hunt ended.", "chat-warning")), this.startTimer -= e, this.startTimer < 0 && this.persistentData.autoStart && this.startLevel(this.level - 49)), this.updateStats()
     }
     calculateEndLevelBones() {
       this.endLevelBones = 0, this.persistentData.boneCollectors > 0 && this.bones.uncollected && (this.endLevelBones = this.bones.uncollected.map((e => e.value)).reduce(((e, t) => e + t), 0), this.addBones(this.endLevelBones));
@@ -2172,7 +2170,7 @@ var Incremancer;
           new UpgradeDef(71, "Electro-Shock Collars", this.types.ShockPC, this.costs.parts, 3e14, 1.20, .0025, 0, "Using shock collars tuned to the Hybrid Zombie's nervous system causes them to attack at blinding speeds! Attack Speed +0.25% with each rank of Electro-Shock Collars.", null, 304),
           new UpgradeDef(72, "Power Regulators", this.types.EnergyCost, this.costs.parts, 1e18, 1.20, 1, 30, "Golem parts assembled around the graveyard can help regulate and attune necrotic power. Reduces zombie summoning cost by 1 with each rank of Power Regulators.", null, 304),
           new UpgradeDef(73, "Sephirin's Reputation", this.types.prest_multPC, this.costs.blood, 1e20, 1.25, .03, 0, "Astounding levels of blood sacrificed can enhance your reputation with dark entities in the Void. +3% Zombie Heatlh and Damage per rank", null, 304),
-          new UpgradeDef(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.(In testing)", null, 304),
+          new UpgradeDef(74, "Strider's Mathemagics", this.types.SkeleMove, this.costs.parts, 1e18, 6, 1, 10, "Using Archane Mathemagics you imbue your Skeleton Champion with golem based ligaments. +1 Movement Speed per rank.", null, 304),
           new UpgradeDef(75, "Hybrid Talent Infusion", this.types.golemTalents, this.costs.parts, 1e13, 1, 1, 1, "Infuse golems with the Skeleton Champion's combat knowledge. Skeleton talents (Bone Shield, Dark Orb, Thrifty, Opportunist, Blood Pact) also apply to all golems. Additional cost: 100M bones + 100M brains.", "Golems now benefit from Skeleton Champion talents!", 302),
           new UpgradeDef(76, "Zombie Harpies", this.types.zombieHarpies, this.costs.parts, 1e14, 1, 1, 1, "Infuse harpies with necromantic energy. Instead of dropping bombs, harpies now drop zombies on enemy positions at no energy cost.", "Harpies now drop zombies!", 222),
           new UpgradeDef(77, "Necromantic Prodigies", this.types.zombieTalents, this.costs.parts, 1e14, 1, 1, 1, "Through dark experimentation, 1 in 100 zombies arise as prodigies — wielding skeleton combat talents like Dark Orb and Bone Shield.", "Some zombies now rise as prodigies!", 302),
@@ -6514,18 +6512,6 @@ var Incremancer;
       c.confirmMessage = "Are you sure you want to reset everything? If you have a cloud save it will also be deleted. Make sure you export your save game first.", c.confirmCallback = function() {
         c.model.resetData(), c.confirmCallback = !1
       }
-    }, c.debugAscend = function() {
-      c.confirmMessage = "Debug: Reset to ascension state WITH incrementing ascension level?", c.confirmCallback = function() {
-        c.model.ascend(), c.confirmCallback = !1
-      }
-    }, c.debugAscendNoIncrement = function() {
-      c.confirmMessage = "Debug: Reset to ascension state WITHOUT changing ascension level?", c.confirmCallback = function() {
-        var saved = c.model.persistentData.ascensionLevel || 0;
-        c.model.ascend();
-        c.model.persistentData.ascensionLevel = saved;
-        c.model.saveData();
-        c.confirmCallback = !1
-      }
     }, c.addBoneCollector = function() {
       c.model.getEnergyRate() >= 1 && c.model.persistentData.boneCollectors++
     }, c.subtractBoneCollector = function() {
@@ -6980,8 +6966,6 @@ var Incremancer;
       c.model.persistentData.autoSellGear ? c.model.persistentData.autoSellGear = !1 : c.model.persistentData.autoSellGear = !0
     }, c.toggleAutoSellGearLegendary = function() {
       c.model.persistentData.autoSellGearLegendary ? c.model.persistentData.autoSellGearLegendary = !1 : c.model.persistentData.autoSellGearLegendary = !0
-    }, c.toggleAutoPrestige = function() {
-      c.model.persistentData.autoPrestige = !c.model.persistentData.autoPrestige
     }, c.toggleTabAuto = function(panel) {
       var items = c.upgrades;
       var allOn = items.every(function(u) { return u.auto || u.autoLevel; });
@@ -7019,8 +7003,6 @@ var Incremancer;
     }, c.lootFilterLabel = function() {
       const labels = { 0: "Show All", 1: "Rare+", 2: "Epic+", 3: "Legendary+", 4: "Ancient+", 5: "Divine+", 6: "Chaos Only" };
       return labels[c.model.persistentData.lootChatFilter || 0];
-    }, c.toggleShowFps = function() {
-      c.model.persistentData.showfps = !c.model.persistentData.showfps
     }, c.toggleParticles = function() {
       c.model.persistentData.particles = !c.model.persistentData.particles
     }, c.setBackgroundTint = function(tint) {
