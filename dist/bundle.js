@@ -4969,11 +4969,6 @@ var Incremancer;
       const slDist = (0.4 + Math.random() * 0.2) * (this.gameModel.fenceRadius || 50);
       this.slingshotX = cx + Math.cos(slAngle) * slDist;
       this.slingshotY = cy + Math.sin(slAngle) * slDist;
-      if (NetProjectile.instance && NetProjectile.instance.launcherSprite) {
-        NetProjectile.instance.launcherSprite.x = this.slingshotX;
-        NetProjectile.instance.launcherSprite.y = this.slingshotY;
-        NetProjectile.instance.launcherSprite.zIndex = this.slingshotY;
-      }
     }
     addAndRemoveSpiders() {
       const count = this.gameModel.persistentData.spiders || 0;
@@ -5277,7 +5272,7 @@ var Incremancer;
       const silkSpeedMult = Math.pow(1.3, this.gameModel.silkSpeedRank || 0);
       const silkSpeed = Math.max(P.x, P.y) / 12 * silkSpeedMult;
       const fenceR = this.gameModel.fenceRadius || 50;
-      const maxRange = 0.25 * Math.max(P.x, P.y);
+      const maxRange = 0.2 * Math.max(P.x, P.y);
       switch (spider.state) {
         case Zt.idle:
           if (spider.staggerDelay > 0) { spider.staggerDelay -= dt; return; }
@@ -5608,8 +5603,13 @@ var Incremancer;
         this.launcherSprite.visible = !1;
         g.addChild(this.launcherSprite);
       }
-      this.launcherSprite.x = graveyardSprite.x + 35;
-      this.launcherSprite.y = graveyardSprite.y + 5;
+      if (SpiderCollector.instance && SpiderCollector.instance.slingshotX != null) {
+        this.launcherSprite.x = SpiderCollector.instance.slingshotX;
+        this.launcherSprite.y = SpiderCollector.instance.slingshotY;
+      } else {
+        this.launcherSprite.x = graveyardSprite.x + 35;
+        this.launcherSprite.y = graveyardSprite.y + 5;
+      }
       this.launcherSprite.zIndex = this.launcherSprite.y;
       this.currentState = -1;
     }
