@@ -4969,6 +4969,11 @@ var Incremancer;
       const slDist = (0.4 + Math.random() * 0.2) * (this.gameModel.fenceRadius || 50);
       this.slingshotX = cx + Math.cos(slAngle) * slDist;
       this.slingshotY = cy + Math.sin(slAngle) * slDist;
+      if (NetProjectile.instance && NetProjectile.instance.launcherSprite) {
+        NetProjectile.instance.launcherSprite.x = this.slingshotX;
+        NetProjectile.instance.launcherSprite.y = this.slingshotY;
+        NetProjectile.instance.launcherSprite.zIndex = this.slingshotY;
+      }
     }
     addAndRemoveSpiders() {
       const count = this.gameModel.persistentData.spiders || 0;
