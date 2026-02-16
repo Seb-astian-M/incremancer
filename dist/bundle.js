@@ -1527,7 +1527,7 @@ var Incremancer;
       this._milestoneHandled = false, this.level++, this.currentState = this.states.playingLevel, this.setupLevel(), this.updatePlayingLevel(), this.persistentData.autoRelease && this.releaseCagedZombies()
     }
     setupLevel() {
-      this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), function(){const spells = new SpellSystem; spells.spells.forEach(s => { if (s.active) { s.active = !1; s.end(); spells.applySpellBuffEnd(s, this); } })}.call(this), this.addStartLevelResources(), this.populateStats(), SpiderCollector.instance && (SpiderCollector.instance.spiderTotalBones = 0, SpiderCollector.instance.spiderTotalParts = 0)
+      this.endLevelTimer = this.endLevelDelay, N(), this.particles.initialize(), this.humans.populate(), this.zombies.populate(), this.graveyard.initialize(), setTimeout(Z, 10), this.upgrades.applyUpgrades(), this.upgrades.updateRuneEffects(), this.partFactory.applyGenerators(), this.creatures.populate(), this.skeleton.populate(), function(){const spells = new SpellSystem; spells.spells.forEach(s => { if (s.active) { s.end(); spells.applySpellBuffEnd(s, this); s.start(); spells.applySpellBuffStart(s, this); } })}.call(this), this.addStartLevelResources(), this.populateStats(), SpiderCollector.instance && (SpiderCollector.instance.spiderTotalBones = 0, SpiderCollector.instance.spiderTotalParts = 0), this.chatLog.forEach(function(m) { m.count = 1 })
     }
     populateStats() {
       this.stats = {
@@ -1606,7 +1606,7 @@ var Incremancer;
         damageReduction: 1,
         healthRegen: 0,
         damageReflection: 0
-      }, this.bossFailCount = 0, this.bossRushMode = !1, this.bossRushOffered = !1, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.skeleton.persistent.talentReset = !0, this.skeleton.persistent.talentPoints = 0, this.skeleton.persistent.level = 1, this.skeleton.talents = [], this.persistentData.skeletonTalents = [], this.level = 1, this.currentState = this.states.prestiged, this.setupLevel(), this.saveData();
+      }, this.bossFailCount = 0, this.bossRushMode = !1, this.bossRushOffered = !1, this.boneCollectors.update(.1), this.partFactory.generatorsApplied = [], this.creatureFactory.updateAutoBuild(), this.creatureFactory.resetLevels(), this.skeleton.persistent.talentReset = !0, this.skeleton.persistent.talentPoints = 0, this.skeleton.persistent.level = 1, this.skeleton.persistent.items = [], this.skeleton.persistent.gearSetEquipped = -1, this.skeleton.persistent.gearSets = [], this.skeleton.persistent.currItemId = 0, this.skeleton.persistent.xp = 0, this.skeleton.persistent.xpRate = 0, this.skeleton.persistent.skeletons = 0, this.skeleton.talents = [], this.persistentData.skeletonTalents = [], this.level = 1, this.currentState = this.states.prestiged, function(){const spells = new SpellSystem; spells.spells.forEach(s => { if (s.active) { s.active = !1; s.end(); } })}.call(this), this.setupLevel(), this.saveData();
     }
     //o
     saveData() {
@@ -6513,6 +6513,18 @@ var Incremancer;
     }, c.resetGame = function() {
       c.confirmMessage = "Are you sure you want to reset everything? If you have a cloud save it will also be deleted. Make sure you export your save game first.", c.confirmCallback = function() {
         c.model.resetData(), c.confirmCallback = !1
+      }
+    }, c.debugAscend = function() {
+      c.confirmMessage = "Debug: Reset to ascension state WITH incrementing ascension level?", c.confirmCallback = function() {
+        c.model.ascend(), c.confirmCallback = !1
+      }
+    }, c.debugAscendNoIncrement = function() {
+      c.confirmMessage = "Debug: Reset to ascension state WITHOUT changing ascension level?", c.confirmCallback = function() {
+        var saved = c.model.persistentData.ascensionLevel || 0;
+        c.model.ascend();
+        c.model.persistentData.ascensionLevel = saved;
+        c.model.saveData();
+        c.confirmCallback = !1
       }
     }, c.addBoneCollector = function() {
       c.model.getEnergyRate() >= 1 && c.model.persistentData.boneCollectors++

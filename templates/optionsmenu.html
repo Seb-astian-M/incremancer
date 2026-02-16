@@ -101,6 +101,16 @@
           <button ng-click="zm.resetGame();">Reset Game</button>
       </div>
       <div class="upgrade">
+          <h4>Debug: Ascend (with multiplier)</h4>
+          <p>Reset to ascension state and increment ascension level. Ascension multipliers will increase.</p>
+          <button ng-click="zm.debugAscend();">Ascend +1</button>
+      </div>
+      <div class="upgrade">
+          <h4>Debug: Ascend (no multiplier)</h4>
+          <p>Reset to ascension state without changing ascension level. Multipliers stay the same.</p>
+          <button ng-click="zm.debugAscendNoIncrement();">Ascend (reset only)</button>
+      </div>
+      <div class="upgrade">
           <h4>Changelog (Fork)</h4>
 
           <p><strong>v1.10.0</strong> <em>2026-02-15</em></p>
